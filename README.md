@@ -50,4 +50,5 @@ connectory, konfiguracje MCP, workflowy n8n, skrypty setupowe.
 | JIRA connector | ✅ spec + demo pull (praca SHELF, 3 notatki) | `connectors/jira/` |
 | n8n workflows  | ⬜ todo      | `n8n/` |
 
-Pełny projekt: `docs/architecture.md`.
+Pełny projekt: `docs/architecture.md`. Mapa kontekstów (Personal, Scandit, Shadow
+Operator, HaloEfekt) z Notion IDs i repos: `docs/contexts.md`.

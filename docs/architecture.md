@@ -64,11 +64,14 @@ Second brain ma działać w wielu miejscach — odzwierciedla to struktura `01-P
 ## Warstwa zadań: multi-tracker zależnie od kontekstu
 
 Zadania nie żyją w jednym miejscu — tracker zależy od kontekstu. Każdy linkuje do
-notatki roboczej tą samą konwencją frontmatter (`tracker` + `task_id`):
+notatki roboczej tą samą konwencją frontmatter (`tracker` + `task_id`). Pełna mapa
+kontekstów (Notion IDs, repos, struktura vaultu): **`docs/contexts.md`**.
 
-| Kontekst | Tracker | Gdzie | Connector |
-|----------|---------|-------|-----------|
-| Osobiste | **Notion** | Private Dashboard `collection://29084f14-76e0-80be-ac06-000b9ee2fc4f` | `connectors/notion/` |
-| Praca Scandit | **JIRA** | `scandit.atlassian.net`, projekt SHELF (repo digital-shelf-ios) | `connectors/jira/` |
+| Kontekst | Tracker | Connector |
+|----------|---------|-----------|
+| Personal | **Notion** Private Tasks | `connectors/notion/` |
+| Praca Scandit | **JIRA** projekt SHELF | `connectors/jira/` |
+| Shadow Operator (venture) | **Notion** Prospecting Tracker + repo claude-marketing | `connectors/notion/` |
+| HaloEfekt (agencja) | **Notion** Agency Tasks + repos legal-mind/doc-forge | `connectors/notion/` |
 
-> ClickUp/legal-mind: nie dotyczy tego mózgu (nie istnieje).
+> ClickUp nie istnieje — HaloEfekt jedzie na Notion Agency Database.
