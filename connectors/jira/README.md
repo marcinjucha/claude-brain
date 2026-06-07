@@ -6,9 +6,16 @@ Wykonawca: **Claude Code przez Atlassian MCP** (`mcp__claude_ai_Atlassian__*`).
 
 ## Dostęp
 
-- Site: `scandit.atlassian.net` · cloudId: `a19c74f3-95cf-4d55-9d33-366adfe6f7a0`
+- Site: `scandit.atlassian.net`
+- **cloudId — różne dla JIRA i Confluence (nie mylić):**
+  - JIRA = UUID `a19c74f3-95cf-4d55-9d33-366adfe6f7a0`
+  - Confluence = domena `scandit.atlassian.net`
 - Projekt: **SHELF** (repo `~/Scandit/digital-shelf-ios/`)
 - Konwencja branchy: `feature|bugfix/SHELF-<nr>-<slug>` → slug zgodny z nazwą pliku notatki.
+
+> **Autorytet:** pełne reguły JIRA/Confluence/Sprint są w skillu Scandit
+> `~/Scandit/digital-shelf-ios/.claude/skills/project-management/SKILL.md`
+> (agent `atlassian-manager`). Poniżej tylko to, co istotne dla mózgu.
 
 ## Konwencja linkująca (frontmatter — wspólna dla wszystkich trackerów)
 
@@ -23,19 +30,27 @@ status: In Progress        # LUSTRO z JIRA — JIRA jest właścicielem
 
 ## PULL (moje zadania JIRA → notatki robocze)
 
-JQL bazowy (aktywne, przypisane do mnie):
+**Domyślnie sprint-scoped** ("co robić teraz") — lepsze niż "wszystkie otwarte":
 ```
-project = SHELF AND assignee = currentUser() AND statusCategory != Done ORDER BY updated DESC
+assignee = currentUser() AND sprint in openSprints() AND project = SHELF ORDER BY priority DESC
 ```
-> Pobieraj wąsko pola (`summary,status,issuetype,priority,updated`) — pełne opisy ADF
-> potrafią przekroczyć limit tokenów. Opis zadania zostaje w JIRA; do vaultu idzie tylko
-> link + summary, a detal piszesz sam.
+Szerszy backlog (gdy trzeba): `... AND statusCategory != Done ORDER BY updated DESC`.
 
-Claude dla każdego aktywnego zadania zakłada notatkę z szablonu `_system/templates/working-note.md`
-(dedup po `task_id`), do `01-Projects/work/`.
+> Pobieraj wąsko pola (`summary,status,issuetype,priority,updated`) — i tak potrafi
+> przekroczyć limit tokenów (opisy), wtedy czytaj zapisany plik wyniku przez `jq`.
+> Opis zadania zostaje w JIRA; do vaultu idzie link + summary, detal piszesz sam.
+
+Scaffold tylko zadań **aktywnych** (In Progress / To Do); pomiń Done/Implemented (zamknięte/review)
+i czyste placeholdery. Dedup po `task_id`, do `01-Projects/work/`.
 
 ## PUBLISH (finalny produkt → JIRA)
 
-Sekcja `## Finalny produkt` notatki → komentarz lub opis zadania:
-`mcp__claude_ai_Atlassian__addCommentToJiraIssue` / `editJiraIssue`. Zmiana statusu
-(`transitionJiraIssue`) tylko za Twoją zgodą.
+Sekcja `## Finalny produkt` → komentarz/opis: `addCommentToJiraIssue` / `editJiraIssue`.
+
+> **KRYTYCZNE: zawsze Markdown, NIGDY ADF.** ADF → surowy escaped JSON w UI JIRA
+> (produkcyjne bugi SHELF-21506, 21765-21767). MCP sam konwertuje md→ADF. Nie używaj
+> obiektów ADF ani `JSON.stringify()`.
+> Przy tworzeniu zadań: komponenty zawsze `[{name:"iOS"},{name:"SHELFVIEW-APP"}]`
+> (labele ukrywają task — SHELF-21606). Sprint: `customfield_10020` (liczba, nie tablica).
+
+Zmiana statusu (`transitionJiraIssue`) tylko za zgodą użytkownika.

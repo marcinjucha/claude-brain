@@ -32,7 +32,7 @@ Argument: `$ARGUMENTS` — pierwszy token to kontekst. Flagi: `--status <s>` (fi
 2. Jeśli kontekst nieznany — wypisz dostępne (`personal`, `scandit`, `shadow-operator`, `agency`, `social-media`) i zapytaj.
 
 ## Faza 1 — pobierz zadania
-- **JIRA:** `searchJiraIssuesUsingJql`, JQL: `project = SHELF AND assignee = currentUser() AND statusCategory != Done ORDER BY updated DESC`. Pola wąsko: `summary,status,issuetype,priority,updated` (pełne ADF przekracza limit tokenów → jeśli wynik za duży, czytaj zapisany plik przez `jq`).
+- **JIRA:** `searchJiraIssuesUsingJql`, domyślnie sprint-scoped: `assignee = currentUser() AND sprint in openSprints() AND project = SHELF ORDER BY priority DESC` (szerzej: `... AND statusCategory != Done`). Pola wąsko: `summary,status,issuetype,priority,updated` (i tak bywa za duże → czytaj zapisany plik przez `jq`). Scaffold tylko aktywne (In Progress/To Do); pomiń Done/Implemented i placeholdery. Pełne reguły: skill Scandit `project-management`.
 - **Notion (cały kontekst, np. `personal`, `agency`):** `notion-fetch` na `collection://...` po schemat, potem `notion-search` z `data_source_url` po otwarte zadania (Status ∈ {In Progress, Todo, To Do, Not Started, Inbox}).
 - **Notion (pod-projekt, np. `social-media`):** NIE używaj `notion-search` po całej tabeli —
   semantyka zwraca obce zadania łapiące się na słowa. Zamiast tego `notion-fetch` na stronie

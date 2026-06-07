@@ -15,6 +15,9 @@ w Notion i (czasem) powiązane repo. Notatki robocze linkują do zadań przez fr
 - **Repo:** `~/Scandit/digital-shelf-ios/`
 - **Vault:** `01-Projects/work/SHELF-<nr>-<slug>.md`
 - Connector: `connectors/jira/`.
+- **Autorytet JIRA/Confluence/Sprint:** skill `~/Scandit/digital-shelf-ios/.claude/skills/project-management/SKILL.md`
+  (agent `atlassian-manager`) — reguły: Markdown-not-ADF, cloudId, komponenty iOS/SHELFVIEW-APP,
+  sprint przez CQL, tech debt → Confluence parent `7171866823`.
 
 ## 3. Shadow Operator (własny venture)
 Pomoc kreatorom YouTube/IG w monetyzacji przez produkty cyfrowe. Ja robię back-end
