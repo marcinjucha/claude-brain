@@ -48,8 +48,10 @@ connectory, konfiguracje MCP, workflowy n8n, skrypty setupowe.
 | Telegram capture | ✅ działa (bot @mjchiefbot, launchd w tle) | `connectors/telegram/` |
 | Notion connector | ✅ spec + konwencja (osobiste, przez MCP) | `connectors/notion/` |
 | JIRA connector | ✅ spec + demo pull (praca SHELF, 3 notatki) | `connectors/jira/` |
-| `/brain-pull` | ✅ komenda: tracker → notatki robocze (każdy kontekst) | `.claude/commands/` |
-| n8n workflows  | ⬜ todo      | `n8n/` |
+| `/brain-pull` + `/brain-publish` | ✅ zadania: tracker ↔ notatki (globalne) | `.claude/commands/` |
+| `/brain-load` + `/brain-update` | ✅ wiedza: pamięć projektu ↔ sesja (globalne) | `.claude/commands/` |
+| Dashboard + pamięć projektu (vault) | ✅ Home.md + `_<projekt>.md` | vault |
+| n8n / `/brain-digest`  | ⬜ todo      | `n8n/` |
 
 Pełny projekt: `docs/architecture.md`. Mapa kontekstów (Personal, Scandit, Shadow
 Operator, HaloEfekt) z Notion IDs i repos: `docs/contexts.md`.
