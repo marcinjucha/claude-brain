@@ -13,6 +13,10 @@ i linkuje przez frontmatter `tracker` + `task_id` (patrz `connectors/`, `docs/co
 Argument: `$ARGUMENTS` — pierwszy token to kontekst. Flagi: `--status <s>` (filtr), `--dry`
 (tylko raport, nic nie zapisuj).
 
+Repo mózgu (źródło config/ścieżek, działa z każdego projektu):
+`/Users/marcinjucha/Prywatne/projects/claude-brain`. Czytaj jego `config.json` i `docs/contexts.md`
+po ścieżce absolutnej — komenda jest globalna i bywa uruchamiana spoza repo.
+
 ## Routing kontekstów
 
 Źródło prawdy: `config.json` + `docs/contexts.md` (w repo claude-brain). Skrót:
