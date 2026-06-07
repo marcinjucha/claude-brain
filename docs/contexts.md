@@ -4,6 +4,11 @@ Second brain obsługuje cztery konteksty. Każdy ma własny tracker zadań, wła
 w Notion i (czasem) powiązane repo. Notatki robocze linkują do zadań przez frontmatter
 `tracker` + `task_id` (patrz `connectors/`).
 
+> **Zasada: silniki domenowe (skille/agenci) żyją w swoich repo** (`claude-marketing`,
+> `claude-dev`, repo projektów) — **mózg linkuje i mapuje, nie wchłania.** Tak samo jak
+> linkuje do repo `memory.md` zamiast kopiować. Mapę „zadanie → skill" trzyma pamięć
+> projektu w vaulcie (np. `_shadow-operator.md`).
+
 ## 1. Personal
 - **Tracker:** Notion — Private Tasks Table `collection://29084f14-76e0-80be-ac06-000b9ee2fc4f`
 - **Repo:** brak
@@ -28,11 +33,11 @@ Notion służy też do udostępniania materiałów kreatorom.
 - **Notion:** Shadow Operator `https://app.notion.com/p/1d984f1476e0821eaa98817a218ff9b3`
   - **Prospecting Tracker** `collection://9cd84f14-76e0-823a-9146-876ae3400d3c` (statusy outreach, kreatorzy)
   - Bootcamp OS: Finding/Vetting → Outreach → Pilot Launch → Roadmap; szablony follow-up (EN/PL)
-- **Repo:** `~/Prywatne/projects/claude-marketing/` — silnik (skille):
-  `mkr-youtube-creator-prospecting`, `mkr-instagram-creator-prospecting`,
-  `mkr-outreach-creator-messaging`, `mkr-creator-loom-script`,
-  `mkr-creator-monetisation-audit`, `mrk-offer`, `ag-knowledge`
-- **Vault (propozycja):** `01-Projects/shadow-operator/<kreator>/` (Intel Audit, skrypty)
+- **Silnik (repo `~/Prywatne/projects/claude-marketing/`):** skille
+  `mkr-*-creator-prospecting`, `mkr-creator-monetisation-audit`, `mkr-creator-loom-script`,
+  `mkr-outreach-creator-messaging`, `mrk-offer`, `ag-knowledge`. Mapa „zadanie → skill":
+  pamięć projektu `01-Projects/shadow-operator/_shadow-operator.md`.
+- **Vault:** `01-Projects/shadow-operator/` — `_shadow-operator.md` + notatka per kreator.
 
 ## 4. HaloEfekt (agencja ze znajomymi)
 - **Notion:** Agency Dashboard `https://app.notion.com/p/29084f1476e080d1bbb7f111d659e9ca`

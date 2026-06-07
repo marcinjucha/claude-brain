@@ -10,6 +10,12 @@ nie hardkoduj jej w skryptach.
   skrypty setup/sync/maintenance (`scripts/`), dokumentacja architektury (`docs/`).
 - **NIE TU:** notatki, wiedza, zadania-jako-treść — to idzie do vaultu.
 
+## Zasada: silniki vs mózg
+
+Silniki domenowe (skille/agenci, np. `claude-marketing`, `claude-dev`) i głęboka wiedza repo
+(`CLAUDE.md`/skille/`memory.md`) **żyją w swoich repo**. Mózg **linkuje i mapuje, nie wchłania
+ani nie kopiuje** — pamięć projektu w vaulcie trzyma wysoką półkę + mapę „zadanie → skill".
+
 ## Operowanie na vaulcie
 
 Vault to zwykłe pliki `.md` na dysku — czytaj/pisz je bezpośrednio (Read/Write/Edit).
