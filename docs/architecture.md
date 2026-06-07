@@ -61,7 +61,14 @@ Second brain ma działać w wielu miejscach — odzwierciedla to struktura `01-P
 - **Telegram: zakres** — START: tylko capture do `00-Inbox`. Później ewentualnie zapytania do mózgu (RAG).
 - **n8n: gdzie hostowany** — otwarte (lokalnie vs VPS). Telegram na start bez n8n (lekki poller).
 
-## Mapowanie do baz Notion (z globalnego CLAUDE.md)
+## Warstwa zadań: multi-tracker zależnie od kontekstu
 
-- Praca/personal → Private Dashboard (Tasks `collection://29084f14-76e0-80be-ac06-000b9ee2fc4f`)
-- Agency/legal-mind → ClickUp (NIE Notion Agency DB — zdeprecjonowana dla legal-mind)
+Zadania nie żyją w jednym miejscu — tracker zależy od kontekstu. Każdy linkuje do
+notatki roboczej tą samą konwencją frontmatter (`tracker` + `task_id`):
+
+| Kontekst | Tracker | Gdzie | Connector |
+|----------|---------|-------|-----------|
+| Osobiste | **Notion** | Private Dashboard `collection://29084f14-76e0-80be-ac06-000b9ee2fc4f` | `connectors/notion/` |
+| Praca Scandit | **JIRA** | `scandit.atlassian.net`, projekt SHELF (repo digital-shelf-ios) | `connectors/jira/` |
+
+> ClickUp/legal-mind: nie dotyczy tego mózgu (nie istnieje).

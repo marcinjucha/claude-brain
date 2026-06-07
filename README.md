@@ -25,11 +25,11 @@ connectory, konfiguracje MCP, workflowy n8n, skrypty setupowe.
 │  scripts/    ── bootstrap, sync, maintenance                  │
 └───────────────────────────────────────────────────────────────┘
                 │
-     ┌──────────┼──────────┐
-     ▼          ▼          ▼
-  Notion     Telegram   (kolejne źródła)
-  wiedza/    capture /
-  zadania    komunikacja
+     ┌──────────┼──────────┬─────────────┐
+     ▼          ▼          ▼             ▼
+  Notion      JIRA      Telegram   (kolejne źródła)
+  zadania     zadania   capture /
+  osobiste    pracy     komunikacja
 ```
 
 ## Zasada projektowa
@@ -46,7 +46,8 @@ connectory, konfiguracje MCP, workflowy n8n, skrypty setupowe.
 | Vault PARA     | ✅ założony  | `.../Documents/AI` |
 | Repo szkielet  | ✅ gotowy    | tutaj |
 | Telegram capture | ✅ działa (bot @mjchiefbot, launchd w tle) | `connectors/telegram/` |
-| Notion connector | ⬜ todo (model: podział ról, patrz docs) | `connectors/notion/` |
+| Notion connector | ✅ spec + konwencja (osobiste, przez MCP) | `connectors/notion/` |
+| JIRA connector | ✅ spec + demo pull (praca SHELF, 3 notatki) | `connectors/jira/` |
 | n8n workflows  | ⬜ todo      | `n8n/` |
 
 Pełny projekt: `docs/architecture.md`.

@@ -19,10 +19,12 @@ zewnętrznych (Notion, Telegram), nie dla plików lokalnych.
 Struktura vaultu (PARA): `00-Inbox`, `01-Projects/{work,clients}`, `02-Areas`,
 `03-Resources`, `04-Archive`, `_system/templates`.
 
-## Routing zadań (z globalnego CLAUDE.md użytkownika)
+## Routing zadań (warstwa zadań mózgu)
 
-- legal-mind / Halo Efekt → **ClickUp** (NIE Notion Agency DB).
-- Reszta (personal, Scandit/Stepstone) → **Notion Private Dashboard**.
+- Osobiste → **Notion** Private Dashboard (`connectors/notion/`).
+- Praca Scandit → **JIRA** projekt SHELF, repo digital-shelf-ios (`connectors/jira/`).
+- Notatka robocza linkuje do zadania przez frontmatter `tracker` + `task_id`. Plik pracy
+  Scandit: `01-Projects/work/SHELF-<nr>-<slug>.md`.
 
 ## Status i kolejność
 

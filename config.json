@@ -9,7 +9,21 @@
     "system": "_system"
   },
   "connectors": {
-    "notion": { "enabled": false, "transport": "mcp" },
-    "telegram": { "enabled": false, "transport": "bot" }
+    "notion": {
+      "enabled": true,
+      "transport": "mcp",
+      "context": "personal",
+      "tasks": "collection://29084f14-76e0-80be-ac06-000b9ee2fc4f",
+      "projects": "collection://29084f14-76e0-80bb-8e2c-000be77d2a5f"
+    },
+    "jira": {
+      "enabled": true,
+      "transport": "mcp",
+      "context": "work",
+      "cloudId": "a19c74f3-95cf-4d55-9d33-366adfe6f7a0",
+      "site": "scandit.atlassian.net",
+      "project": "SHELF"
+    },
+    "telegram": { "enabled": true, "transport": "bot", "bot": "@mjchiefbot" }
   }
 }
