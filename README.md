@@ -50,7 +50,9 @@ connectory, konfiguracje MCP, workflowy n8n, skrypty setupowe.
 | JIRA connector | ✅ spec + demo pull (praca SHELF, 3 notatki) | `connectors/jira/` |
 | `/brain-pull` + `/brain-publish` | ✅ zadania: tracker ↔ notatki (globalne) | `.claude/commands/` |
 | `/brain-load` + `/brain-update` | ✅ wiedza: pamięć projektu ↔ sesja (globalne) | `.claude/commands/` |
-| Dashboard + pamięć projektu (vault) | ✅ Home.md + `_<projekt>.md` | vault |
+| `/brain-social` | ✅ content social + copy (pipeline) | `.claude/commands/` |
+| Dashboard żywy + social board (Dataview) | ✅ Home.md, `_social-board.md` (wymaga pluginu) | vault · `docs/obsidian-setup.md` |
+| Pamięć projektu (vault) | ✅ `_<projekt>.md` | vault |
 | n8n / `/brain-digest`  | ⬜ todo      | `n8n/` |
 
 Pełny projekt: `docs/architecture.md`. Mapa kontekstów (Personal, Scandit, Shadow
