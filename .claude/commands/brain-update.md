@@ -26,9 +26,10 @@ Jeśli plik nie istnieje → utwórz z analogicznej struktury co `_scandit.md`.
 
 ## Faza 3 — rozdziel poziomy (WAŻNE)
 - **Górny (tu):** status, postęp, połączenia, wskaźniki "co dalej". → pamięć projektu w vaulcie.
-- **Dolny (NIE tu):** głębokie lekcje techniczne, pułapki, reguły kodu. → repo `memory.md`
-  przez `/ai-extract-memory`. Jeśli w sesji pojawiła się taka lekcja — **zasugeruj** użytkownikowi
-  jej zapis do repo, nie wpisuj jej do pamięci projektu w mózgu.
+- **Dolny (NIE tu):** głębokie lekcje techniczne, pułapki, reguły kodu. → repo, ścieżką:
+  `/ai-extract-memory` (do `memory.md`, bufor sesji) → `/ai-curate-memory` (promocja do CLAUDE.md/skilli).
+  Jeśli w sesji pojawiła się taka lekcja — **zasugeruj** użytkownikowi ten zapis, nie wpisuj jej
+  do pamięci projektu w mózgu.
 
 ## Faza 4 — raport
 Co zaktualizowano w pamięci projektu + ewentualne sugestie lekcji do repo `memory.md`.

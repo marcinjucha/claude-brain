@@ -23,12 +23,14 @@ Repo mózgu (config/ścieżki): `/Users/marcinjucha/Prywatne/projects/claude-bra
 - Przeczytaj powiązane working notes (linki w pamięci projektu / pliki w `<vault>`).
 
 ## Faza 2 — wczytaj dolny poziom (repo)
-- Przeczytaj `repoMemory` z bieżącego folderu (`CLAUDE.md`, `memory.md`) — głęboka wiedza techniczna.
+Trwała wiedza repo = **CLAUDE.md + skille**; `memory.md` to bufor uczenia z sesji (staging).
+- Przeczytaj `CLAUDE.md` (reguły, dojrzałe konwencje) i — gdy istotne — skille w `.claude/skills/`.
+- Przeczytaj `memory.md` jako świeże, jeszcze niepromowane lekcje.
 - Jeśli istnieje `SESSION.md` w worktree — wczytaj (ulotny stan bieżącej gałęzi).
 
 ## Faza 3 — przedstaw obraz
 Krótko podsumuj użytkownikowi: co to za projekt, na jakim etapie, co w toku, otwarte wątki,
 i czego pamięć NIE wie (luki). Bez ścian tekstu — to brief startowy, nie raport.
 
-> Pamięć projektu w mózgu = wysoka półka (status/połączenia). Głębokie lekcje techniczne
-> NIE są tu kopiowane — żyją w repo `memory.md`. `/brain-load` czyta oba; nie scalaj ich.
+> Pamięć projektu w mózgu = wysoka półka (status/połączenia). Głęboka wiedza techniczna
+> NIE jest tu kopiowana — żyje w repo (CLAUDE.md/skille, a świeże w memory.md). Czytaj oba poziomy; nie scalaj.
