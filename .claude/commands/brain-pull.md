@@ -22,7 +22,8 @@ Argument: `$ARGUMENTS` — pierwszy token to kontekst. Flagi: `--status <s>` (fi
 | `personal` | Notion | `collection://29084f14-76e0-80be-ac06-000b9ee2fc4f` | `01-Projects` | `<slug>.md` |
 | `scandit` | JIRA | projekt SHELF, cloudId `a19c74f3-95cf-4d55-9d33-366adfe6f7a0` | `01-Projects/work` | `SHELF-<nr>-<slug>.md` |
 | `shadow-operator` | Notion | `collection://9cd84f14-76e0-823a-9146-876ae3400d3c` | `01-Projects/shadow-operator` | `<slug>.md` |
-| `agency` / `social-media` | Notion | `collection://29284f14-76e0-8062-a18d-000bfce0cf23` | `01-Projects/agency[/social-media]` | `<slug>.md` |
+| `agency` | Notion | `collection://29284f14-76e0-8062-a18d-000bfce0cf23` | `01-Projects/agency` | `<task-id>-<slug>.md` |
+| `social-media` | Notion | projekt **AAA-P-10** `33c84f1476e08111acd6e3e197be747f` (relacja `✅ Tasks`) | `01-Projects/agency/social-media` | `<task-id>-<slug>.md` |
 
 Ścieżkę vaultu czytaj z `config.json` → `vault.path` (NIE hardkoduj).
 
@@ -32,7 +33,11 @@ Argument: `$ARGUMENTS` — pierwszy token to kontekst. Flagi: `--status <s>` (fi
 
 ## Faza 1 — pobierz zadania
 - **JIRA:** `searchJiraIssuesUsingJql`, JQL: `project = SHELF AND assignee = currentUser() AND statusCategory != Done ORDER BY updated DESC`. Pola wąsko: `summary,status,issuetype,priority,updated` (pełne ADF przekracza limit tokenów → jeśli wynik za duży, czytaj zapisany plik przez `jq`).
-- **Notion:** `notion-fetch` na `collection://...` po schemat, potem `notion-search` z `data_source_url` po otwarte zadania (Status ∈ {In Progress, Todo, To Do, Not Started}).
+- **Notion (cały kontekst, np. `personal`, `agency`):** `notion-fetch` na `collection://...` po schemat, potem `notion-search` z `data_source_url` po otwarte zadania (Status ∈ {In Progress, Todo, To Do, Not Started, Inbox}).
+- **Notion (pod-projekt, np. `social-media`):** NIE używaj `notion-search` po całej tabeli —
+  semantyka zwraca obce zadania łapiące się na słowa. Zamiast tego `notion-fetch` na stronie
+  **projektu** i odczytaj relację `✅ Tasks`, potem `notion-fetch` każdego zadania.
+- `task_id` dla Notion Agency = ludzkie ID (`AAA-T-###`); `task_url` = pełny URL (zawiera UUID do publish).
 - Filtr `--status` zawęża do podanego statusu.
 
 ## Faza 2 — klasyfikuj (osąd)
