@@ -1,0 +1,15 @@
+{
+  "vault": {
+    "path": "/Users/marcinjucha/Library/Mobile Documents/iCloud~md~obsidian/Documents/AI",
+    "inbox": "00-Inbox",
+    "projects": "01-Projects",
+    "areas": "02-Areas",
+    "resources": "03-Resources",
+    "archive": "04-Archive",
+    "system": "_system"
+  },
+  "connectors": {
+    "notion": { "enabled": false, "transport": "mcp" },
+    "telegram": { "enabled": false, "transport": "bot" }
+  }
+}
