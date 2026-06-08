@@ -31,8 +31,11 @@ Pomoc kreatorom YouTube/IG w monetyzacji przez produkty cyfrowe. Ja robię back-
 marketingu, kreatorzy tworzą produkty. Dla każdego kreatora: **Intel Audit** + **skrypty**.
 Notion służy też do udostępniania materiałów kreatorom.
 - **Notion:** Shadow Operator `https://app.notion.com/p/1d984f1476e0821eaa98817a218ff9b3`
-  - **Prospecting Tracker** `collection://9cd84f14-76e0-823a-9146-876ae3400d3c` (statusy outreach, kreatorzy)
+  - **Tasks Tracker** `collection://37984f14-76e0-80f1-95f2-000bd6a8a39a` — **zadania** (Status: Not started/In progress/Done,
+    Priority, relacja `Prospect` → kreator). To źródło dla `/brain-pull shadow-operator`.
+  - **Prospecting Tracker** `collection://9cd84f14-76e0-823a-9146-876ae3400d3c` — **kreatorzy/prospekty** (statusy outreach).
   - Bootcamp OS: Finding/Vetting → Outreach → Pilot Launch → Roadmap; szablony follow-up (EN/PL)
+  > Uwaga: zadania = Tasks Tracker (per-kreator, model „przechowaj Gameplan+Loom"); to NIE Prospecting Tracker.
 - **Silnik (repo `~/Prywatne/projects/claude-marketing/`):** skille
   `mkr-*-creator-prospecting`, `mkr-creator-monetisation-audit`, `mkr-creator-loom-script`,
   `mkr-outreach-creator-messaging`, `mrk-offer`, `ag-knowledge`. Mapa „zadanie → skill":

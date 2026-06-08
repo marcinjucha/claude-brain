@@ -25,7 +25,7 @@ po ścieżce absolutnej — komenda jest globalna i bywa uruchamiana spoza repo.
 |----------|---------|--------|---------------|-------------|
 | `personal` | Notion | `collection://29084f14-76e0-80be-ac06-000b9ee2fc4f` | `01-Projects` | `<slug>.md` |
 | `scandit` | JIRA | projekt SHELF, cloudId `a19c74f3-95cf-4d55-9d33-366adfe6f7a0` | `01-Projects/work` | `SHELF-<nr>-<slug>.md` |
-| `shadow-operator` | Notion | `collection://9cd84f14-76e0-823a-9146-876ae3400d3c` | `01-Projects/shadow-operator` | `<slug>.md` |
+| `shadow-operator` | Notion | **Tasks Tracker** `collection://37984f14-76e0-80f1-95f2-000bd6a8a39a` (relacja `Prospect` → kreator). Kreatorzy/prospekty osobno: Prospecting Tracker `collection://9cd84f14-76e0-823a-9146-876ae3400d3c` | `01-Projects/shadow-operator` | `<slug>.md` |
 | `agency` | Notion | `collection://29284f14-76e0-8062-a18d-000bfce0cf23` | `01-Projects/agency` | `<task-id>-<slug>.md` |
 | `social-media` | Notion | projekt **AAA-P-10** `33c84f1476e08111acd6e3e197be747f` (relacja `✅ Tasks`) | `01-Projects/agency/social-media` | `<task-id>-<slug>.md` |
 
