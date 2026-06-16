@@ -23,7 +23,8 @@ Repo mózgu (config/ścieżki): `/Users/marcinjucha/Prywatne/projects/claude-bra
 ## Faza 1 — wczytaj górny poziom (mózg)
 - Przeczytaj `vault.path`/`<vault>`/`<memory>` (np. `01-Projects/work/_scandit.md`) — status,
   co w toku, jak się łączy.
-- Przeczytaj powiązane working notes (linki w pamięci projektu / pliki w `<vault>`).
+- Przeczytaj powiązane working notes (linki w pamięci projektu / pliki w `<vault>` —
+  także wewnątrz folderów podmiotów `<vault>/<subject>/`).
 
 ## Faza 2 — wczytaj dolny poziom (repo)
 Trwała wiedza repo = **CLAUDE.md + skille**; `memory.md` to bufor uczenia z sesji (staging).
@@ -32,12 +33,15 @@ Trwała wiedza repo = **CLAUDE.md + skille**; `memory.md` to bufor uczenia z ses
 - Jeśli istnieje `SESSION.md` w worktree — wczytaj (ulotny stan bieżącej gałęzi).
 
 ## Faza 2.5 — auto-backfill notatki ticketu (BEZ pytania)
-Jeśli ticket wykryty (Faza 0) **i** w `<vault>` NIE ma pliku `<TICKET>*.md`:
+Jeśli ticket wykryty (Faza 0) **i** nie istnieje notatka `<TICKET>*.md` — ani płasko w
+`<vault>`, ani wewnątrz folderu podmiotu `<vault>/<subject>/`:
 - **Automatycznie** pobierz TEN JEDEN ticket z JIRA (nie pytaj — preferencja potwierdzona).
   Logika jak w `/brain-pull`, ale single-item: `searchJiraIssuesUsingJql` z
   `cloudId` z config (`connectors.jira.cloudId`), JQL `key = <TICKET>`, pola
   `summary,status,issuetype,priority,updated,description` — albo `getJiraIssue` po kluczu.
-- Scaffolduj notatkę z `_system/templates/working-note.md` do `<vault>/<TICKET>-<slug>.md`:
+- Scaffolduj notatkę z `_system/templates/working-note.md`: gdy podmiot ma już folder lub
+  klaster >1 notatki → do `<vault>/<subject>/<TICKET>-<slug>.md` (utwórz folder, jeśli brak);
+  dla pojedynczego, izolowanego ticketu → płasko do `<vault>/<TICKET>-<slug>.md`:
   frontmatter (`tracker: jira`, `task_id`, `task_url`=`https://<site>/browse/<TICKET>`, `task`,
   `status` LUSTRO z trackera, `priority`, `project`, `context`, `updated`=dziś, tags) + sekcja
   **Kontekst** (summary + opis + acceptance criteria) + **Detal** zostaw pusty (pisze user).

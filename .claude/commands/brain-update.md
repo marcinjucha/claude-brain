@@ -15,7 +15,9 @@ Repo mózgu (config/ścieżki): `/Users/marcinjucha/Prywatne/projects/claude-bra
 `pwd` → dopasuj do `config.json` → `paths` (najdłuższy prefiks). Ustal `<vault>` i `<memory>`.
 Brak trafienia → użyj `$1` / zapytaj. Ticket z gałęzi (jeśli kontekst JIRA):
 `git -C <cwd> branch --show-current` → regex `SHELF-[0-9]+` (jeden z możliwych kluczy
-notatki w Fazie 2b; kontekst Notion używa klucza encji).
+notatki w Fazie 2b; kontekst Notion używa klucza encji). Klucz notatki = **podmiot (subject)**;
+gdy podmiot ma >1 powiązaną notatkę, jego notatki mieszkają w folderze `<vault>/<subject>/`
+(szczegóły rozwiązania ścieżki w Fazie 2b).
 
 ## Faza 1 — zbierz co się zmieniło (źródło: TA sesja/konwersacja + dodatki)
 **Główne źródło: ta sesja/konwersacja** — uniwersalne, działa wszędzie (np. dla Notion/marketingu
@@ -52,21 +54,39 @@ Roboczy detal z sesji (decyzje, dead-endy, „co dalej", dotknięte pliki/encje)
 (klient/twórca/prospect) dla kontekstów Notion.
 
 **Ustal klucz notatki (target):**
-- Da się wywieść ticket z gałęzi (`SHELF-[0-9]+`) → target `<vault>/<TICKET>*.md`.
-- W przeciwnym razie (Notion/inny kontekst) → target notatki **encji, nad którą pracowano**
-  (twórca/prospect/klient). Rozwiąż z: jawnego argumentu `$2` jeśli podany; inaczej wywnioskuj
-  z konwersacji (która encja była w centrum); inaczej dopasuj istniejącą notatkę w `<vault>`
-  po nazwie. (np. praca nad Kacprem → `kacper-snela.md`.)
+- Klucz = **podmiot (subject)**: dla kontekstów JIRA ticket z gałęzi (`SHELF-[0-9]+`); dla
+  kontekstów Notion **encja, nad którą pracowano** (twórca/prospect/klient). Encję rozwiąż z:
+  jawnego argumentu `$2` jeśli podany; inaczej wywnioskuj z konwersacji (która encja była
+  w centrum); inaczej dopasuj istniejącą notatkę w `<vault>` (także wewnątrz folderów
+  `<vault>/<subject>/`) po nazwie.
+- **Ścieżka (folder-per-subject):** gdy podmiot ma (lub będzie miał) >1 powiązaną notatkę —
+  notatka główna + notatki zadaniowe — wszystkie mieszkają RAZEM w folderze podmiotu:
+  target `<vault>/<subject>/<subject>*.md` (główna `<subject>.md`, zadaniowe `<subject>-<slug>.md`).
+  - Notion: per-encja, np. Kacper → `<vault>/kacper-snela/kacper-snela.md` + `kacper-snela-*.md`.
+  - JIRA / tematyczne: per-temat, gdy kilka notatek dzieli podmiot (np. ARKit → `<vault>/arkit/`).
+  - **POJEDYNCZA, izolowana notatka zostaje PŁASKO** w `<vault>` (np. jednorazowy ticket
+    `<vault>/<TICKET>-<slug>.md`). Folder zakłada się DOPIERO gdy płaski podmiot urośnie do
+    klastra (>1 notatka) — patrz „migracja-przy-dotknięciu" niżej. Nie wymuszaj folderu z góry.
 
 **Zapisz detal:**
+- **Folder:** jeśli podmiot kwalifikuje się do folderowania (>1 notatka), a folder
+  `<vault>/<subject>/` nie istnieje → utwórz go przed zapisem.
+- **Migracja-przy-dotknięciu:** jeśli notatki podmiotu leżą obecnie PŁASKO w `<vault>` i tworzą
+  klaster główna+zadaniowa (>1 notatka) → najpierw skonsoliduj je do `<vault>/<subject>/`
+  (przenieś pliki, zachowując nazwy), DOPIERO POTEM zapisz. Pojedynczą izolowaną notatkę
+  zostaw płasko.
 - Notatka istnieje → dopisz/zaktualizuj sekcje **Detal techniczny / jak to robimy** i
   **Decyzje i pytania otwarte**. `updated`=dziś.
 - Notatka nie istnieje, ale encja/ticket jednoznacznie zidentyfikowane → utwórz z
-  `_system/templates/working-note.md` (frontmatter jak w `/brain-load` Faza 2.5), wypełnij
-  detalem i **zaznacz w raporcie, że powstała nowa notatka**.
+  `_system/templates/working-note.md` (frontmatter jak w `/brain-load` Faza 2.5) pod ścieżką
+  z „Ustal klucz notatki" (`<vault>/<subject>/<subject>*.md` lub płasko dla pojedynczej),
+  wypełnij detalem i **zaznacz w raporcie, że powstała nowa notatka**.
 - Target niejednoznaczny / nie da się ustalić → **NIE zgaduj i nie twórz złej notatki**:
   zaktualizuj TYLKO wysoką półkę (Faza 2a) i napisz w raporcie, że working detail nie został
   zrzucony (brak jasnego targetu).
+- **Wikilinki przetrwają przeniesienie:** Obsidian rozwiązuje `[[nazwa]]` po nazwie pliku
+  niezależnie od folderu — działa, bo nazwy plików pozostają UNIKALNE dzięki konwencji
+  `<subject>-<slug>`. Linków NIE trzeba przepisywać po migracji do folderu.
 - Daty bezwzględne. Dalej jednokierunkowo — do SESSION.md nic nie wraca.
 
 ## Faza 3 — rozdziel poziomy (WAŻNE)
@@ -80,5 +100,6 @@ Roboczy detal z sesji (decyzje, dead-endy, „co dalej", dotknięte pliki/encje)
 
 ## Faza 4 — raport
 Co zaktualizowano: (a) pamięć projektu (`<memory>` — status/połączenia), (b) notatka robocza
-(ticketu lub encji — detal; zaznacz jeśli powstała nowa LUB jeśli detalu nie zrzucono przez
-niejednoznaczny target) + ewentualne sugestie lekcji do repo `memory.md`. SESSION.md nietknięty.
+(ticketu lub encji — detal; zaznacz jeśli powstała nowa, jeśli założono/zmigrowano folder
+podmiotu, LUB jeśli detalu nie zrzucono przez niejednoznaczny target) + ewentualne sugestie
+lekcji do repo `memory.md`. SESSION.md nietknięty.
