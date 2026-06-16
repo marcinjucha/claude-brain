@@ -28,7 +28,7 @@
   },
   "paths": {
     "/Users/marcinjucha/Scandit/digital-shelf-ios": { "context": "scandit", "vault": "01-Projects/work", "memory": "_scandit.md", "repoMemory": ["CLAUDE.md", "memory.md"] },
-    "/Users/marcinjucha/Prywatne/projects/legal-mind": { "context": "agency", "vault": "01-Projects/agency", "memory": "_legal-mind.md", "repoMemory": ["CLAUDE.md", "memory.md"] },
+    "/Users/marcinjucha/Prywatne/projects/legal-mind": { "context": "agency", "vault": "01-Projects/agency", "memory": "_halo-efekt.md", "repoMemory": ["CLAUDE.md", "memory.md"] },
     "/Users/marcinjucha/Prywatne/projects/doc-forge": { "context": "agency", "vault": "01-Projects/agency", "memory": "_doc-forge.md", "repoMemory": ["CLAUDE.md", "memory.md"] },
     "/Users/marcinjucha/Prywatne/projects/claude-marketing": { "context": "shadow-operator", "vault": "01-Projects/shadow-operator", "memory": "_shadow-operator.md", "repoMemory": ["CLAUDE.md", "memory.md"] }
   }
