@@ -30,6 +30,19 @@ Daty względne (np. „wczoraj", „dziś") zamień na bezwzględne (`YYYY-MM-DD
 ## Faza 2a — pamięć projektu / wysoka półka (status + połączenia)
 W `<vault>/<memory>` (np. `_scandit.md`): odśwież sekcje **Status**, **W toku**,
 **Jak się łączy**. Ustaw `updated` na dziś. Zwięźle — to mapa, nie dziennik.
+
+**KONDENSUJ, nie akumuluj (KRYTYCZNE — najczęstszy błąd tej komendy):** aktualizacja =
+**ZASTĄP** istniejący wpis nowym stanem, NIE doklejaj kolejnych zdań. Po edycji wpis ma być
+**nie dłuższy niż przed** (chyba że to genuinely nowy temat). Wpis per-ticket/temat ≈ 1 akapit:
+aktualny status + „co dalej" + linki (`[[working-note]]`, spawnowane tickety). Stary stan
+nadpisz, nie archiwizuj obok.
+
+**Detal techniczny NIE należy tu — idzie do notatki roboczej (Faza 2b).** Jeśli łapiesz się na
+pisaniu: nazw plików/symboli, wartości/parametrów, mechanizmów, kroków procesu, list findings,
+cytatów z kodu, ścieżek decyzji — to sygnał, że piszesz dziennik. Przenieś to do working note,
+a w pamięci projektu zostaw jedno zdanie statusu + link. **Jeśli istniejący wpis już spuchł od
+detalu — przy tej aktualizacji go skondensuj** (detal do working note), nie powielaj.
+
 Jeśli plik nie istnieje → utwórz z analogicznej struktury co `_scandit.md`.
 Tu idzie TYLKO wysoki poziom (status/postęp/połączenia), NIE detal techniczny.
 
@@ -58,6 +71,7 @@ Roboczy detal z sesji (decyzje, dead-endy, „co dalej", dotknięte pliki/encje)
 
 ## Faza 3 — rozdziel poziomy (WAŻNE)
 - **Wysoka półka (Faza 2a):** status, postęp, połączenia, „co dalej". → pamięć projektu `<memory>`.
+  ZASTĘPUJ stary status, nie akumuluj; gdy wpis rośnie w detal → przenieś detal do working note.
 - **Working detail (Faza 2b):** decyzje, dead-endy, dotknięte pliki, proces. → notatka robocza
   (ticketu dla JIRA / encji dla Notion).
 - **Trwałe lekcje repo (NIE tu):** reguły kodu, pułapki architektury. → ścieżką
