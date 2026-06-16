@@ -1,7 +1,7 @@
 ---
 description: Connect the current folder to the brain — load project memory + deep repo memory
 argument-hint: [context]
-allowed-tools: Read, Bash, Grep
+allowed-tools: Read, Write, Bash, Grep, mcp__claude_ai_Atlassian__searchJiraIssuesUsingJql, mcp__claude_ai_Atlassian__getJiraIssue
 ---
 
 # /brain-load — podłącz ten folder do mózgu
@@ -12,10 +12,13 @@ Uruchamiana z DOWOLNEGO folderu (komenda globalna). Para z `/brain-update`.
 
 Repo mózgu (config/ścieżki): `/Users/marcinjucha/Prywatne/projects/claude-brain`.
 
-## Faza 0 — wykryj projekt
+## Faza 0 — wykryj projekt + ticket
 1. `pwd`. Dopasuj do `config.json` → `paths` (najdłuższy pasujący prefiks ścieżki).
    - Trafienie → masz `context`, `vault` (podfolder), `memory` (plik pamięci), `repoMemory`.
    - Brak → użyj `$1` jako kontekstu, albo zapytaj.
+2. **Ustal ticket** (zawsze wyprowadzalny z gałęzi/worktree): `git -C <cwd> branch --show-current`
+   → regex `SHELF-[0-9]+` (np. `feature/SHELF-23428-...` → `SHELF-23428`). Jak wywołane z
+   `/ios-feature <TICKET>` — użyj tego argumentu. Brak gałęzi/ticketa → pomiń backfill (Faza 2.5).
 
 ## Faza 1 — wczytaj górny poziom (mózg)
 - Przeczytaj `vault.path`/`<vault>`/`<memory>` (np. `01-Projects/work/_scandit.md`) — status,
@@ -28,9 +31,29 @@ Trwała wiedza repo = **CLAUDE.md + skille**; `memory.md` to bufor uczenia z ses
 - Przeczytaj `memory.md` jako świeże, jeszcze niepromowane lekcje.
 - Jeśli istnieje `SESSION.md` w worktree — wczytaj (ulotny stan bieżącej gałęzi).
 
+## Faza 2.5 — auto-backfill notatki ticketu (BEZ pytania)
+Jeśli ticket wykryty (Faza 0) **i** w `<vault>` NIE ma pliku `<TICKET>*.md`:
+- **Automatycznie** pobierz TEN JEDEN ticket z JIRA (nie pytaj — preferencja potwierdzona).
+  Logika jak w `/brain-pull`, ale single-item: `searchJiraIssuesUsingJql` z
+  `cloudId` z config (`connectors.jira.cloudId`), JQL `key = <TICKET>`, pola
+  `summary,status,issuetype,priority,updated,description` — albo `getJiraIssue` po kluczu.
+- Scaffolduj notatkę z `_system/templates/working-note.md` do `<vault>/<TICKET>-<slug>.md`:
+  frontmatter (`tracker: jira`, `task_id`, `task_url`=`https://<site>/browse/<TICKET>`, `task`,
+  `status` LUSTRO z trackera, `priority`, `project`, `context`, `updated`=dziś, tags) + sekcja
+  **Kontekst** (summary + opis + acceptance criteria) + **Detal** zostaw pusty (pisze user).
+- Jeśli notatka już istnieje → nic nie rób (tylko ją wczytaj w Fazie 1/2).
+
+## Faza 2.6 — reconcile SESSION.md ↔ pamięć projektu
+Jeśli worktree `SESSION.md` (wczytany w Fazie 2) wspomina tickety/pracę, których NIE ma w
+górnej pamięci `<memory>` (`_scandit.md`):
+- Zasygnalizuj: **„brain stale vs SESSION.md"** + wypisz deltę (czego brak na wysokiej półce).
+- Wpłyń tę górną deltę (status/połączenia, nie detal techniczny) do `<memory>`, `updated`=dziś.
+- Detal techniczny NIE idzie tu — to robi `/brain-update` (SESSION.md → notatka ticketu).
+
 ## Faza 3 — przedstaw obraz
 Krótko podsumuj użytkownikowi: co to za projekt, na jakim etapie, co w toku, otwarte wątki,
-i czego pamięć NIE wie (luki). Bez ścian tekstu — to brief startowy, nie raport.
+i czego pamięć NIE wie (luki). Wymień: czy notatka ticketu była backfillowana, czy był
+reconcile SESSION.md. Bez ścian tekstu — to brief startowy, nie raport.
 
 > Pamięć projektu w mózgu = wysoka półka (status/połączenia). Głęboka wiedza techniczna
 > NIE jest tu kopiowana — żyje w repo (CLAUDE.md/skille, a świeże w memory.md). Czytaj oba poziomy; nie scalaj.
