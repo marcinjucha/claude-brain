@@ -35,3 +35,23 @@ Struktura vaultu (PARA): `00-Inbox`, `01-Projects/{work,clients}`, `02-Areas`,
 ## Status i kolejność
 
 Patrz tabela statusu w `README.md`. Kolejność budowy: connectory → n8n → automatyzacje.
+
+## Warstwa statusu + brain-sync
+
+**Warstwa statusu** to auto-generowany blok `<!-- status:auto -->…<!-- /status:auto -->` —
+**projekcja notatek**, nie osobna prawda: wyliczana z otwartych `- [ ]` i frontmatteru. Żyje na
+3 poziomach (hub jednolinijkowiec → sekcja statusu w `_<context>.md` → wycinek per-kontekst w
+`Home.md`, znaczony `<!-- ctx:… -->`); rollup tylko w górę. Format zdefiniowany w JEDNYM miejscu:
+`_system/templates/status-block.md` (SPEC = single source of truth). Oba commandy SPEC tylko
+**referują, nigdy nie kopiują** formatu; blok jest ZAWSZE podmieniany w miejscu, nigdy dopisywany.
+**Why:** jedna definicja = brak driftu i puchnięcia; status pozostaje pochodną notatek, nie drugą
+kopią stanu do ręcznego utrzymania.
+
+**`brain-sync`** (`commands/brain-sync.md`) — okresowy audyt vaultu (per-kontekst po cwd, flagi
+`--all`/`--status`/`--gap`): konsoliduje/czyści/porządkuje notatki kontekstu (propose-then-confirm,
+archiwizacja zamiast usuwania do `04-Archive`, strefy nietykalne: `SESSION.md`, datowane wpisy
+`### YYYY-MM-DD`, pliki archiwum, jawne warianty), robi PEŁNY recompute warstwy statusu + rollup
+i raportuje luki migracji tracker→Brain (Notion+JIRA, READ-ONLY, sam pull deleguje do `/brain-pull`).
+To okresowy odpowiednik event-driven `brain-update` (które regeneruje status WĄSKO — własny blok
+kontekstu + własny wycinek w `Home.md`, tylko gdy status się zmienił). Dołącza do rodziny `brain-*`
+(brain-load, brain-update, brain-pull, brain-publish, brain-inbox, brain-social).
