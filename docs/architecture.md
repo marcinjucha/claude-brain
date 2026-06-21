@@ -74,4 +74,4 @@ kontekstów (Notion IDs, repos, struktura vaultu): **`docs/contexts.md`**.
 | Shadow Operator (venture) | **Notion** Prospecting Tracker + repo claude-marketing | `connectors/notion/` |
 | HaloEfekt (agencja) | **Notion** Agency Tasks + repos legal-mind/doc-forge | `connectors/notion/` |
 
-> ClickUp nie istnieje — HaloEfekt jedzie na Notion Agency Database.
+> HaloEfekt jedzie na Notion Agency Database.

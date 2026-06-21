@@ -52,5 +52,5 @@ Notion służy też do udostępniania materiałów kreatorom.
 - **Repos:** `~/Prywatne/projects/legal-mind/` (AI Agency), `~/Prywatne/projects/doc-forge/` (DocForge, Notion AAA-P-6)
 - **Vault (propozycja):** `01-Projects/agency/{social-media,legal-mind,doc-forge}/`
 
-> Korekta vs globalny CLAUDE.md: HaloEfekt/legal-mind jedzie na **Notion Agency Database**
-> (`collection://29284f14-76e0-8062-a18d-000bfce0cf23`), nie ClickUp — ClickUp nie istnieje.
+> HaloEfekt/legal-mind jedzie na **Notion Agency Database**
+> (`collection://29284f14-76e0-8062-a18d-000bfce0cf23`).
