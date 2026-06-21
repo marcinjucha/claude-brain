@@ -98,8 +98,17 @@ Roboczy detal z sesji (decyzje, dead-endy, „co dalej", dotknięte pliki/encje)
   `/ai-extract-memory` (do `memory.md`, bufor sesji) → `/ai-curate-memory` (promocja do CLAUDE.md/skilli).
   Jeśli w sesji pojawiła się taka lekcja — **zasugeruj** użytkownikowi ten zapis, nie wpisuj jej do mózgu.
 
+## Faza 3.5 — odśwież blok statusu (WĄSKO, wg SPEC)
+Jeśli ta sesja zmieniła status: zregeneruj blok `status:auto` wg `_system/templates/status-block.md`
+WĄSKO — tylko (a) blok w `_<context>.md` bieżącego kontekstu i (b) slice `<!-- ctx:<context> -->`
+w `Home.md`. **NIE** przeliczaj innych kontekstów ani całego Home (to robi `/brain-sync`). ZASTĄP blok
+(kondensuj, nie akumuluj); treść ręczna poniżej `/status:auto` nietknięta. Huby podmiotów: odśwież linię
+„**Status:**" dotkniętego podmiotu. WHY: brain-update jest ŹRÓDŁEM statusu na bieżąco, brain-sync go tylko
+spina i roluje — jeden format (SPEC) = brak dryfu.
+
 ## Faza 4 — raport
 Co zaktualizowano: (a) pamięć projektu (`<memory>` — status/połączenia), (b) notatka robocza
 (ticketu lub encji — detal; zaznacz jeśli powstała nowa, jeśli założono/zmigrowano folder
-podmiotu, LUB jeśli detalu nie zrzucono przez niejednoznaczny target) + ewentualne sugestie
-lekcji do repo `memory.md`. SESSION.md nietknięty.
+podmiotu, LUB jeśli detalu nie zrzucono przez niejednoznaczny target), (c) blok statusu (jeśli
+odświeżony — `_<context>.md` + slice w Home) + ewentualne sugestie lekcji do repo `memory.md`.
+SESSION.md nietknięty.
