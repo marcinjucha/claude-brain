@@ -16,10 +16,14 @@ Repo mózgu (config/ścieżki): `/Users/marcinjucha/Prywatne/projects/claude-bra
 Brak trafienia → użyj `$1` / zapytaj.
 **Zadeklarowany kontekst > cwd (KRYTYCZNE):** kontekst wskazany przez użytkownika w promptcie
 (np. „halo efekt"→`agency`, „shadow-operator") MA PIERWSZEŃSTWO nad mapowaniem cwd; cwd to tylko
-domyślny kontekst, gdy nic nie zadeklarowano. Rozwiąż go na `<vault>`/`<memory>` przez
-`paths[<cwd>].contexts[<kontekst>]` (`multiContext`) → `paths[<cwd>].contextAliases` → dowolny
-wpis `paths` z tym `context`. Repo wielokontekstowe (np. `claude-marketing` = shadow-operator
-domyślnie + agency) zapisuje do pamięci ZADEKLAROWANEGO kontekstu, nie cwd-domyślnego. Ticket z gałęzi (jeśli kontekst JIRA):
+domyślny kontekst, gdy nic nie zadeklarowano. Rozwiąż go na `<vault>`/`<memory>` W TEJ KOLEJNOŚCI:
+(1) **znormalizuj** synonim przez `paths[<cwd>].contextAliases` (np. „halo efekt"→`agency`);
+(2) rozwiąż nazwę kanoniczną przez `paths[<cwd>].contexts[<nazwa>]` (`multiContext`) — to daje
+`<vault>`/`<memory>` JEDNOZNACZNIE, preferuj to; (3) DOPIERO gdy repo nie ma `contexts` — dowolny
+wpis `paths` z tym `context`. ⚠️ Krok 3 bywa wieloznaczny (np. `agency` ma 2 wpisy: `legal-mind`=
+`_halo-efekt.md` vs `doc-forge`=`_doc-forge.md`) — `contexts` z kroku 2 to rozstrzyga, NIE zgaduj
+z kroku 3. Repo wielokontekstowe (np. `claude-marketing` = shadow-operator domyślnie + agency)
+zapisuje do pamięci ZADEKLAROWANEGO kontekstu, nie cwd-domyślnego. Ticket z gałęzi (jeśli kontekst JIRA):
 `git -C <cwd> branch --show-current` → regex `SHELF-[0-9]+` (jeden z możliwych kluczy
 notatki w Fazie 2b; kontekst Notion używa klucza encji). Klucz notatki = **podmiot (subject)**;
 gdy podmiot ma >1 powiązaną notatkę, jego notatki mieszkają w folderze `<vault>/<subject>/`

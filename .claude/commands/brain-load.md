@@ -18,11 +18,14 @@ Repo mózgu (config/ścieżki): `/Users/marcinjucha/Prywatne/projects/claude-bra
    - Brak → użyj `$1` jako kontekstu, albo zapytaj.
    - **Zadeklarowany kontekst > cwd (KRYTYCZNE):** jeśli użytkownik wskazał kontekst w promptcie
      (np. „halo efekt", „agency", „shadow-operator"), MA ON PIERWSZEŃSTWO — mapowanie cwd to tylko
-     DOMYŚLNY kontekst, gdy nic nie zadeklarowano. Rozwiąż zadeklarowany kontekst na `vault`/`memory`:
-     najpierw `paths[<cwd>].contexts[<kontekst>]` (repo wielokontekstowe, `multiContext: true`),
-     potem `paths[<cwd>].contextAliases` (np. „halo efekt"→`agency`), inaczej dowolny wpis `paths`
-     z tym `context`. (Np. cwd `claude-marketing` domyślnie = `shadow-operator`, ale „halo efekt"
-     w promptcie → kontekst `agency`, vault `01-Projects/agency`, `_halo-efekt.md`.)
+     DOMYŚLNY kontekst, gdy nic nie zadeklarowano. Rozwiąż zadeklarowany kontekst na `vault`/`memory`
+     w TEJ kolejności: (1) NAJPIERW znormalizuj synonim przez `paths[<cwd>].contextAliases`
+     (np. „halo efekt"→`agency`); (2) rozwiąż nazwę kanoniczną przez `paths[<cwd>].contexts[<nazwa>]`
+     (repo wielokontekstowe, `multiContext: true`) → daje `vault`/`memory` JEDNOZNACZNIE, preferuj to;
+     (3) DOPIERO gdy repo nie ma `contexts` → dowolny wpis `paths` z tym `context`; ⚠️ krok 3 jest
+     niejednoznaczny (`agency` ma 2 wpisy: `legal-mind`=`_halo-efekt.md` vs `doc-forge`=`_doc-forge.md`)
+     — `contexts` z kroku 2 to rozstrzyga, NIE zgaduj z kroku 3. (Np. cwd `claude-marketing` domyślnie =
+     `shadow-operator`, ale „halo efekt"→`agency`, vault `01-Projects/agency`, `_halo-efekt.md`.)
 2. **Ustal ticket** (zawsze wyprowadzalny z gałęzi/worktree): `git -C <cwd> branch --show-current`
    → regex `SHELF-[0-9]+` (np. `feature/SHELF-23428-...` → `SHELF-23428`). Jak wywołane z
    `/ios-feature <TICKET>` — użyj tego argumentu. Brak gałęzi/ticketa → pomiń backfill (Faza 2.5).
