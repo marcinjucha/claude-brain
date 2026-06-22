@@ -16,6 +16,13 @@ Repo mózgu (config/ścieżki): `/Users/marcinjucha/Prywatne/projects/claude-bra
 1. `pwd`. Dopasuj do `config.json` → `paths` (najdłuższy pasujący prefiks ścieżki).
    - Trafienie → masz `context`, `vault` (podfolder), `memory` (plik pamięci), `repoMemory`.
    - Brak → użyj `$1` jako kontekstu, albo zapytaj.
+   - **Zadeklarowany kontekst > cwd (KRYTYCZNE):** jeśli użytkownik wskazał kontekst w promptcie
+     (np. „halo efekt", „agency", „shadow-operator"), MA ON PIERWSZEŃSTWO — mapowanie cwd to tylko
+     DOMYŚLNY kontekst, gdy nic nie zadeklarowano. Rozwiąż zadeklarowany kontekst na `vault`/`memory`:
+     najpierw `paths[<cwd>].contexts[<kontekst>]` (repo wielokontekstowe, `multiContext: true`),
+     potem `paths[<cwd>].contextAliases` (np. „halo efekt"→`agency`), inaczej dowolny wpis `paths`
+     z tym `context`. (Np. cwd `claude-marketing` domyślnie = `shadow-operator`, ale „halo efekt"
+     w promptcie → kontekst `agency`, vault `01-Projects/agency`, `_halo-efekt.md`.)
 2. **Ustal ticket** (zawsze wyprowadzalny z gałęzi/worktree): `git -C <cwd> branch --show-current`
    → regex `SHELF-[0-9]+` (np. `feature/SHELF-23428-...` → `SHELF-23428`). Jak wywołane z
    `/ios-feature <TICKET>` — użyj tego argumentu. Brak gałęzi/ticketa → pomiń backfill (Faza 2.5).

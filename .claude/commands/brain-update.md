@@ -13,7 +13,13 @@ Repo mózgu (config/ścieżki): `/Users/marcinjucha/Prywatne/projects/claude-bra
 
 ## Faza 0 — wykryj projekt + ticket
 `pwd` → dopasuj do `config.json` → `paths` (najdłuższy prefiks). Ustal `<vault>` i `<memory>`.
-Brak trafienia → użyj `$1` / zapytaj. Ticket z gałęzi (jeśli kontekst JIRA):
+Brak trafienia → użyj `$1` / zapytaj.
+**Zadeklarowany kontekst > cwd (KRYTYCZNE):** kontekst wskazany przez użytkownika w promptcie
+(np. „halo efekt"→`agency`, „shadow-operator") MA PIERWSZEŃSTWO nad mapowaniem cwd; cwd to tylko
+domyślny kontekst, gdy nic nie zadeklarowano. Rozwiąż go na `<vault>`/`<memory>` przez
+`paths[<cwd>].contexts[<kontekst>]` (`multiContext`) → `paths[<cwd>].contextAliases` → dowolny
+wpis `paths` z tym `context`. Repo wielokontekstowe (np. `claude-marketing` = shadow-operator
+domyślnie + agency) zapisuje do pamięci ZADEKLAROWANEGO kontekstu, nie cwd-domyślnego. Ticket z gałęzi (jeśli kontekst JIRA):
 `git -C <cwd> branch --show-current` → regex `SHELF-[0-9]+` (jeden z możliwych kluczy
 notatki w Fazie 2b; kontekst Notion używa klucza encji). Klucz notatki = **podmiot (subject)**;
 gdy podmiot ma >1 powiązaną notatkę, jego notatki mieszkają w folderze `<vault>/<subject>/`
