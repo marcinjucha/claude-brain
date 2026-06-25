@@ -24,9 +24,9 @@ import argparse, json, os, re, sys, glob
 CONFIG = "/Users/marcinjucha/Prywatne/projects/claude-brain/config.json"
 GEN_HEADER = ("<!-- GENERATED from brain {src} — DO NOT EDIT HERE; edit the brain note. "
               "Regenerate: claude-brain/scripts/sync-knowledge.py -->\n")
-SLUG_PTR_RE = re.compile(r'references/knowledge/([a-z0-9][a-z0-9-]*)\.md')
-BULLET_RE   = re.compile(r'(?m)^\s*[-*]\s+([a-z0-9][a-z0-9-]*)\b')
-WIKILINK_RE = re.compile(r'\[\[([a-z0-9][a-z0-9-]*)\]\]')
+SLUG_PTR_RE   = re.compile(r'references/knowledge/([a-z0-9][a-z0-9-]*)\.md')
+SLUG_TOKEN_RE = re.compile(r'[a-z0-9][a-z0-9-]+')
+WIKILINK_RE   = re.compile(r'\[\[([a-z0-9][a-z0-9-]*)\]\]')
 FM_FIELD_RE = lambda f: re.compile(r'(?m)^' + re.escape(f) + r':\s*(.*)$')
 # wikilink targets that legitimately live outside knowledge/ (don't flag as dangling):
 EXTERNAL_LINKS = {"knowledge-system"}
@@ -66,10 +66,15 @@ def source_notes(cfg, ctx):
     return out, d
 
 def find_skills(consumer_dirs):
-    """SKILL.md paths under each consumer dir that contain a `## Knowledge` block."""
-    skills = []
+    """SKILL.md paths under each consumer dir that contain a `## Knowledge` block.
+    Dedup by realpath so a symlink-shared skill (e.g. agency legal-mind/doc-forge) is processed once."""
+    skills, seen = [], set()
     for cdir in consumer_dirs:
         for sk in glob.glob(os.path.join(cdir, "*", "SKILL.md")):
+            real = os.path.realpath(sk)
+            if real in seen:
+                continue
+            seen.add(real)
             try:
                 with open(sk, encoding="utf-8") as f:
                     txt = f.read()
@@ -80,24 +85,28 @@ def find_skills(consumer_dirs):
     return skills
 
 def skill_deps(txt, known_slugs):
-    """Slugs a skill depends on: all @references/knowledge/<slug>.md pointers, plus bullet
-    tokens inside the `## Knowledge` section that match a real note (no false positives)."""
+    """Slugs a skill depends on: all @references/knowledge/<slug>.md pointers, plus EVERY
+    note-slug token on bullet lines inside the `## Knowledge` section (filtered by known_slugs,
+    so prose words can't false-match AND multi-slug bullets like `- a + b — …` are fully caught,
+    not just the first token)."""
     deps = set(SLUG_PTR_RE.findall(txt))
     m = re.search(r'(?ms)^##\s+Knowledge\b.*?(?=^##\s|\Z)', txt)
     if m:
-        for tok in BULLET_RE.findall(m.group(0)):
-            if tok in known_slugs:
-                deps.add(tok)
+        for line in m.group(0).splitlines():
+            if re.match(r'\s*[-*]\s+', line):
+                for tok in SLUG_TOKEN_RE.findall(line):
+                    if tok in known_slugs:
+                        deps.add(tok)
     return deps
 
-def strip_gen_header(text):
-    lines = text.splitlines(keepends=True)
-    if lines and lines[0].startswith("<!-- GENERATED"):
-        return "".join(lines[1:])
-    return text
+def frontmatter(text):
+    """The YAML frontmatter block only (between the first --- ... ---), so field lookups/rewrites
+    never match a `used-by:`-like line in the note BODY."""
+    m = re.match(r'(?s)\s*---\n(.*?)\n---', text)
+    return m.group(1) if m else ""
 
 def fm_value(text, field):
-    m = FM_FIELD_RE(field).search(text)
+    m = FM_FIELD_RE(field).search(frontmatter(text))
     return m.group(1).strip() if m else None
 
 def snapshot(cfg, ctx, write, report):
@@ -207,7 +216,7 @@ def derive_used_by(cfg, ctx, src, write, report):
             txt = f.read()
         actual = sorted(ref_by[slug])
         new_line = "used-by: [" + ", ".join(actual) + "]"
-        if FM_FIELD_RE("used-by").search(txt):
+        if FM_FIELD_RE("used-by").search(frontmatter(txt)):
             new = FM_FIELD_RE("used-by").sub(new_line, txt, count=1)
             if new != txt:
                 report.append(("used-by", f"{slug} → {actual}"))
@@ -216,12 +225,15 @@ def derive_used_by(cfg, ctx, src, write, report):
                         f.write(new)
 
 def main():
+    global CONFIG
     ap = argparse.ArgumentParser()
     ap.add_argument("--context"); ap.add_argument("--all", action="store_true")
     ap.add_argument("--check", action="store_true", help="dry-run; nonzero exit on drift/dangling")
     ap.add_argument("--used-by", action="store_true", help="also rewrite vault notes' used-by")
     ap.add_argument("--quiet", action="store_true", help="print summary only if something changed")
+    ap.add_argument("--config", default=CONFIG, help="config.json path (override for testing)")
     args = ap.parse_args()
+    CONFIG = args.config
     cfg = load_config()
     write = not args.check
     total_changed, hard_fail, lines = 0, False, []
