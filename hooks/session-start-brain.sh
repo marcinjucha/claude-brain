@@ -85,6 +85,17 @@ else
   append ""
 fi
 
+# knowledge index (MOC) for this context — what reusable domain knowledge exists in the brain.
+# Surfaced so any project/work session knows what's available (not just skill-invocation).
+KMOC="$VAULT_PATH/03-Resources/$CONTEXT/knowledge/_MOC.md"
+if [ -n "$CONTEXT" ] && [ -f "$KMOC" ]; then
+  append "## Knowledge index — $CONTEXT ($KMOC)"
+  append "(reusable domain knowledge for this context; read a linked note for detail, or /brain-load)"
+  append ""
+  append "$(cat "$KMOC" 2>/dev/null)"
+  append ""
+fi
+
 # worktree SESSION.md (cwd up to the matched repo prefix)
 SESSION_FILE="$(find_session_md "$CWD" "$MATCH_PREFIX" || true)"
 HAVE_SESSION=0
