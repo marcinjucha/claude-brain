@@ -87,25 +87,45 @@ fi
 
 # worktree SESSION.md (cwd up to the matched repo prefix)
 SESSION_FILE="$(find_session_md "$CWD" "$MATCH_PREFIX" || true)"
+HAVE_SESSION=0
 if [ -n "${SESSION_FILE:-}" ] && [ -f "$SESSION_FILE" ]; then
+  HAVE_SESSION=1
   append "## Worktree SESSION.md ($SESSION_FILE)"
   append ""
   append "$(cat "$SESSION_FILE" 2>/dev/null)"
   append ""
 fi
 
-# infer current ticket from branch; check for a working-note in the vault
+# infer current ticket from branch; locate its working-note in the vault
 TICKET=""
 if command -v git >/dev/null 2>&1; then
   BRANCH="$(git -C "$CWD" branch --show-current 2>/dev/null || true)"
   TICKET="$(printf '%s' "$BRANCH" | grep -oiE 'SHELF-[0-9]+' | head -1 || true)"
 fi
 
+# working-note convention: <VAULT_SUB>/<TICKET>*.md (e.g. 01-Projects/scandit/SHELF-23796-*.md)
+NOTE_FILE=""
 NOTE_MISSING=0
 if [ -n "$TICKET" ]; then
-  # working-note convention: 01-Projects/work/<TICKET>*.md
-  if ! ls "$VAULT_PATH/$VAULT_SUB/$TICKET"*.md >/dev/null 2>&1; then
-    NOTE_MISSING=1
+  NOTE_FILE="$(ls "$VAULT_PATH/$VAULT_SUB/$TICKET"*.md 2>/dev/null | head -1 || true)"
+  [ -z "$NOTE_FILE" ] && NOTE_MISSING=1
+fi
+
+# Inject the working-note keyed off the current worktree's ticket:
+#   (B) NO SESSION.md here  -> inline the full note (non-code / scratch contexts have no SESSION.md).
+#   (A) SESSION.md present  -> inject only a pointer; SESSION.md is the live scratchpad, so inlining
+#       the note too would duplicate context and bloat the session start.
+if [ -n "$NOTE_FILE" ] && [ -f "$NOTE_FILE" ]; then
+  if [ "$HAVE_SESSION" -eq 0 ]; then
+    append "## Brain working note ($NOTE_FILE)"
+    append ""
+    append "$(cat "$NOTE_FILE" 2>/dev/null)"
+    append ""
+  else
+    append "## Brain working note — pointer (Read on demand)"
+    append "$TICKET working-note: $NOTE_FILE"
+    append "(SESSION.md above is the live scratchpad; Read this note for deep history / Council / process.)"
+    append ""
   fi
 fi
 

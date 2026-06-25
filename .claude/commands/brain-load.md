@@ -31,8 +31,12 @@ Repo mózgu (config/ścieżki): `/Users/marcinjucha/Prywatne/projects/claude-bra
    `/ios-feature <TICKET>` — użyj tego argumentu. Brak gałęzi/ticketa → pomiń backfill (Faza 2.5).
 
 ## Faza 1 — wczytaj górny poziom (mózg)
-- Przeczytaj `vault.path`/`<vault>`/`<memory>` (np. `01-Projects/work/_scandit.md`) — status,
+- Przeczytaj `vault.path`/`<vault>`/`<memory>` (np. `01-Projects/scandit/_scandit.md`) — status,
   co w toku, jak się łączy.
+- Jeśli ticket wykryty (Faza 0 pkt 2) — NAJPIERW przeczytaj W CAŁOŚCI jego własną notatkę
+  roboczą jako PODSTAWOWĄ notatkę tego worktree: `<vault>/<TICKET>*.md` (także wewnątrz
+  folderów podmiotów `<vault>/<subject>/<TICKET>*.md`). To lustro rozwiązania
+  worktree→ticket→notatka z hooka SessionStart.
 - Przeczytaj powiązane working notes (linki w pamięci projektu / pliki w `<vault>` —
   także wewnątrz folderów podmiotów `<vault>/<subject>/`).
 
