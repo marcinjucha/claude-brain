@@ -124,6 +124,14 @@ out="$(bash "$INSTALL" "$ROOT/wt" testctx 2>&1)"; rc=$?
 hp="$(git -C "$ROOT/wt" rev-parse --git-path hooks 2>/dev/null)"; case "$hp" in /*) ;; *) hp="$ROOT/wt/$hp";; esac
 [ $rc -eq 0 ] && [ -x "$hp/pre-commit" ] && ok "pre-commit w worktree ($hp) — FIX działa" || no "instalacja padła: $out (rc=$rc)"
 
+echo "### T12 — --used-by JEDNYM przebiegiem zostawia snapshoty w sync (bug kolejności)"
+build
+printf -- "## Knowledge\n- @references/knowledge/alpha.md\n" > "$SK"
+python3 "$SCRIPT" --config "$(CFG)" --context testctx --used-by >/dev/null 2>&1
+out="$(python3 "$SCRIPT" --config "$(CFG)" --context testctx --check 2>&1)"; rc=$?
+echo "$out" | grep -q "would change 0" && [ $rc -eq 0 ] && ok "po --used-by snapshoty w sync (derive PRZED snapshot)" || no "dryf po --used-by: $out (rc=$rc)"
+head -8 "$ROOT/vault/03-Resources/testctx/knowledge/alpha.md" | grep -q "used-by: \[test-skill\]" && ok "used-by w źródle zaktualizowane" || no "used-by nie zaktualizowane"
+
 echo; echo "================  WYNIK: $PASS PASS / $FAIL FAIL  ================"
 rm -rf "$ROOT"
 [ $FAIL -eq 0 ]

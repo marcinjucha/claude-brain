@@ -239,13 +239,15 @@ def main():
     total_changed, hard_fail, lines = 0, False, []
     for ctx in contexts(cfg, args):
         report = []
-        changed, dangling, src, srcdir = snapshot(cfg, ctx, write, report)
+        src, srcdir = source_notes(cfg, ctx)
         if not os.path.isdir(srcdir):
             if not args.quiet:
                 print(f"[{ctx}] no knowledge dir yet ({srcdir}) — skip")
             continue
+        # derive used-by FIRST (rewrites source notes) so snapshot reflects it in ONE pass
         if args.used_by:
             derive_used_by(cfg, ctx, src, write, report)
+        changed, dangling, src, srcdir = snapshot(cfg, ctx, write, report)
         issues, dangling_links = integrity(cfg, ctx, src, srcdir)
         total_changed += changed
         if dangling or dangling_links:
