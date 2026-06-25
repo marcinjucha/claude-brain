@@ -45,6 +45,7 @@ Trwała wiedza repo = **CLAUDE.md + skille**; `memory.md` to bufor uczenia z ses
 - Przeczytaj `CLAUDE.md` (reguły, dojrzałe konwencje) i — gdy istotne — skille w `.claude/skills/`.
 - Przeczytaj `memory.md` jako świeże, jeszcze niepromowane lekcje.
 - Jeśli istnieje `SESSION.md` w worktree — wczytaj (ulotny stan bieżącej gałęzi).
+- Jeśli `config.json` `.knowledge[<context>].active == true` → uruchom `python3 /Users/marcinjucha/Prywatne/projects/claude-brain/scripts/sync-knowledge.py --context <context> --check` (READ-ONLY, nic nie zapisuje). Zbierz: dryf (ile snapshotów nieaktualnych), dangling, kandydaci-duplikaty, sieroty, used-by-stale, notatki `emerging`. Kontekst nieaktywny → pomiń.
 
 ## Faza 2.5 — auto-backfill notatki ticketu (BEZ pytania)
 Jeśli ticket wykryty (Faza 0) **i** nie istnieje notatka `<TICKET>*.md` — ani płasko w
@@ -72,6 +73,7 @@ górnej pamięci `<memory>` (`_scandit.md`):
 Krótko podsumuj użytkownikowi: co to za projekt, na jakim etapie, co w toku, otwarte wątki,
 i czego pamięć NIE wie (luki). Wymień: czy notatka ticketu była backfillowana, czy był
 reconcile SESSION.md. Bez ścian tekstu — to brief startowy, nie raport.
+- knowledge: zsynch. ✅ / albo: N dryf · M dup? · K emerging · dangling: … — przy problemach dodaj, że `/brain-update` rozwiązuje je (osąd: scal duplikaty, awansuj emerging→canon).
 
 > Pamięć projektu w mózgu = wysoka półka (status/połączenia). Głęboka wiedza techniczna
 > NIE jest tu kopiowana — żyje w repo (CLAUDE.md/skille, a świeże w memory.md). Czytaj oba poziomy; nie scalaj.

@@ -31,5 +31,10 @@
     "/Users/marcinjucha/Prywatne/projects/legal-mind": { "context": "agency", "vault": "01-Projects/agency", "memory": "_halo-efekt.md", "repoMemory": ["CLAUDE.md", "memory.md"] },
     "/Users/marcinjucha/Prywatne/projects/doc-forge": { "context": "agency", "vault": "01-Projects/agency", "memory": "_doc-forge.md", "repoMemory": ["CLAUDE.md", "memory.md"] },
     "/Users/marcinjucha/Prywatne/projects/claude-marketing": { "context": "shadow-operator", "vault": "01-Projects/shadow-operator", "memory": "_shadow-operator.md", "repoMemory": ["CLAUDE.md", "memory.md"], "multiContext": true, "contexts": { "shadow-operator": { "vault": "01-Projects/shadow-operator", "memory": "_shadow-operator.md" }, "agency": { "vault": "01-Projects/agency", "memory": "_halo-efekt.md" } }, "contextAliases": { "halo efekt": "agency", "haloefekt": "agency", "halo-efekt": "agency" } }
+  },
+  "knowledge": {
+    "shadow-operator": { "dir": "03-Resources/shadow-operator/knowledge", "active": true, "consumers": ["/Users/marcinjucha/Prywatne/projects/claude-marketing/skills"] },
+    "agency": { "dir": "03-Resources/agency/knowledge", "active": false, "consumers": ["/Users/marcinjucha/Prywatne/projects/legal-mind/.claude/skills", "/Users/marcinjucha/Prywatne/projects/doc-forge/.claude/skills"] },
+    "scandit": { "dir": "03-Resources/scandit/knowledge", "active": false, "consumers": ["/Users/marcinjucha/Scandit/digital-shelf-ios/.claude/skills"] }
   }
 }

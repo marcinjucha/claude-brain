@@ -116,9 +116,20 @@ w `Home.md`. **NIE** przeliczaj innych kontekstów ani całego Home (to robi `/b
 „**Status:**" dotkniętego podmiotu. WHY: brain-update jest ŹRÓDŁEM statusu na bieżąco, brain-sync go tylko
 spina i roluje — jeden format (SPEC) = brak dryfu.
 
+## Faza 3.7 — utrzymanie bazy wiedzy (knowledge-system)
+Jeśli `config.json` `.knowledge[<context>].active == true`:
+1. Uruchom `python3 /Users/marcinjucha/Prywatne/projects/claude-brain/scripts/sync-knowledge.py --context <context> --used-by` — regeneruje snapshoty + przepisuje `used-by` w notatkach mózgu + raport integralności.
+2. **Osąd agenta** (to, czego skrypt nie zrobi automatycznie) na podstawie raportu:
+   - **kandydaci-duplikaty (dup?):** oceń, czy to ta sama idea; jeśli tak — scal (przenieś treść do jednej notatki, zaktualizuj `[[linki]]` i wskaźniki, usuń drugą), wg reguły anty-dryf z `_system/knowledge-system.md`.
+   - **emerging → canon:** dla notatek `status: emerging` (home=brain) sprawdź, czy wzorzec utrzymał się na **N≥3 odrębnych twórcach** (zapisane slugi przypadków w ciele notatki); jeśli tak — zmień `status` na `canon`.
+   - **dangling / sieroty:** napraw (dangling = krytyczne; sierota = rozważ link z MOC albo usuń).
+3. Zaktualizuj `_MOC.md` kontekstu, jeśli doszły/zniknęły notatki.
+Kontekst nieaktywny lub brak notatek → pomiń tę fazę (jedno zdanie w raporcie).
+
 ## Faza 4 — raport
 Co zaktualizowano: (a) pamięć projektu (`<memory>` — status/połączenia), (b) notatka robocza
 (ticketu lub encji — detal; zaznacz jeśli powstała nowa, jeśli założono/zmigrowano folder
 podmiotu, LUB jeśli detalu nie zrzucono przez niejednoznaczny target), (c) blok statusu (jeśli
 odświeżony — `_<context>.md` + slice w Home) + ewentualne sugestie lekcji do repo `memory.md`.
+(d) utrzymanie wiedzy: ile snapshotów zsynch., co scalono/awansowano/naprawiono (lub 'pominięto — brak aktywnej wiedzy').
 SESSION.md nietknięty.
