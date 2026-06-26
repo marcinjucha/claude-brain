@@ -33,6 +33,8 @@ dostajesz przez **SKOPIOWANIE (lustro)** wiedzy do mózgu, NIGDY nie ścieniają
 
 ## Faza 0 — ustal skill + tryb
 - Skill z `$1`. Brak → zapytaj który skill.
+- Sprawdź, że katalog skilla istnieje (`skills/<skill>/SKILL.md` w repo kontekstu). Nie istnieje → zapytaj/przerwij, NIE działaj na ślepo.
+- **Dla MIRROR rozwiąż `<ctx>`** z REPO skilla → kontekstu w `config.json` `.knowledge` (np. skill w `digital-shelf-ios` → `scandit`; notatka-lustro ląduje w `03-Resources/scandit/knowledge/`). Potwierdź, że `<ctx>` jest zarejestrowany w configu.
 - Tryb: **EXTRACT** domyślnie; **MIRROR** gdy `--mirror` LUB gdy skill jest współdzielony z zespołem.
   Niejasne, czy współdzielony? → zapytaj wprost: „czy ten skill jest używany przez zespół (np. repo
   iOS/Scandit, nie tylko Twoje)?". Zespołowy = MIRROR.
@@ -55,7 +57,7 @@ Notatki w mózgu to pliki vaulta (NIE artefakt-definicja) → pisz/rozszerzaj je
   - Ścień `SKILL.md` (usuń prozę wiedzy, dodaj blok `## Knowledge` w formie **pointer** `@references/knowledge/<slug>.md` + self-check „wylistuj złożone notatki").
   - ⚠️ Edycja `SKILL.md` (plik-artefakt) MUSI iść przez subagenta **`ai-manager-agent`** (reguła MUST) — main loop NIE pisze SKILL.md sam, nawet z pełnym kontekstem.
 - **MIRROR:**
-  - Notatka: `home: <skill-slug>` (lustro), `status` ≠ `canon` (źródłem jest skill).
+  - Notatka: `home: <skill-slug>` (lustro), `status: mirror`, `mirror-source: <abs-path do SKILL.md>` (umożliwia silnikowi advisory `mirror-stale`), `status` ≠ `canon` (źródłem jest skill).
   - **NIE dotykaj `SKILL.md` ani repo skilla. NIE dodawaj bloku `## Knowledge`. NIE pisz snapshotu.** Lustro żyje tylko w mózgu.
 
 ## Faza 3 — sync

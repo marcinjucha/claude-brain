@@ -132,6 +132,33 @@ out="$(python3 "$SCRIPT" --config "$(CFG)" --context testctx --check 2>&1)"; rc=
 echo "$out" | grep -q "would change 0" && [ $rc -eq 0 ] && ok "po --used-by snapshoty w sync (derive PRZED snapshot)" || no "dryf po --used-by: $out (rc=$rc)"
 head -8 "$ROOT/vault/03-Resources/testctx/knowledge/alpha.md" | grep -q "used-by: \[test-skill\]" && ok "used-by w źródle zaktualizowane" || no "used-by nie zaktualizowane"
 
+echo "### T13 — MIRROR: orphan-exclude (C2) + mirror-stale (C1) + self-snapshot-guard (C3)"
+build
+SRC="$ROOT/teamskill.md"; printf "team content\n" > "$SRC"
+cat > "$ROOT/vault/03-Resources/testctx/knowledge/gamma.md" <<EOF
+---
+type: knowledge
+id: gamma
+status: mirror
+home: test-skill
+mirror-source: $SRC
+---
+# Mirror gamma
+treść lustra
+EOF
+# C2: gamma (mirror) NIE referowane przez skill i NIE w MOC → NIE orphan
+printf -- "## Knowledge\n- @references/knowledge/alpha.md\n" > "$SK"
+out="$(python3 "$SCRIPT" --config "$(CFG)" --context testctx --check 2>&1)"
+echo "$out" | grep -qi "orphan: gamma" && no "mirror gamma błędnie orphan (C2)" || ok "mirror gamma NIE orphan mimo braku w MOC i konsumencie (C2)"
+# C1: źródło nowsze niż lustro → mirror-stale
+sleep 1; touch "$SRC"
+out="$(python3 "$SCRIPT" --config "$(CFG)" --context testctx --check 2>&1)"
+echo "$out" | grep -qi "mirror-stale: gamma" && ok "mirror-stale wykryte gdy źródło nowsze (C1)" || no "brak mirror-stale: $out"
+# C3: skill referuje gamma a home==test-skill → NIE self-snapshot
+printf -- "## Knowledge\n- @references/knowledge/gamma.md\n" > "$SK"
+python3 "$SCRIPT" --config "$(CFG)" --context testctx >/dev/null 2>&1
+[ ! -f "$(REF)/gamma.md" ] && ok "mirror gamma NIE zsnapshotowane do własnego home-skilla (C3)" || no "circular self-snapshot lustra!"
+
 echo; echo "================  WYNIK: $PASS PASS / $FAIL FAIL  ================"
 rm -rf "$ROOT"
 [ $FAIL -eq 0 ]
