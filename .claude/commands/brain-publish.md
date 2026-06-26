@@ -52,14 +52,14 @@ i dokładną treść do wysłania. Czekaj na "tak". Nic nie wysyłaj bez zgody.
 ## Faza 4 — status (opcjonalnie, tylko za zgodą)
 Jeśli podano `--status` lub użytkownik prosi: JIRA `getTransitionsForJiraIssue` →
 `transitionJiraIssue`; Notion `notion-update-page` ustaw `Status`. Nigdy bez potwierdzenia.
-- **Trello:** status to **LABEL** na tych boardach (listy = encje, np. klient — więc statusu NIE
-  trzymamy w liście). Etykiety statusowe: "🔵 W toku" / "📋 Do zrobienia" / "⏳ Czekam".
-  NIE przenoś karty między listami (przeniosłoby ją do innej encji). Zamiast tego podmień label statusu:
+- **Trello:** na boardach Trello listy=status, labelka=encja (klient/osoba). Status =
+  **przeniesienie karty** do listy o nazwie odpowiadającej `--status`
+  ("📋 Do zrobienia" / "🔵 W toku" / "⏳ Czekam" / "✅ Done"). Rozwiąż listę po nazwie na boardzie karty:
   - board karty: `GET /1/cards/{id}?fields=idBoard`
-  - labele boardu: `GET /1/boards/{idBoard}/labels` (pełne id boardu — nie shortlink)
-  - znajdź docelowy label po nazwie wg `--status`; zdejmij obecny label statusu, dodaj nowy:
-    `DELETE /1/cards/{id}/idLabels/{oldLabelId}` + `POST /1/cards/{id}/idLabels?value={newLabelId}`.
-  Auth jak w Fazie 3 (curl + `TRELLO_API_KEY`/`TRELLO_TOKEN`).
+  - listy boardu: `GET /1/boards/{idBoard}/lists?filter=open`
+  - znajdź listę po nazwie wg `--status`, przenieś kartę: `PUT /1/cards/{id}?idList={listId}`.
+  Labelka karty = ENCJA (klient/osoba) i jej NIE ruszamy przy zmianie statusu.
+  Auth jak w Fazie 3 (curl + `TRELLO_API_KEY`/`TRELLO_TOKEN`). Tylko za zgodą.
 
 ## Faza 5 — zaktualizuj notatkę
 W froncie notatki ustaw `status` (lustro nowego stanu, jeśli zmieniony) i `updated` na dziś;
