@@ -27,6 +27,8 @@ Repo mózgu (skrypty/config): `/Users/marcinjucha/Prywatne/projects/claude-brain
 | Korzyść | single-source-w-mózgu + skill nadal odpalalny | tylko brain-side: notatka przeglądalna / surface'owalna / linkowalna / reużywalna przez TWOJE inne skille — BEZ zmiany tego, co widzi zespół |
 | Bramka walidacji | pełne 5a + 5b + 5c | 5a (notatka == wiedza skilla) + 5b (niezależna kopia bezstratna); 5c funkcjonalne N/A (skill bez zmian) — zamiast tego potwierdź, że notatka czyta się SAMODZIELNIE |
 
+> **Rozwój lustra:** NIE rozwijaj net-nowej wiedzy w notatce-lustrze (refresh skill→brain ją nadpisze). Twoja net-nowa wiedza → osobna notatka `home: brain` (konsumują Twoje skille); dla ZESPOŁU → PR do skilla zespołu (system nie pushuje mózg→repo), potem refresh. Pełna zasada: `_system/knowledge-system.md` §„Tryb MIRROR".
+
 **PO CO MIRROR:** skill współdzielony z zespołem (Scandit `ios-*`) MUSI zostać kompletny dla
 współpracowników, a vault mózgu nie jest z nimi dzielony — więc wszystkie korzyści bazy wiedzy
 dostajesz przez **SKOPIOWANIE (lustro)** wiedzy do mózgu, NIGDY nie ścieniając skilla ani nie dotykając jego repo.
