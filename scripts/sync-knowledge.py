@@ -252,11 +252,21 @@ def derive_used_by(cfg, ctx, src, write, report):
         new_line = "used-by: [" + ", ".join(actual) + "]"
         if FM_FIELD_RE("used-by").search(frontmatter(txt)):
             new = FM_FIELD_RE("used-by").sub(new_line, txt, count=1)
-            if new != txt:
-                report.append(("used-by", f"{slug} → {actual}"))
-                if write:
-                    with open(path, "w", encoding="utf-8") as f:
-                        f.write(new)
+        elif actual:
+            # field absent + real consumers exist → INSERT it at the end of the frontmatter
+            # block (just before the closing ---). Without this, derive_used_by could only
+            # UPDATE an existing field, so a freshly-created note never gained used-by and
+            # `used-by-stale` persisted forever. Function-style replacement avoids backref
+            # interpretation of `\` in new_line.
+            new = re.sub(r'(?s)(\A\s*---\n.*?\n)(---)',
+                         lambda m: m.group(1) + new_line + "\n" + m.group(2), txt, count=1)
+        else:
+            new = txt
+        if new != txt:
+            report.append(("used-by", f"{slug} → {actual}"))
+            if write:
+                with open(path, "w", encoding="utf-8") as f:
+                    f.write(new)
 
 def main():
     global CONFIG
