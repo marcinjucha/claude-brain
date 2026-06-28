@@ -125,6 +125,23 @@ def snapshot(cfg, ctx, write, report):
         refdir = os.path.join(skdir, "references", "knowledge")
         for slug in sorted(deps):
             if slug not in src:
+                # Context-agnostic guard: a snapshot already on disk that declares a DIFFERENT
+                # context belongs to another context sharing this consumer dir (e.g. agency's
+                # ag-knowledge physically living in a shadow-operator consumer repo via symlink).
+                # It is not THIS context's note — skip it, don't flag a false dangling. Validation
+                # thus depends on whose snapshots are actually present, not a single hardcoded ctx.
+                foreign = os.path.join(refdir, slug + ".md")
+                if os.path.exists(foreign):
+                    with open(foreign, encoding="utf-8") as _f:
+                        ftxt = _f.read()
+                    # snapshots begin with a GEN_HEADER comment line BEFORE the frontmatter;
+                    # strip it so frontmatter()/fm_value can see the `context:` field.
+                    if ftxt.startswith("<!--") and "\n" in ftxt:
+                        ftxt = ftxt.split("\n", 1)[1]
+                    snap_ctx = (fm_value(ftxt, "context") or "").strip()
+                    if snap_ctx and snap_ctx != ctx:
+                        report.append(("skip-foreign-ctx", f"{slug} (context={snap_ctx} ≠ {ctx})"))
+                        continue
                 dangling.add((os.path.basename(skdir), slug)); continue
             with open(src[slug], encoding="utf-8") as f:
                 body = f.read()
