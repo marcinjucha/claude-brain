@@ -102,7 +102,7 @@
     },
     "scandit": {
       "dir": "03-Resources/scandit/knowledge",
-      "active": false,
+      "active": true,
       "consumers": [
         "/Users/marcinjucha/Scandit/digital-shelf-ios/.claude/skills"
       ]
