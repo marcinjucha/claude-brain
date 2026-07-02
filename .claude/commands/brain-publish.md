@@ -61,6 +61,20 @@ Jeśli podano `--status` lub użytkownik prosi: JIRA `getTransitionsForJiraIssue
   Labelka karty = ENCJA (klient/osoba) i jej NIE ruszamy przy zmianie statusu.
   Auth jak w Fazie 3 (curl + `TRELLO_API_KEY`/`TRELLO_TOKEN`). Tylko za zgodą.
 
+## Zasada jakości kart (next-action → board)
+Dotyczy PRZYPADKU, gdy operacja wypycha **wiele kart next-action** na board (nie standardowy
+pojedynczy `## Finalny produkt` → jedno istniejące zadanie). Każda karta MUSI być:
+1. **Jedna rzecz** — pojedyncza, atomowa akcja, nie pakiet kroków.
+2. **Niezależna** — wykonywalna sama z siebie. Jeśli jest zablokowana niezakończoną zależnością, to NIE jest to-do — to "czekam".
+3. **Przypisana do właściciela** — do tego, kto ją wykonuje.
+
+Routing po właścicielu/gotowości (Trello, listy=status z Fazy 4):
+- Akcje, które właściciel notatki (Marcin/operator) może zrobić **TERAZ** → lista aktywna ("📋 Do zrobienia" / "🔵 W toku").
+- Akcje zależne od kogoś innego (twórca/klient — np. kupno domeny, publikacja ankiety) → "⏳ Czekam". Dodaj je jako karty (NIE pomijaj — to śledzone zależności), tylko na liście czekam, nie na to-do.
+- Element zablokowany/bramkowany (np. "pełny launch — zablokowany do walidacji") też idzie na "⏳ Czekam", nie na to-do.
+
+> **WHY:** zablokowana albo spakowana karta na liście aktywnej kłamie o gotowości — sugeruje "do zrobienia teraz", a nie da się jej ruszyć; wyrzucenie zależności zamiast dodania na "czekam" gubi jej śledzenie.
+
 ## Faza 5 — zaktualizuj notatkę
 W froncie notatki ustaw `status` (lustro nowego stanu, jeśli zmieniony) i `updated` na dziś;
 dopisz linię `published: <data>` jeśli nie istnieje. Zaraportuj: co, gdzie, link.
