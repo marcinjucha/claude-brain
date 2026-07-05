@@ -98,7 +98,6 @@
       "dir": "03-Resources/shadow-operator/knowledge",
       "active": true,
       "consumers": [
-        "/Users/marcinjucha/Prywatne/projects/claude-dev/skills",
         "/Users/marcinjucha/Prywatne/projects/claude-marketing/skills"
       ]
     },
