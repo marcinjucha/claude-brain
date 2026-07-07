@@ -1,6 +1,6 @@
 ---
-description: Periodic brain audit — consolidate/clean/organize a context's vault (propose-then-confirm), regenerate the status layer (Home rollup + per-context + hubs), and report tracker→Brain (Notion/JIRA) migration gaps
-argument-hint: [context] [--all|--status|--gap]
+description: Periodic brain audit — consolidate/clean/organize a context's vault (propose-then-confirm), regenerate the status layer (Home rollup + per-context + hubs), report tracker→Brain (Notion/JIRA) migration gaps, and (opt-in --deep) run a read-only semantic audit that reads notes to flag superseded content, semantic duplicates, and status-drift that the grep scan can't catch
+argument-hint: [context] [--all|--status|--gap|--deep]
 allowed-tools: Read, Edit, Write, Bash, Grep, mcp__notion__notion-fetch, mcp__notion__notion-search, mcp__claude_ai_Atlassian__searchJiraIssuesUsingJql
 ---
 
@@ -32,6 +32,7 @@ użyj `$1` / zapytaj. Tryby (z `$2`):
 - `--all` → wszystkie konteksty, ale RAPORT zbiorczy; ZAPIS tylko per-kontekst, osobna zgoda na każdy;
 - `--status` → sam refresh warstwy statusu (Faza 4), pomiń sprzątanie (realizuje „tylko odśwież widok");
 - `--gap` → dołącz raport luk migracji (Faza 4.5).
+- `--deep` → wymuś Fazę 1.5 (audyt semantyczny, czytanie notatek); bez flagi ta faza jest proponowana warunkowo.
 
 ## Faza 1 — inwentaryzacja + diagnostyka (READ-ONLY)
 Zmapuj notatki kontekstu (pliki, rozmiary, frontmatter, linki `[[…]]`, otwarte `- [ ]`). Wykryj:
@@ -52,6 +53,30 @@ dev-knowledge = treść, nie taski.
 **Wymaga osądu (tylko FLAGA → propozycja):**
 - superseded vs aktualne (newest-wins to heurystyka, nie pewnik); redundancja semantyczna / co scalić
   bez utraty niuansu; świadome archiwum vs śmieć; leakage wysoka-półka↔working-detail (co przenieść w dół).
+
+## Faza 1.5 — audyt semantyczny (opcjonalny, READ-ONLY, token-heavy)
+> Faza 1 (grep / `brain-scan.py`) łapie martwe linki i formę. NIE złapie tego, co wymaga CZYTANIA:
+> treści superseded, duplikatów semantycznych, statusu rozjechanego z treścią. Ta faza to dopełnia.
+
+**Kiedy uruchomić:** domyślnie ZAPYTAJ (czytanie notatek = koszt w tokenach), albo wymuś flagą `--deep`.
+Auto-proponuj gdy: kontekst ma dużo notatek wiedzy (`03-Resources/<ctx>/knowledge/` > ~20), od ostatniego
+audytu doszło dużo notatek, albo `brain-scan` pokazał spuchnięte huby. Pomiń dla małego / świeżo audytowanego kontekstu.
+
+**Jak:** READ-ONLY, per kontekst (`--all` = osobno na każdy). Zleć CZYTAJĄCEGO subagenta (fork / general-purpose,
+bez prawa zapisu) na notatki JEDNEGO kontekstu; przy dużym kontekście partycjonuj po podmiocie/klastrze (jeden
+agent na klaster). Agent CZYTA i FLAGUJE (nie zmienia):
+- **Superseded** — notatka/sekcja, której twierdzenie zastąpiła nowsza notatka albo nowszy datowany wpis.
+  (Datowane wpisy są append-only → wolno tylko dopisać „(superseded → X)".)
+- **Duplikat / nakładka semantyczna** — dwie notatki o tym samym pojęciu (szczeg. w `knowledge/`), kandydaci
+  do MERGE lub cross-linku. **Near-duplicate = FLAGA do przeglądu, NIGDY auto-merge.**
+- **Status-drift** — blok `status:auto` / linia „Status:" huba przeczy najnowszemu datowanemu wpisowi / otwartym
+  `- [ ]` w treści. (To dokładnie to, czego grep nie widzi — regeneracja w Fazie 4.)
+- **Leakage półek** — wysoka półka (`_<context>`) trzyma working-detail; working note trzyma trwałą wiedzę
+  należącą do `knowledge/`. → propozycja przeniesienia w dół / do knowledge.
+
+**Wynik:** wyłącznie FLAGI wpięte do planu Fazy 2 (propose-then-confirm). Nic nie scalaj/nie przenoś tutaj.
+Strefy NIGDY-nie-rusza (Faza 0) obowiązują. Dla knowledge-system: sprawdź dedup notatek wiedzy też względem
+`_MOC.md` + kontraktu `sync-knowledge.py` (merge notatki = zmiana ŹRÓDŁA → wymaga resync).
 
 ## Faza 2 — plan sprzątania (propose-then-confirm)
 Przedstaw ponumerowany, rankowany plan. Podział:
