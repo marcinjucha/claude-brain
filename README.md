@@ -19,10 +19,11 @@ connectory, konfiguracje MCP, workflowy n8n, skrypty setupowe.
 │  HYDRAULIKA (to repo — claude-brain)                          │
 │                                                               │
 │  Claude Code ── silnik: operuje na plikach vaultu wprost      │
-│  connectors/ ── Notion, Telegram, Perplexity, ...             │
+│  commands/   ── rodzina /brain-* (globalne komendy)           │
+│  connectors/ ── Notion, JIRA, Telegram                        │
 │  mcp/        ── konfiguracje serwerów MCP                     │
 │  n8n/        ── workflowy automatyzacji (eksporty .json)      │
-│  scripts/    ── bootstrap, sync, maintenance                  │
+│  scripts/    ── bootstrap, sync, maintenance, knowledge-system │
 └───────────────────────────────────────────────────────────────┘
                 │
      ┌──────────┼──────────┬─────────────┐
@@ -48,12 +49,62 @@ connectory, konfiguracje MCP, workflowy n8n, skrypty setupowe.
 | Telegram capture | ✅ działa (bot @mjchiefbot, launchd w tle) | `connectors/telegram/` |
 | Notion connector | ✅ spec + konwencja (osobiste, przez MCP) | `connectors/notion/` |
 | JIRA connector | ✅ spec + demo pull (praca SHELF, 3 notatki) | `connectors/jira/` |
-| `/brain-pull` + `/brain-publish` | ✅ zadania: tracker ↔ notatki (globalne) | `.claude/commands/` |
-| `/brain-load` + `/brain-update` | ✅ wiedza: pamięć projektu ↔ sesja (globalne) | `.claude/commands/` |
-| `/brain-social` | ✅ content social + copy (pipeline) | `.claude/commands/` |
+| Rodzina `/brain-*` (9 komend) | ✅ zadania · pamięć · status · knowledge (globalne) | `commands/` → `.claude/commands/` |
+| Warstwa statusu (`status:auto`) | ✅ auto-blok, rollup 3-poziomowy | `_system/templates/status-block.md` |
+| Knowledge-system | ✅ wiedza skilli → vault (source of truth) + pre-commit | `scripts/`, `_system/knowledge-system.md` |
 | Dashboard żywy + social board (Dataview) | ✅ Home.md, `_social-board.md` (wymaga pluginu) | vault · `docs/obsidian-setup.md` |
 | Pamięć projektu (vault) | ✅ `_<projekt>.md` | vault |
 | n8n / `/brain-digest`  | ⬜ todo      | `n8n/` |
 
 Pełny projekt: `docs/architecture.md`. Mapa kontekstów (Personal, Scandit, Shadow
 Operator, HaloEfekt) z Notion IDs i repos: `docs/contexts.md`.
+
+## Jak używać — rodzina `/brain-*`
+
+Komendy są **globalne** (symlinkowane z `commands/` do `~/.claude/commands/` przez
+`scripts/link-commands.sh`), więc odpalasz je z dowolnego folderu. Który kontekst i tracker
+złapią, wynika z `cwd` przez mapę `config.json` → `.paths`.
+
+**Codzienny cykl pracy w projekcie:**
+
+| Komenda | Do czego |
+|---------|----------|
+| `/brain-load` | Podłącza bieżący folder do mózgu: wczytuje pamięć projektu z vaultu + głęboką pamięć repo. Zacznij tu każdą sesję. |
+| `/brain-pull` | Ściąga zadania z trackera kontekstu (Notion/JIRA/Trello) do notatek roboczych w vaulcie. |
+| `/brain-update` | Po pracy aktualizuje pamięć projektu (status, done, connections) i **wąsko** regeneruje warstwę statusu (własny blok + wycinek w `Home.md`). Event-driven. |
+| `/brain-publish` | Wypycha finalny produkt z notatki roboczej z powrotem do trackera (Notion/JIRA/Trello). |
+
+**Skrzynka i treść:**
+
+| Komenda | Do czego |
+|---------|----------|
+| `/brain-inbox` | Triage `00-Inbox` (capture'y z Telegrama) — rozdziela każdy element do właściwego trackera, potem kasuje przetworzony plik. |
+| `/brain-social` | Scaffold notatki social + draft hooka, skryptu i copy (pipeline treści). |
+
+**Konserwacja (okresowa):**
+
+| Komenda | Do czego |
+|---------|----------|
+| `/brain-sync` | Okresowy audyt vaultu kontekstu: konsoliduje/czyści notatki (propose-then-confirm, archiwizacja zamiast usuwania), robi **pełny** recompute warstwy statusu + rollup, raportuje luki migracji tracker→Brain. Okresowy odpowiednik `brain-update`. |
+
+**Knowledge-system (wiedza domenowa skilli → vault):**
+
+| Komenda | Do czego |
+|---------|----------|
+| `/brain-knowledge-init` | Onboarduje kontekst do knowledge-systemu: tworzy katalog wiedzy w vaulcie, aktywuje kontekst w `config.json`, instaluje pre-commit w repo-konsumentach. |
+| `/brain-knowledge-migrate` | Migruje wiedzę domenową JEDNEGO skilla do vaultu — EXTRACT (twoje skille, ścieńcza je) albo MIRROR (skille zespołowe, tylko kopia). |
+
+Vault (03-Resources/<ctx>/knowledge/) jest **źródłem prawdy** dla wiedzy domenowej; skille
+zostają cienkie i deklarują potrzeby przez `@references/knowledge/<slug>.md`. Snapshot do skilli
+robi `scripts/sync-knowledge.py` (jednokierunkowo, generowana kopia). Kontrakt:
+`<vault>/_system/knowledge-system.md`.
+
+## Skrypty (`scripts/`)
+
+| Skrypt | Do czego |
+|--------|----------|
+| `link-commands.sh` | Symlinkuje `commands/*.md` do `~/.claude/commands/` (rejestruje rodzinę `/brain-*`). |
+| `run-telegram-capture.sh` + `com.mjucha.brain.telegram.plist` | Bot Telegrama (@mjchiefbot) w tle przez launchd — capture do `00-Inbox`. |
+| `knowledge-init.sh` | Hydraulika `/brain-knowledge-init` (katalog + `active:true` + pre-commit). Idempotentny. |
+| `sync-knowledge.py` | Snapshot wiedzy vault→skille + integrity checks (`--context <ctx>` / `--all`). |
+| `install-precommit.sh` | Instaluje pre-commit hook pilnujący spójności knowledge w repo-konsumencie. |

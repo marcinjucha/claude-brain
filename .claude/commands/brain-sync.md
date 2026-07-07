@@ -37,6 +37,12 @@ użyj `$1` / zapytaj. Tryby (z `$2`):
 Zmapuj notatki kontekstu (pliki, rozmiary, frontmatter, linki `[[…]]`, otwarte `- [ ]`). Wykryj:
 
 **Deterministyczne (grep/skrypt — pewne):**
+Uruchom `python3 scripts/brain-scan.py` (całość) lub `--context <ctx>` (jeden kontekst) — to READ-ONLY skan,
+który zwraca poniższe sygnały deterministyczne. Vault root bierze z `config.json` → `vault.path`. UWAGA na
+false-positives (NIE auto-fixuj na ślepo): `[[slug]]`/`[[_<context>]]` w `_system/templates` = placeholdery;
+`[[NazwaSkilla]]` = ref do skilla w repo, nie notatka; `[[folder]]` (np. 00-Inbox) = link do folderu; słowa
+dat-względnych w PROZIE notatek wiedzy = treść, nie nieopisany ref; checkboxy w mirrorowanych notatkach
+dev-knowledge = treść, nie taski.
 - broken `[[wikilinks]]` (brak celu); osierocone notatki (0 linków przychodzących, nie-hub);
 - puste/szablonowe scaffoldy (body = nietknięty template: „To jest serce notatki", „Treść gotowa…");
 - `updated` < daty edycji pliku / starsze niż próg; braki we frontmatter;
