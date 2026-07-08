@@ -5,9 +5,14 @@ w Notion i (czasem) powiązane repo. Notatki robocze linkują do zadań przez fr
 `tracker` + `task_id` (patrz `connectors/`).
 
 > **Zasada: silniki domenowe (skille/agenci) żyją w swoich repo** (`claude-marketing`,
-> `claude-dev`, repo projektów) — **mózg linkuje i mapuje, nie wchłania.** Tak samo jak
-> linkuje do repo `memory.md` zamiast kopiować. Mapę „zadanie → skill" trzyma pamięć
-> projektu w vaulcie (np. `_shadow-operator.md`).
+> `claude-dev`, repo projektów) — **mózg linkuje i mapuje.** Mapę „zadanie → skill" trzyma
+> pamięć projektu w vaulcie (np. `_shadow-operator.md`).
+>
+> **Wyjątek (knowledge-system, 2026-06-25):** dla WIEDZY domenowej kanon się odwrócił — mózg jest
+> ŹRÓDŁEM. Pojedynczy atom (próg/bug/reguła) zostaje w repo i mózg go LINKUJE; cross-atom SYNTEZA
+> („dlaczego domena jest jaka jest") jest brain-owned w `03-Resources/<ctx>/knowledge/`.
+> „Own the synthesis, link the atom." Silniki: `/brain-extract-knowledge` (z pracy) + `distill-coaching`
+> (z wejść zewnętrznych); dyscyplina: skill `brain-conventions`. Kontrakt: `_system/knowledge-system.md`.
 
 ## 1. Personal
 - **Tracker:** Notion — Private Tasks Table `collection://29084f14-76e0-80be-ac06-000b9ee2fc4f`
@@ -24,7 +29,9 @@ w Notion i (czasem) powiązane repo. Notatki robocze linkują do zadań przez fr
   (agent `atlassian-manager`) — reguły: Markdown-not-ADF, cloudId, komponenty iOS/SHELFVIEW-APP,
   sprint przez CQL, tech debt → Confluence parent `7171866823`.
 - **Pamięć repo:** trwała wiedza = `CLAUDE.md` + skille; `memory.md` = bufor sesji promowany
-  do nich przez `/ai-extract-memory` → `/ai-curate-memory`. Mózg linkuje, nie kopiuje.
+  do nich przez `/ai-extract-memory` → `/ai-curate-memory` (atomy → repo). Cross-atom SYNTEZA
+  idzie zamiast tego do mózgu przez `/brain-extract-knowledge` (noty `home:brain`, brain-only —
+  skille zespołu nietknięte). „Own the synthesis, link the atom."
 
 ## 3. Shadow Operator (własny venture)
 Pomoc kreatorom YouTube/IG w monetyzacji przez produkty cyfrowe. Ja robię back-end

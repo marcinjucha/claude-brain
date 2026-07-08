@@ -119,18 +119,30 @@ spina i roluje — jeden format (SPEC) = brak dryfu.
 ## Faza 3.7 — utrzymanie bazy wiedzy (knowledge-system)
 Dwa zakresy o ROZDZIELNYM gatowaniu:
 - **EXTRACT** (kroki 1, 2a/2b/2c-emerging, 3) — uruchom TYLKO gdy `config.json` `.knowledge[<context>].active == true`.
-- **Maintenance LUSTER** (krok 2-mirror) — uruchom ZAWSZE, gdy kontekst ma jakiekolwiek notatki `status: mirror`, NIEZALEŻNIE od `active`. WHY: kontekst MIRROR-only (np. scandit: `active:false`, bo brak snapshot-sync, ale ma lustro arkit) wciąż ma lustra do odświeżenia — `mirror-stale` trzeba naprawić nawet bez aktywnego EXTRACT.
+- **Maintenance LUSTER** (krok 2-mirror) — uruchom ZAWSZE, gdy kontekst ma jakiekolwiek notatki `status: mirror`, NIEZALEŻNIE od `active`. WHY: kontekst może mieć lustra do odświeżenia (np. scandit ma lustro arkit) niezależnie od EXTRACT-u — `mirror-stale` trzeba naprawić nawet gdy EXTRACT nieaktywny. (Uwaga o scandit: config ma `active: true`. Snapshot-sync jest de-facto NO-OPEM dla kontekstów brain-only / mirror-only — skille zespołu nie mają bloku `## Knowledge`, więc silnik ich NIE snapshotuje — dlatego `active: true` jest bezpieczne. Konsekwencja: hook Fazy 3.8, bramkowany `active==true`, DZIAŁA dla scandit.)
 
 Jeśli EXTRACT aktywny (`active == true`):
 1. Uruchom `python3 /Users/marcinjucha/Prywatne/projects/claude-brain/scripts/sync-knowledge.py --context <context> --used-by` — regeneruje snapshoty + przepisuje `used-by` w notatkach mózgu + raport integralności.
 2. **Osąd agenta** (to, czego skrypt nie zrobi automatycznie) na podstawie raportu:
    - **kandydaci-duplikaty (dup?):** oceń, czy to ta sama idea; jeśli tak — scal (przenieś treść do jednej notatki, zaktualizuj `[[linki]]` i wskaźniki, usuń drugą), wg reguły anty-dryf z `_system/knowledge-system.md`.
-   - **emerging → canon:** dla notatek `status: emerging` (home=brain) sprawdź, czy wzorzec utrzymał się na **N≥3 odrębnych twórcach** (zapisane slugi przypadków w ciele notatki); jeśli tak — zmień `status` na `canon`.
+   - **emerging → canon:** dla notatek `status: emerging` (home=brain) sprawdź, czy wzorzec utrzymał się na **N≥3 odrębnych ŹRÓDŁACH** (twórcy / tickety / atomy — wg kontekstu; np. kontekst JIRA jak scandit promuje po ticketach/atomach; zapisane slugi przypadków w ciele notatki); jeśli tak — zmień `status` na `canon`.
    - **notatki `status: mirror` — maintenance LUSTER (URUCHOM ZAWSZE, niezależnie od `active`; patrz nagłówek fazy):** NIE awansuj (nigdy nie stają się brain-canon), NIE scalaj, NIE rozwijaj w nich treści — lustro to ODBICIE skilla. **Przy `mirror-stale` (z raportu integralności, gdy aktywny; inaczej z heurystyki mtime: `mirror-source` nowszy niż notatka) ODŚWIEŻ lustro SAM — to robi agent brain-update, NIE zalecaj użytkownikowi:** przeczytaj AKTUALNY skill-źródło z `mirror-source`, zregeneruj notatkę-lustro BEZSTRATNIE (re-ekstrakcja skill→brain), bump `updated`. Nadpisanie jest BEZPIECZNE — reguła develop gwarantuje, że w lustrze NIE ma własnej wiedzy (net-nowa wiedza żyje w osobnej notatce `home: brain`). Net-nowa wiedza z sesji idzie więc do `home: brain`, NIGDY do lustra. W raporcie: „odświeżono lustro X ze skilla" (patrz `_system/knowledge-system.md` §„Tryb MIRROR").
    - **dangling / sieroty:** napraw (dangling = krytyczne; sierota = rozważ link z MOC albo usuń). Notatki `status: mirror` są legalnie bez-konsumenta (engine wyłącza je z orphan-check) — NIE traktuj lustra jako sieroty do usunięcia.
 3. Zaktualizuj `_MOC.md` kontekstu, jeśli doszły/zniknęły notatki.
 
 EXTRACT nieaktywny (`active != true`) → pomiń kroki 1, 3 i podpunkty emerging/dedup, ale **wykonaj maintenance luster (krok 2-mirror), jeśli kontekst ma notatki `status: mirror`**. Brak jakichkolwiek notatek (w tym luster) → pomiń całą fazę (jedno zdanie w raporcie).
+
+## Faza 3.8 — surfacing kandydatów wiedzy (in-loop hook do silnika)
+Jeśli `knowledge[<ctx>].active == true`: po zapisach statusu/notatki roboczej wykonaj TYLKO **tani pre-filtr Stopnia 1**
+(brzytwa z `brain-conventions`) nad JUŻ-zebranym materiałem sesji, by wskazać **0–3 prawdopodobnych KANDYDATÓW** na
+notatki domenowe. **Ta faza wyłącznie SURFACE'UJE** — NIE stosuj tu pełnej brzytwy (Stopień 2 / atom-vs-synteza),
+NIE dobieraj finalnego brzmienia, NIE bramkuj i NIE zapisuj.
+**PRZEKAŻ kandydatów do silnika `/brain-extract-knowledge`** — silnik jest JEDYNYM właścicielem pełnej brzytwy,
+verify-confirm (jego Faza 4) i zapisu (Faza 5). **Jest DOKŁADNIE JEDNO potwierdzenie — w silniku — nie dwa.**
+Lekko: **0 kandydatów to poprawny, częsty wynik** — powiedz to.
+WHY: standalone opt-in zamiera (dowód: nudge Faza 4(e) → 0 notatek); adopcja bierze się z wpięcia surfacing-u w komendę,
+którą i tak odpalasz z nawyku. Dawniej ta faza dublowała bramkę silnika (propozycja tu + verify tam) i podwójnie
+męczyła użytkownika — teraz surface-tu, bramka-w-silniku.
 
 ## Faza 4 — raport
 Co zaktualizowano: (a) pamięć projektu (`<memory>` — status/połączenia), (b) notatka robocza
@@ -139,8 +151,9 @@ podmiotu, LUB jeśli detalu nie zrzucono przez niejednoznaczny target), (c) blok
 odświeżony — `_<context>.md` + slice w Home) + ewentualne sugestie lekcji do repo `memory.md`.
 (d) utrzymanie wiedzy: ile snapshotów zsynch., co scalono/awansowano/naprawiono (lub 'pominięto — brak aktywnej wiedzy').
 (e) **nudge wiedzy domenowej:** jeśli bufor repo `memory.md` zawiera wpisy `## Domain Concepts`
-wyglądające na wiedzę cross-cutting / konsumowaną przez skille — zanotuj: „memory.md ma wiedzę
-domenową — rozważ `/ai-curate-memory`, aby wypromować ją do NOTATEK mózgu
-(`03-Resources/<ctx>/knowledge/`), NIE do ciał ścienionych skilli." (brain-update tu NIE
-promuje — tylko sygnalizuje ten okresowy następny krok).
+/ `## Architecture Decisions` wyglądające na cross-atom SYNTEZĘ (obejmuje ≥2 atomy, żadna pojedyncza
+lokalizacja repo jej nie niesie) — zanotuj: „memory.md ma wiedzę domenową — rozważ
+`/brain-extract-knowledge`, aby wyekstrahować ją do NOTATEK mózgu (`03-Resources/<ctx>/knowledge/`)."
+Pojedyncze, atomowe reguły-kodu/pułapki-arch idą osobno przez `/ai-curate-memory` (do CLAUDE.md/skilli),
+NIE do mózgu. (brain-update tu NIE promuje — tylko sygnalizuje ten okresowy następny krok; główny wyzwalacz to Faza 3.8.)
 SESSION.md nietknięty.
