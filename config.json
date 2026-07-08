@@ -100,6 +100,15 @@
         "CLAUDE.md",
         "memory.md"
       ]
+    },
+    "/Users/marcinjucha/Prywatne/projects/claude-dev": {
+      "context": "claude-dev",
+      "vault": "01-Projects/claude-dev",
+      "memory": "_claude-dev.md",
+      "repoMemory": [
+        "CLAUDE.md",
+        "memory.md"
+      ]
     }
   },
   "knowledge": {
