@@ -91,6 +91,15 @@
         "CLAUDE.md",
         "memory.md"
       ]
+    },
+    "/Users/marcinjucha/Scandit/digital-shelf-sdk-ios": {
+      "context": "scandit",
+      "vault": "01-Projects/scandit",
+      "memory": "_scandit.md",
+      "repoMemory": [
+        "CLAUDE.md",
+        "memory.md"
+      ]
     }
   },
   "knowledge": {
@@ -121,6 +130,13 @@
       "active": true,
       "consumers": [
         "/Users/marcinjucha/Prywatne/projects/claude-dev/skills"
+      ]
+    },
+    "scandit-pple-sdk": {
+      "dir": "03-Resources/scandit-pple-sdk/knowledge",
+      "active": true,
+      "consumers": [
+        "/Users/marcinjucha/Scandit/digital-shelf-sdk-ios/.claude/skills"
       ]
     }
   }
