@@ -116,7 +116,13 @@
       "dir": "03-Resources/general-business/knowledge",
       "active": true,
       "consumers": [],
-      "_note": "Base context: universal business craft (sales/marketing/launch/product). No consumers of its own; business contexts pull it in via `inherits`. Add more base pools (general-technical, a truly-global `general`) the same way — config only."
+      "_note": "Base context: universal business craft (sales/marketing/launch/product). No consumers of its own; business contexts pull it in via `inherits`."
+    },
+    "general-technical": {
+      "dir": "03-Resources/general-technical/knowledge",
+      "active": true,
+      "consumers": [],
+      "_note": "Base context: universal engineering craft (web/TS stack — TanStack/Supabase/RLS/React + stack-agnostic principles). No consumers of its own; web-dev contexts pull it in via `inherits`. Halo/project-specific CMS/monorepo notes stay in `agency`; iOS (scandit) does NOT inherit (different stack)."
     },
     "shadow-operator": {
       "dir": "03-Resources/shadow-operator/knowledge",
@@ -129,7 +135,7 @@
     "agency": {
       "dir": "03-Resources/agency/knowledge",
       "active": true,
-      "inherits": ["general-business"],
+      "inherits": ["general-business", "general-technical"],
       "consumers": [
         "/Users/marcinjucha/Prywatne/projects/legal-mind/.claude/skills",
         "/Users/marcinjucha/Prywatne/projects/doc-forge/.claude/skills"
@@ -145,6 +151,7 @@
     "claude-dev": {
       "dir": "03-Resources/claude-dev/knowledge",
       "active": true,
+      "inherits": ["general-technical"],
       "consumers": [
         "/Users/marcinjucha/Prywatne/projects/claude-dev/skills"
       ]
