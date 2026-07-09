@@ -73,7 +73,7 @@ górnej pamięci `<memory>` (`_scandit.md`):
 Krótko podsumuj użytkownikowi: co to za projekt, na jakim etapie, co w toku, otwarte wątki,
 i czego pamięć NIE wie (luki). Wymień: czy notatka ticketu była backfillowana, czy był
 reconcile SESSION.md. Bez ścian tekstu — to brief startowy, nie raport.
-- knowledge: zsynch. ✅ / albo: N dryf · M dup? · K emerging · dangling: … — przy problemach dodaj, że `/brain-update` rozwiązuje je (osąd: scal duplikaty, awansuj emerging→canon). Jeśli kontekst dziedziczy pulę bazową (`inherits`) — NAZWIJ ją (np. „+ general-business (uniwersalne)"), by było jasne, że dostępny jest też uniwersalny craft, nie tylko noty kontekstowe.
+- knowledge: zsynch. ✅ / albo: N dryf · M dup? · K emerging · dangling: … — przy problemach dodaj, że `/brain-update` rozwiązuje je (osąd: scal duplikaty, awansuj emerging→canon). Jeśli kontekst dziedziczy pule bazowe (`inherits`) — NAZWIJ WSZYSTKIE (np. „+ general-business + general-technical (uniwersalne)", jak `agency`), by było jasne, że dostępny jest też uniwersalny craft, nie tylko noty kontekstowe.
 
 > Pamięć projektu w mózgu = wysoka półka (status/połączenia). Głęboka wiedza techniczna
 > NIE jest tu kopiowana — żyje w repo (CLAUDE.md/skille, a świeże w memory.md). Czytaj oba poziomy; nie scalaj.

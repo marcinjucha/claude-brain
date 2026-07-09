@@ -25,7 +25,7 @@ Brak wpisu → **najpierw dodaj** wpis i dopiero wtedy uruchom Fazę 1. Przykła
 ```
 (`consumers` = lista folderów `skills/` repo, które mają dostawać snapshot + pre-commit.)
 
-**Kontekst może być PULĄ BAZOWĄ:** wpis w `.knowledge` z `active: true` i `consumers: []` (brak własnych konsumentów), a INNE konteksty wciągają go przez `inherits: ["<baza>"]` — np. `general-business` (uniwersalny craft biznesowy) dziedziczony przez `shadow-operator` + `agency`. Onboarding nowego kontekstu BIZNESOWEGO oznacza dopisanie `inherits: ["general-business"]` do jego wpisu w configu RĘCZNIE — tool nie scaffolduje tej relacji.
+**Kontekst może być PULĄ BAZOWĄ:** wpis w `.knowledge` z `active: true` i `consumers: []` (brak własnych konsumentów), a INNE konteksty wciągają je przez `inherits: [...]` — pule bazowe to `general-business` (uniwersalny craft biznesowy) i `general-technical` (uniwersalny craft inżynieryjny/webowy). Onboarding nowego kontekstu oznacza dopisanie do jego wpisu w configu RĘCZNIE tych pul bazowych, które go dotyczą (`["general-business"]` dla biznesu, `["general-technical"]` dla web-devu, OBU jak `agency`; stack iOS/inne mogą nie dziedziczyć żadnej) — tool nie scaffolduje tej relacji.
 
 ## Faza 1 — uruchom plumbing
 ```bash

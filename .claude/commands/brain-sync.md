@@ -1,6 +1,6 @@
 ---
-description: Periodic brain audit — consolidate/clean/organize a context's vault (propose-then-confirm), regenerate the status layer (Home rollup + per-context + hubs), report tracker→Brain (Notion/JIRA) migration gaps, and (opt-in --deep) run a read-only semantic audit that reads notes to flag superseded content, semantic duplicates, and status-drift that the grep scan can't catch
-argument-hint: [context] [--all|--status|--gap|--deep]
+description: Periodic brain audit — consolidate/clean/organize a context's vault (propose-then-confirm), regenerate the status layer (Home rollup + per-context + hubs), report tracker→Brain (Notion/JIRA) migration gaps, and BY DEFAULT run a read-only semantic audit that reads notes to flag superseded content, semantic duplicates, and status-drift the grep scan can't catch (opt out with --shallow for a fast grep-only pass)
+argument-hint: [context] [--all|--status|--gap|--shallow]
 allowed-tools: Read, Edit, Write, Bash, Grep, mcp__notion__notion-fetch, mcp__notion__notion-search, mcp__claude_ai_Atlassian__searchJiraIssuesUsingJql
 ---
 
@@ -9,7 +9,9 @@ allowed-tools: Read, Edit, Write, Bash, Grep, mcp__notion__notion-fetch, mcp__no
 Okresowy audyt kontekstu w vaulcie: konsoliduje, czyści, lepiej organizuje, ODŚWIEŻA warstwę statusu
 (`Home.md` rollup + `_<context>.md` + huby) i wskazuje luki tracker→Brain (Notion/JIRA). Para z `/brain-update`.
 **Podział po osi czasu: brain-update = event-driven, wąski (po sesji); brain-sync = periodic-audit,
-pełny przelicz.** Globalna. Repo (config/ścieżki): `/Users/marcinjucha/Prywatne/projects/claude-brain`.
+pełny przelicz.** Przycinanie wiedzy nieaktualnej / superseded / zduplikowanej / osieroconej to
+zadanie TEJ komendy (audyt semantyczny, domyślnie włączony) — nie ma osobnego `brain-prune`. Globalna. Repo (config/ścieżki):
+`/Users/marcinjucha/Prywatne/projects/claude-brain`.
 
 ## Domyślnie READ-ONLY + propose-then-confirm
 brain-sync **najpierw raportuje plan, nie dotyka plików.** Jedna bramka zgody na całą partię (możesz
@@ -32,7 +34,10 @@ użyj `$1` / zapytaj. Tryby (z `$2`):
 - `--all` → wszystkie konteksty, ale RAPORT zbiorczy; ZAPIS tylko per-kontekst, osobna zgoda na każdy;
 - `--status` → sam refresh warstwy statusu (Faza 4), pomiń sprzątanie (realizuje „tylko odśwież widok");
 - `--gap` → dołącz raport luk migracji (Faza 4.5).
-- `--deep` → wymuś Fazę 1.5 (audyt semantyczny, czytanie notatek); bez flagi ta faza jest proponowana warunkowo.
+- brak → Faza 1.5 (audyt semantyczny, czytanie notatek) URUCHAMIA SIĘ DOMYŚLNIE, wraz z knowledge-system `--check`;
+- `--shallow` (alias `--fast`) → OPT-OUT: pomiń Fazę 1.5, zrób tylko szybki skan grep/`brain-scan.py`.
+  Tradeoff: default (deep) czyta notatki = wolniej / więcej tokenów, ale łapie superseded/duplikaty/drift,
+  których grep nie widzi — dlatego jest domyślny.
 
 ## Faza 1 — inwentaryzacja + diagnostyka (READ-ONLY)
 Zmapuj notatki kontekstu (pliki, rozmiary, frontmatter, linki `[[…]]`, otwarte `- [ ]`). Wykryj:
@@ -44,6 +49,14 @@ false-positives (NIE auto-fixuj na ślepo): `[[slug]]`/`[[_<context>]]` w `_syst
 `[[NazwaSkilla]]` = ref do skilla w repo, nie notatka; `[[folder]]` (np. 00-Inbox) = link do folderu; słowa
 dat-względnych w PROZIE notatek wiedzy = treść, nie nieopisany ref; checkboxy w mirrorowanych notatkach
 dev-knowledge = treść, nie taski.
+
+**Knowledge-dir — `sync-knowledge.py` jest autorytatywny, NIE brain-scan.** Dla każdego kontekstu z
+`knowledge[ctx].active == true` uruchom DODATKOWO `python3 scripts/sync-knowledge.py --context <ctx> --check`
+i ZAUFAJ JEMU (nie brain-scanowi) w sprawach katalogu wiedzy. Ono poprawnie rozwiązuje cross-context
+`inherits` (link liść→baza `[[…]]` NIE jest dangling), agreguje konsumentów przez wszystkie konteksty
+(`global_ref_by` — nota z base-poola z `consumers: []` NIE jest fałszywym sierotą), egzekwuje kierunkowy
+`link-rule` i raportuje kolizje slugów. brain-scan potrafi je false-flagować — dla katalogów wiedzy
+źródłem prawdy jest `sync-knowledge.py --check`.
 - broken `[[wikilinks]]` (brak celu); osierocone notatki (0 linków przychodzących, nie-hub);
 - puste/szablonowe scaffoldy (body = nietknięty template: „To jest serce notatki", „Treść gotowa…");
 - `updated` < daty edycji pliku / starsze niż próg; braki we frontmatter;
@@ -54,13 +67,14 @@ dev-knowledge = treść, nie taski.
 - superseded vs aktualne (newest-wins to heurystyka, nie pewnik); redundancja semantyczna / co scalić
   bez utraty niuansu; świadome archiwum vs śmieć; leakage wysoka-półka↔working-detail (co przenieść w dół).
 
-## Faza 1.5 — audyt semantyczny (opcjonalny, READ-ONLY, token-heavy)
+## Faza 1.5 — audyt semantyczny (DOMYŚLNY, READ-ONLY, token-heavy)
 > Faza 1 (grep / `brain-scan.py`) łapie martwe linki i formę. NIE złapie tego, co wymaga CZYTANIA:
 > treści superseded, duplikatów semantycznych, statusu rozjechanego z treścią. Ta faza to dopełnia.
 
-**Kiedy uruchomić:** domyślnie ZAPYTAJ (czytanie notatek = koszt w tokenach), albo wymuś flagą `--deep`.
-Auto-proponuj gdy: kontekst ma dużo notatek wiedzy (`03-Resources/<ctx>/knowledge/` > ~20), od ostatniego
-audytu doszło dużo notatek, albo `brain-scan` pokazał spuchnięte huby. Pomiń dla małego / świeżo audytowanego kontekstu.
+**Kiedy uruchomić:** DOMYŚLNIE — plain `brain-sync` odpala tę fazę zawsze. Opt-out: `--shallow` (alias `--fast`)
+pomija ją i robi tylko szybki skan grep. Tradeoff: default czyta notatki = wolniej / więcej tokenów, ale
+łapie superseded/duplikaty/drift, których grep nie widzi — dlatego jest domyślny. Rozważ `--shallow` dla
+małego / świeżo audytowanego kontekstu, gdzie koszt czytania się nie zwraca.
 
 **Jak:** READ-ONLY, per kontekst (`--all` = osobno na każdy). Zleć CZYTAJĄCEGO subagenta (fork / general-purpose,
 bez prawa zapisu) na notatki JEDNEGO kontekstu; przy dużym kontekście partycjonuj po podmiocie/klastrze (jeden
@@ -77,6 +91,10 @@ agent na klaster). Agent CZYTA i FLAGUJE (nie zmienia):
 **Wynik:** wyłącznie FLAGI wpięte do planu Fazy 2 (propose-then-confirm). Nic nie scalaj/nie przenoś tutaj.
 Strefy NIGDY-nie-rusza (Faza 0) obowiązują. Dla knowledge-system: sprawdź dedup notatek wiedzy też względem
 `_MOC.md` + kontraktu `sync-knowledge.py` (merge notatki = zmiana ŹRÓDŁA → wymaga resync).
+**Base-pool blast radius:** noty uniwersalne leżą w osobnym BASE POOL (`general-business` / `general-technical`),
+z którego dziedziczą inne konteksty. Merge/archiwizacja/supersede noty z base-poola to zmiana ŹRÓDŁA
+dotykająca KAŻDEGO dziedziczącego kontekstu — wymaga resync CAŁOŚCI (`sync-knowledge.py --all`) + ponownego
+audytu linków kierunkowych, nie tylko lokalnej edycji.
 
 ## Faza 2 — plan sprzątania (propose-then-confirm)
 Przedstaw ponumerowany, rankowany plan. Podział:

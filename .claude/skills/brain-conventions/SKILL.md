@@ -49,14 +49,21 @@ Wspólna definicja, do której odnosi się `/brain-extract-knowledge`:
 - **Stopień 1 — kwalifikacja.** Wszystkie trzy muszą zajść, inaczej → repo (nie brain): (a) DURABLE (ustalone, nie `[do potwierdzenia]`), (b) CROSS-TICKET RELEVANT (przyda się na przyszłym niepowiązanym tickecie), (c) DOMENA / PRODUKT / FIZYKA-WHY (nie mechanika kodu). ⚠️ Klasyfikuj po SUBSTANCJI, NIE po trybie gramatycznym — reguła domenowa bywa rozkazująca („nigdy…", „zawsze…") i wciąż jest domeną, nie mechaniką.
 - **Stopień 2 — dom (rozstrzygający).** Pojedynczy zakotwiczony ATOM już żyjący w repo (jeden próg / jeden bug / jedna reguła-pliku) → zostaje w repo, nota mózgu może go tylko `references:`-linkować, nie kopiować. SYNTEZA obejmująca ≥2 atomy, której nie niesie żadna pojedyncza lokalizacja repo → nota mózgu.
 
-### Trzeci wymiar zapisu — UNIWERSALNA vs SPECJALISTYCZNA (w obrębie mózgu)
+### Trzeci wymiar zapisu — TRZY POOLE: uniwersalna-BIZNES vs uniwersalna-TECHNICZNA vs SPECJALISTYCZNA (w obrębie mózgu)
 
-Oś ORTOGONALNA do brzytwy: brzytwa decyduje repo-vs-brain; ta decyduje — GDY już wiesz, że to nota mózgu — który KONTEKST mózgu ją trzyma.
+Oś ORTOGONALNA do brzytwy: brzytwa decyduje repo-vs-brain; ta decyduje — GDY już wiesz, że to nota mózgu — który POOL/KONTEKST mózgu ją trzyma. Są DWIE żywe bazy uniwersalne, nie jedna.
 
-- **Test.** Czy teza jest prawdziwa/użyteczna w ≥2 kontekstach biznesowych — czysty craft (sprzedaż / marketing / launch / produkt), bez specyfiki jednego venture? **TAK →** baza uniwersalna `03-Resources/general-business/knowledge/` (`context: general-business`) + jej `_MOC.md`. **NIE →** bieżący kontekst `03-Resources/<ctx>/knowledge/`. WHY: uniwersalny craft zapisany raz w bazie spływa do skilli KAŻDEGO kontekstu dziedziczącego (`inherits: ["general-business"]`) bez duplikacji; ta sama teza wpisana per-kontekst rozjeżdża się w N kopii.
-- **Fail-safe.** Domyślaj się KONTEKSTU specyficznego; promuj do uniwersalnej dopiero na realny popyt 2. kontekstu (`git mv` noty do bazy + resync + audyt linków). WHY: łatwiej podnieść notę do bazy niż odkręcić fałszywie-uniwersalną, na której inny kontekst już zbudował.
-- **Reguła kierunkowa.** Nota uniwersalna `[[linkuje]]` TYLKO inne uniwersalne — NIGDY w dół do noty kontekstowej (silnik zablokuje commit); nota kontekstowa MOŻE linkować w górę do uniwersalnej. WHY: link w dół związałby bazę z jednym venture, łamiąc jej niezależność.
-- **Pełny mechanizm:** `_system/knowledge-system.md` §„Wiedza uniwersalna" (dziedziczenie, resync, audyt). Ten skill WSKAZUJE, nie przepisuje.
+- **Test (trójdzielny).** Czy teza jest venture-niezależna, i jeśli tak — biznesowa czy techniczna?
+  - **Uniwersalna-BIZNES** (czysty craft: sprzedaż / marketing / launch / oferta / produkt / voice-copy, bez specyfiki jednego venture) **→** `03-Resources/general-business/knowledge/` (`context: general-business`) + jej `_MOC.md`.
+  - **Uniwersalna-TECHNICZNA** (inżynieria venture-niezależna: web/TS stack — TanStack / Supabase / RLS / React / Zod / Tailwind — + zasady stack-agnostyczne: SRP / TDD / kompozycja / abstrakcje) **→** `03-Resources/general-technical/knowledge/` (`context: general-technical`) + jej `_MOC.md`.
+  - **Specjalistyczna** (specyfika jednego venture) **→** bieżący kontekst `03-Resources/<ctx>/knowledge/`.
+
+  WHY: uniwersalna teza zapisana RAZ w swojej bazie spływa do skilli KAŻDEGO kontekstu, który tę bazę dziedziczy, bez duplikacji; ta sama teza wpisana per-kontekst rozjeżdża się w N kopii.
+- **Dziedziczenie to LISTA (multi-inherit).** Kontekst komponuje te bazy, które go dotyczą — `inherits` jest listą, nie pojedynczą wartością: np. `agency` dziedziczy OBIE (`["general-business", "general-technical"]`), `claude-dev` → `["general-technical"]`, shadow-operator → `["general-business"]`, iOS scandit → `[]` (żadnej). WHY: kontekst potrafi konsumować oba rodzaje craftu naraz — jedna oś dziedziczenia by go do tego nie dopuściła.
+- **Fail-safe.** Domyślaj się KONTEKSTU specyficznego; promuj do którejkolwiek bazy uniwersalnej dopiero na realny popyt 2. kontekstu. WHY: łatwiej podnieść notę do bazy niż odkręcić fałszywie-uniwersalną, na której inny kontekst już zbudował.
+- **Reguła kierunkowa.** Nota uniwersalna `[[linkuje]]` TYLKO w obrębie WŁASNEGO poolu — nigdy w dół do noty kontekstowej ani w bok do drugiego poolu uniwersalnego (silnik zablokuje commit); nota kontekstowa MOŻE linkować w górę do uniwersalnej. WHY: link poza pool związałby bazę z jednym venture / drugim poolem, łamiąc jej niezależność.
+- **Mechanizm promocji.** Podniesienie noty do bazy uniwersalnej robi `scripts/promote-to-universal.py` (przenosi notę + resync + audyt linków), NIE ręczny `git mv`.
+- **Pełny mechanizm:** `_system/knowledge-system.md` §„Wiedza uniwersalna" (oba poole, dziedziczenie-lista, resync, audyt). Ten skill WSKAZUJE, nie przepisuje.
 
 ### Reguły wspólne dla obu destylerów
 

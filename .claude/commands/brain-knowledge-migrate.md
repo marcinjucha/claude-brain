@@ -82,5 +82,8 @@ Stage **JAWNIE** (nazwane ścieżki — nigdy `git add -A`; repo bywa z niepowi�
 - MIRROR: TYLKO notatki vaulta.
 Komunikat commita = tryb (EXTRACT/MIRROR) + który skill + wynik walidacji (5a/5b/[5c]). (Vault to osobne repo od repo skilla — commituj w odpowiednim.)
 
+## Follow-up — awans do puli bazowej (gdy wiedza jest UNIWERSALNA)
+Ta komenda migruje wiedzę do KONTEKSTU. Jeśli któraś zmigrowana notatka jest w istocie UNIWERSALNA (czysty craft biznesowy lub techniczny, nie project-specific), po migracji AWANSUJ ją do pasującej puli bazowej (`general-business` / `general-technical`) przez `scripts/promote-to-universal.py`. Ekstrakcja do poziomu kontekstu to zadanie tej komendy; awans do puli bazowej to osobny krok następczy.
+
 ## Raport
 Podsumuj: (a) skill + tryb, (b) notatki utworzone/rozszerzone (slugi), (c) co ze SKILL.md (ścieniony przez ai-manager-agent / nietknięty), (d) wynik 3-warstwowej bramki, (e) co zacommitowano i gdzie.
