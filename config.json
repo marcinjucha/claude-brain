@@ -112,9 +112,16 @@
     }
   },
   "knowledge": {
+    "general-business": {
+      "dir": "03-Resources/general-business/knowledge",
+      "active": true,
+      "consumers": [],
+      "_note": "Base context: universal business craft (sales/marketing/launch/product). No consumers of its own; business contexts pull it in via `inherits`. Add more base pools (general-technical, a truly-global `general`) the same way — config only."
+    },
     "shadow-operator": {
       "dir": "03-Resources/shadow-operator/knowledge",
       "active": true,
+      "inherits": ["general-business"],
       "consumers": [
         "/Users/marcinjucha/Prywatne/projects/claude-marketing/skills"
       ]
@@ -122,6 +129,7 @@
     "agency": {
       "dir": "03-Resources/agency/knowledge",
       "active": true,
+      "inherits": ["general-business"],
       "consumers": [
         "/Users/marcinjucha/Prywatne/projects/legal-mind/.claude/skills",
         "/Users/marcinjucha/Prywatne/projects/doc-forge/.claude/skills"

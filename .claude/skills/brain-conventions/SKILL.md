@@ -49,6 +49,15 @@ Wspólna definicja, do której odnosi się `/brain-extract-knowledge`:
 - **Stopień 1 — kwalifikacja.** Wszystkie trzy muszą zajść, inaczej → repo (nie brain): (a) DURABLE (ustalone, nie `[do potwierdzenia]`), (b) CROSS-TICKET RELEVANT (przyda się na przyszłym niepowiązanym tickecie), (c) DOMENA / PRODUKT / FIZYKA-WHY (nie mechanika kodu). ⚠️ Klasyfikuj po SUBSTANCJI, NIE po trybie gramatycznym — reguła domenowa bywa rozkazująca („nigdy…", „zawsze…") i wciąż jest domeną, nie mechaniką.
 - **Stopień 2 — dom (rozstrzygający).** Pojedynczy zakotwiczony ATOM już żyjący w repo (jeden próg / jeden bug / jedna reguła-pliku) → zostaje w repo, nota mózgu może go tylko `references:`-linkować, nie kopiować. SYNTEZA obejmująca ≥2 atomy, której nie niesie żadna pojedyncza lokalizacja repo → nota mózgu.
 
+### Trzeci wymiar zapisu — UNIWERSALNA vs SPECJALISTYCZNA (w obrębie mózgu)
+
+Oś ORTOGONALNA do brzytwy: brzytwa decyduje repo-vs-brain; ta decyduje — GDY już wiesz, że to nota mózgu — który KONTEKST mózgu ją trzyma.
+
+- **Test.** Czy teza jest prawdziwa/użyteczna w ≥2 kontekstach biznesowych — czysty craft (sprzedaż / marketing / launch / produkt), bez specyfiki jednego venture? **TAK →** baza uniwersalna `03-Resources/general-business/knowledge/` (`context: general-business`) + jej `_MOC.md`. **NIE →** bieżący kontekst `03-Resources/<ctx>/knowledge/`. WHY: uniwersalny craft zapisany raz w bazie spływa do skilli KAŻDEGO kontekstu dziedziczącego (`inherits: ["general-business"]`) bez duplikacji; ta sama teza wpisana per-kontekst rozjeżdża się w N kopii.
+- **Fail-safe.** Domyślaj się KONTEKSTU specyficznego; promuj do uniwersalnej dopiero na realny popyt 2. kontekstu (`git mv` noty do bazy + resync + audyt linków). WHY: łatwiej podnieść notę do bazy niż odkręcić fałszywie-uniwersalną, na której inny kontekst już zbudował.
+- **Reguła kierunkowa.** Nota uniwersalna `[[linkuje]]` TYLKO inne uniwersalne — NIGDY w dół do noty kontekstowej (silnik zablokuje commit); nota kontekstowa MOŻE linkować w górę do uniwersalnej. WHY: link w dół związałby bazę z jednym venture, łamiąc jej niezależność.
+- **Pełny mechanizm:** `_system/knowledge-system.md` §„Wiedza uniwersalna" (dziedziczenie, resync, audyt). Ten skill WSKAZUJE, nie przepisuje.
+
 ### Reguły wspólne dla obu destylerów
 
 - **Anty-dryf dedup-search PRZED utworzeniem noty.** Przeszukaj `knowledge/` po istniejący slug/tezę i ROZSZERZ istniejącą, nie twórz rodzeństwa. Dedup przy zapisie = najtańsza obrona przed degradacją na skali.

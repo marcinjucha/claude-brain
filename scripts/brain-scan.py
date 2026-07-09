@@ -46,9 +46,17 @@ def load_cfg():
             for _, sub in (p.get("contexts") or {}).items():
                 if sub.get("vault"):
                     areas[sub["context"] if "context" in sub else ctx].add(sub["vault"])
-    for ctx, k in (d.get("knowledge") or {}).items():
+    kn = d.get("knowledge") or {}
+    for ctx, k in kn.items():
         if k.get("dir"):
             areas[ctx].add(k["dir"])
+    # inherited base pools (knowledge.<ctx>.inherits[]) belong to the inheriting context's scan
+    # area too, else a leaf note's [[link]] up to a universal note false-flags as a broken link.
+    for ctx, k in kn.items():
+        for base in (k.get("inherits") or []):
+            bdir = (kn.get(base) or {}).get("dir")
+            if bdir:
+                areas[ctx].add(bdir)
     return vault, {c: sorted(a) for c, a in areas.items()}
 
 

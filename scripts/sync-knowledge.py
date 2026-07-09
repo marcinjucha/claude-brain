@@ -6,7 +6,10 @@ The brain vault (03-Resources/<ctx>/knowledge/) is the SOURCE OF TRUTH for domai
 Consuming skills stay thin and declare what they need via `@references/knowledge/<slug>.md`
 pointers (+ a `## Knowledge` block). This script snapshots those notes into each skill's
 `references/knowledge/` (one-way, generated copy), auto-derives `used-by`, and runs integrity
-checks. Config-driven and multi-context (shadow-operator / agency / scandit / …).
+checks. Config-driven and multi-context (shadow-operator / agency / scandit / …). A context may
+`inherits: [<base>]` (e.g. business contexts inherit the `general-business` universal pool); each
+inherited base dir is unioned into that context's source set, snapshots, and cross-context
+used-by/orphan aggregation, so a universal note is shared without duplication.
 
 See: <vault>/_system/knowledge-system.md for the contract.
 
@@ -53,17 +56,39 @@ def contexts(cfg, args):
     return [args.context]
 
 def source_notes(cfg, ctx):
-    """{slug: abspath} for the brain knowledge notes of a context (excludes _MOC / _*.md)."""
-    d = os.path.join(vault_path(cfg), cfg["knowledge"][ctx]["dir"])
-    out = {}
-    if not os.path.isdir(d):
-        return out, d
-    for path in glob.glob(os.path.join(d, "*.md")):
-        base = os.path.basename(path)
-        if base.startswith("_"):
+    """Returns (src, own_dir, origin): src={slug: abspath}, origin={slug: rel_dir}.
+    Beyond the context's own knowledge dir, UNIONS in every base context listed in
+    `inherits: [...]` (e.g. a business context inherits `general-business`) so a shared /
+    universal note becomes a first-class part of THIS context's source set — which resolves
+    cross-context wikilinks AND lets snapshot deliver it to this context's consumers. The
+    context's OWN dir wins on a slug collision (first-listed wins); excludes _MOC / _*.md.
+    `inherits` is a generic list, so non-business pools (general-technical, a truly-global
+    `general`, …) are a config-only addition later — no engine change.
+    Returns a 4th element `collisions` = [(slug, hidden_reldir, winner_reldir)] so a silently
+    shadowed note (same slug in a base pool AND the context — e.g. a promotion left a stale leaf
+    copy) is surfaced, not dropped without trace."""
+    kn = cfg["knowledge"]
+    own_dir = os.path.join(vault_path(cfg), kn[ctx]["dir"])
+    reldirs = [kn[ctx]["dir"]]
+    for base in kn[ctx].get("inherits", []):
+        if base in kn and kn[base]["dir"] not in reldirs:
+            reldirs.append(kn[base]["dir"])
+    out, origin, collisions = {}, {}, []
+    for reldir in reldirs:
+        d = os.path.join(vault_path(cfg), reldir)
+        if not os.path.isdir(d):
             continue
-        out[base[:-3]] = path
-    return out, d
+        for path in glob.glob(os.path.join(d, "*.md")):
+            base = os.path.basename(path)
+            if base.startswith("_"):
+                continue
+            slug = base[:-3]
+            if slug in out:
+                collisions.append((slug, reldir, origin[slug]))  # own / earlier-listed pool wins
+                continue
+            out[slug] = path
+            origin[slug] = reldir
+    return out, own_dir, origin, collisions
 
 def find_skills(consumer_dirs):
     """SKILL.md paths under each consumer dir that contain a `## Knowledge` block.
@@ -112,12 +137,11 @@ def fm_value(text, field):
 def snapshot(cfg, ctx, write, report):
     """Regenerate each consuming skill's references/knowledge/ from the brain notes.
     Returns (changed_count, dangling_set)."""
-    src, srcdir = source_notes(cfg, ctx)
+    src, srcdir, origin, _ = source_notes(cfg, ctx)
     if not os.path.isdir(srcdir):
         # vault/source not available (e.g. machine without the vault) — skip, never flag dangling
         return 0, set(), src, srcdir
     consumers = cfg["knowledge"][ctx].get("consumers", [])
-    rel_src = cfg["knowledge"][ctx]["dir"] + "/"
     changed, dangling = 0, set()
     for sk, txt in find_skills(consumers):
         deps = skill_deps(txt, set(src))
@@ -150,7 +174,9 @@ def snapshot(cfg, ctx, write, report):
             if (fm_value(body, "status") or "").strip() == "mirror" and (fm_value(body, "home") or "").strip() == os.path.basename(skdir):
                 report.append(("skip-mirror-self", f"{slug} (lustro home={os.path.basename(skdir)})"))
                 continue
-            expected = GEN_HEADER.format(src=rel_src) + body
+            # per-note origin: a note inherited from a base context (general-business) records
+            # ITS real source dir, not the consuming context's dir, so "edit the brain note" points right.
+            expected = GEN_HEADER.format(src=origin[slug] + "/") + body
             dest = os.path.join(refdir, slug + ".md")
             cur = None
             if os.path.exists(dest):
@@ -174,30 +200,71 @@ def snapshot(cfg, ctx, write, report):
                         os.remove(path)
     return changed, dangling, src, srcdir
 
-def integrity(cfg, ctx, src, srcdir):
-    """Returns (issues, dangling_links). issues = list of (kind, msg)."""
+def global_ref_by(cfg):
+    """{slug: set(skill_dirname)} aggregated across ALL contexts. A shared/universal note
+    (home = a base context, pulled in by several contexts via `inherits`) is referenced by
+    the consumers of EVERY context that includes it; per-context ref_by would see only one
+    context's slice and flip-flop the note's used-by / false-orphan it on each run. This
+    global reverse map is the load-bearing fix: every context's run derives the SAME union
+    for a shared note, so used-by is stable and orphan is correct regardless of `active`."""
+    ref = {}
+    kn = cfg["knowledge"]
+    for cx in kn:
+        src_cx, _, _, _ = source_notes(cfg, cx)
+        if not src_cx:
+            continue
+        for sk, txt in find_skills(kn[cx].get("consumers", [])):
+            for slug in skill_deps(txt, set(src_cx)):
+                ref.setdefault(slug, set()).add(os.path.basename(os.path.dirname(sk)))
+    return ref
+
+def integrity(cfg, ctx, src, srcdir, origin, gref):
+    """Returns (issues, dangling_links). issues = list of (kind, msg).
+    `gref` = precomputed global_ref_by (cross-context consumer aggregate); `origin` maps
+    slug→home rel-dir so each note's wikilinks are validated against its OWN home context
+    (enforces the directional rule under any run)."""
     issues, dangling_links = [], False
-    # which skills reference each slug (for used-by reconcile + orphan)
-    consumers = cfg["knowledge"][ctx].get("consumers", [])
-    ref_by = {s: set() for s in src}
-    for sk, txt in find_skills(consumers):
-        for slug in skill_deps(txt, set(src)):
-            if slug in ref_by:
-                ref_by[slug].add(os.path.basename(os.path.dirname(sk)))
-    # MOC links (a note is "alive" if in MOC even if no skill yet)
-    moc = os.path.join(srcdir, "_MOC.md")
+    ref_by = {s: gref.get(s, set()) for s in src}
+    kn = cfg["knowledge"]
+    dir_to_ctx = {kn[c]["dir"]: c for c in kn}
+    _src_cache = {}
+    def home_src(slug):
+        hc = dir_to_ctx.get(origin.get(slug, ""), ctx)
+        if hc not in _src_cache:
+            s, _, _, _ = source_notes(cfg, hc)
+            _src_cache[hc] = set(s)
+        return _src_cache[hc]
+    # MOC links (a note is "alive" if in MOC even if no skill yet) — own MOC + inherited bases' MOCs
+    moc_dirs = [srcdir]
+    for base in cfg["knowledge"][ctx].get("inherits", []):
+        if base in cfg["knowledge"]:
+            moc_dirs.append(os.path.join(vault_path(cfg), cfg["knowledge"][base]["dir"]))
     moc_links = set()
-    if os.path.exists(moc):
-        with open(moc, encoding="utf-8") as f:
-            moc_links = set(WIKILINK_RE.findall(f.read()))
+    for md in moc_dirs:
+        mp = os.path.join(md, "_MOC.md")
+        if os.path.exists(mp):
+            with open(mp, encoding="utf-8") as f:
+                moc_links |= set(WIKILINK_RE.findall(f.read()))
     for slug, path in sorted(src.items()):
         with open(path, encoding="utf-8") as f:
             txt = f.read()
         st = (fm_value(txt, "status") or "").strip()
-        # dangling wikilinks
+        # wikilink integrity — validate against the note's OWN home context src (not the
+        # currently-synced context's union). Catches genuine danglings AND enforces the
+        # directional rule: leaf→base links resolve (base is in a leaf's home src), but a
+        # base/universal note linking DOWN to a context-specific note fails HERE under ANY
+        # run (the leaf note is absent from the base's home src) — a clear violation, not a
+        # confusing cross-context "no such note" landmine deferred to a sibling context.
+        hsrc = home_src(slug)
         for tgt in WIKILINK_RE.findall(txt):
-            if tgt not in src and tgt not in EXTERNAL_LINKS:
-                issues.append(("dangling-link", f"{slug} → [[{tgt}]] (no such note)")); dangling_links = True
+            if tgt in hsrc or tgt in EXTERNAL_LINKS:
+                continue
+            if tgt in src:
+                issues.append(("link-rule", f"{slug} ({dir_to_ctx.get(origin.get(slug,''), ctx)}) → [[{tgt}]] "
+                               f"(context-specific target; a base/universal note may only link within its own pool)"))
+            else:
+                issues.append(("dangling-link", f"{slug} → [[{tgt}]] (no such note)"))
+            dangling_links = True
         if st == "mirror":
             # MIRROR note = consumer-less BY DESIGN (source is an external/team skill, not brain).
             # Don't flag orphan/used-by-stale; instead flag staleness vs the source skill (heuristic, advisory).
@@ -237,14 +304,13 @@ def integrity(cfg, ctx, src, srcdir):
                     issues.append(("dup?", f"{slugs[i]} ~ {slugs[j]} (overlap {jac:.0%})"))
     return issues, dangling_links
 
-def derive_used_by(cfg, ctx, src, write, report):
-    """Rewrite each brain note's used-by frontmatter to the skills that actually reference it."""
-    consumers = cfg["knowledge"][ctx].get("consumers", [])
-    ref_by = {s: set() for s in src}
-    for sk, txt in find_skills(consumers):
-        for slug in skill_deps(txt, set(src)):
-            if slug in ref_by:
-                ref_by[slug].add(os.path.basename(os.path.dirname(sk)))
+def derive_used_by(cfg, ctx, src, write, report, gref):
+    """Rewrite each brain note's used-by frontmatter to the skills that actually reference it.
+    Uses the cross-context aggregate (`gref`) so a shared/inherited note's used-by is the full
+    union (every including context's consumers), not just the currently-synced context's slice.
+    NOTE: because `src` includes inherited base-pool notes, a leaf-context `--used-by` run also
+    rewrites base notes' files (in the base dir) — idempotently, to the same global union."""
+    ref_by = {s: gref.get(s, set()) for s in src}
     for slug, path in src.items():
         with open(path, encoding="utf-8") as f:
             txt = f.read()
@@ -280,19 +346,24 @@ def main():
     CONFIG = args.config
     cfg = load_config()
     write = not args.check
+    # global consumer aggregate is context-independent — compute ONCE, reuse for every context
+    # (integrity + derive_used_by), instead of recomputing the full-repo skill sweep per context.
+    gref = global_ref_by(cfg)
     total_changed, hard_fail, lines = 0, False, []
     for ctx in contexts(cfg, args):
         report = []
-        src, srcdir = source_notes(cfg, ctx)
+        src, srcdir, origin, collisions = source_notes(cfg, ctx)
         if not os.path.isdir(srcdir):
             if not args.quiet:
                 print(f"[{ctx}] no knowledge dir yet ({srcdir}) — skip")
             continue
+        for slug, hidden, winner in collisions:
+            report.append(("collision", f"{slug}: {hidden} shadowed by {winner} (slug clash — rename or dedup)"))
         # derive used-by FIRST (rewrites source notes) so snapshot reflects it in ONE pass
         if args.used_by:
-            derive_used_by(cfg, ctx, src, write, report)
+            derive_used_by(cfg, ctx, src, write, report, gref)
         changed, dangling, src, srcdir = snapshot(cfg, ctx, write, report)
-        issues, dangling_links = integrity(cfg, ctx, src, srcdir)
+        issues, dangling_links = integrity(cfg, ctx, src, srcdir, origin, gref)
         total_changed += changed
         if dangling or dangling_links:
             hard_fail = True
@@ -304,7 +375,7 @@ def main():
             for d in sorted(dangling):
                 print(f"  ✗ DANGLING: skill {d[0]} → references/knowledge/{d[1]}.md (no brain note)")
             for kind, msg in issues:
-                mark = "✗" if kind == "dangling-link" else "·"
+                mark = "✗" if kind in ("dangling-link", "link-rule") else "·"
                 print(f"  {mark} {kind}: {msg}")
         if args.quiet and changed:
             lines.append(f"regenerated {changed} snapshot(s) for {ctx}")

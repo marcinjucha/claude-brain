@@ -25,6 +25,8 @@ Brak wpisu → **najpierw dodaj** wpis i dopiero wtedy uruchom Fazę 1. Przykła
 ```
 (`consumers` = lista folderów `skills/` repo, które mają dostawać snapshot + pre-commit.)
 
+**Kontekst może być PULĄ BAZOWĄ:** wpis w `.knowledge` z `active: true` i `consumers: []` (brak własnych konsumentów), a INNE konteksty wciągają go przez `inherits: ["<baza>"]` — np. `general-business` (uniwersalny craft biznesowy) dziedziczony przez `shadow-operator` + `agency`. Onboarding nowego kontekstu BIZNESOWEGO oznacza dopisanie `inherits: ["general-business"]` do jego wpisu w configu RĘCZNIE — tool nie scaffolduje tej relacji.
+
 ## Faza 1 — uruchom plumbing
 ```bash
 bash /Users/marcinjucha/Prywatne/projects/claude-brain/scripts/knowledge-init.sh <context>

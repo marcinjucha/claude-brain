@@ -95,6 +95,21 @@ if [ -n "$CONTEXT" ] && [ -f "$KMOC" ]; then
   append "$(cat "$KMOC" 2>/dev/null)"
   append ""
 fi
+# inherited base pools (config `knowledge.<ctx>.inherits[]`, e.g. general-business): surface their
+# MOCs too, else universal craft shared into this context via `inherits` is invisible at session start.
+if [ -n "$CONTEXT" ]; then
+  for base in $(jq -r --arg c "$CONTEXT" '.knowledge[$c].inherits[]? // empty' "$CONFIG" 2>/dev/null); do
+    BDIR="$(jq -r --arg b "$base" '.knowledge[$b].dir // empty' "$CONFIG" 2>/dev/null)"
+    BMOC="$VAULT_PATH/$BDIR/_MOC.md"
+    if [ -n "$BDIR" ] && [ -f "$BMOC" ]; then
+      append "## Knowledge index — $base (inherited by $CONTEXT) ($BMOC)"
+      append "(universal craft shared across contexts via inherits; same retrieval as above)"
+      append ""
+      append "$(cat "$BMOC" 2>/dev/null)"
+      append ""
+    fi
+  done
+fi
 
 # worktree SESSION.md (cwd up to the matched repo prefix)
 SESSION_FILE="$(find_session_md "$CWD" "$MATCH_PREFIX" || true)"
