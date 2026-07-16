@@ -46,8 +46,16 @@ Ta część jest load-bearing centralizacją: to na nią wskazują OBAJ destyler
 
 Wspólna definicja, do której odnosi się `/brain-extract-knowledge`:
 
-- **Stopień 1 — kwalifikacja.** Wszystkie trzy muszą zajść, inaczej → repo (nie brain): (a) DURABLE (ustalone, nie `[do potwierdzenia]`), (b) CROSS-TICKET RELEVANT (przyda się na przyszłym niepowiązanym tickecie), (c) DOMENA / PRODUKT / FIZYKA-WHY (nie mechanika kodu). ⚠️ Klasyfikuj po SUBSTANCJI, NIE po trybie gramatycznym — reguła domenowa bywa rozkazująca („nigdy…", „zawsze…") i wciąż jest domeną, nie mechaniką.
+- **Stopień 1 — kwalifikacja.** Wszystkie trzy muszą zajść, inaczej → repo (nie brain): (a) DURABLE (ustalone, nie `[do potwierdzenia]`) — wyjątek: NOTA-WYMAGANIE, patrz niżej, (b) CROSS-TICKET RELEVANT (przyda się na przyszłym niepowiązanym tickecie), (c) DOMENA / PRODUKT / FIZYKA-WHY (nie mechanika kodu). ⚠️ Klasyfikuj po SUBSTANCJI, NIE po trybie gramatycznym — reguła domenowa bywa rozkazująca („nigdy…", „zawsze…") i wciąż jest domeną, nie mechaniką.
 - **Stopień 2 — dom (rozstrzygający).** Pojedynczy zakotwiczony ATOM już żyjący w repo (jeden próg / jeden bug / jedna reguła-pliku) → zostaje w repo, nota mózgu może go tylko `references:`-linkować, nie kopiować. SYNTEZA obejmująca ≥2 atomy, której nie niesie żadna pojedyncza lokalizacja repo → nota mózgu.
+
+### Rodzaj wiedzy: NOTA-WYMAGANIE (kontrakt behawioralny produktu)
+
+Osobny rodzaj noty: „jak dany widget / ficzura / flow MA SIĘ ZACHOWYWAĆ" (kontrakt produktowy) — rozłączny z „po co flow istnieje" (domena-WHY) i z mechaniką kodu (repo). WHY: zespół często wie coś o produkcie, ale nie pamięta z PEWNOŚCIĄ jakie SĄ wymagania — nota-wymaganie to zaufane miejsce, gdzie się to sprawdza zamiast zgadywać z kodu. Generyczne dla dowolnego produktu/kontekstu (agencja, CMS, klient, app).
+
+- **Kwalifikacja (niuans brzytwy Stopień 1a).** Wymaganie ma rdzeń TRWAŁY (zasada: dlaczego musi się tak zachowywać) + szczegóły REWIDOWALNE (konkretny kontrakt stanów). Dopuść notę, gdy przechodzi trwała ZASADA (durable + cross-ticket + produkt-WHY); rewidowalność szczegółów NIE dyskwalifikuje — pod warunkiem że są jawnie OGRODZONE (§Kontrakt) i mają linię autorytetu (§Autorytet). Bez tego niuansu brzytwa odrzuciłaby wymaganie jako „nie-durable".
+- **Struktura trójdzielna (każda reguła niesie swoje WHY).** §Zasada — trwały rdzeń (przetrwa refaktory i zmianę szczegółów); §Kontrakt — rewidowalne stany/zachowania, KAŻDY z trwałym WHY (reguła może się zmienić, powód zwykle zostaje); §Autorytet — źródło prawdy = tracker/PM/product-owner, nota = ZROZUMIENIE INŻYNIERII dla orientacji (NIE wyrocznia), przy zmianie wymagań aktualizuj §Kontrakt, `references` = kotwice drift-audit.
+- **Status.** `emerging` domyślnie; trwała §Zasada może awansować do `canon` po N≥3 źródłach, ale §Kontrakt zostaje rewidowalny — nigdy cicho zamrożony w canon (obalenie zachowania → aktualizacja §Kontrakt, nie `superseded-by` całej noty, o ile §Zasada trzyma).
 
 ### Trzeci wymiar zapisu — TRZY POOLE: uniwersalna-BIZNES vs uniwersalna-TECHNICZNA vs SPECJALISTYCZNA (w obrębie mózgu)
 

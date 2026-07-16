@@ -27,6 +27,7 @@ Dla KAŻDEGO kandydata:
 
 **Stopień 1 — bramka kwalifikacji.** Wszystkie TRZY muszą zajść, inaczej → repo (`memory.md`/CLAUDE.md/skill), NIE brain:
 1. **DURABLE** — ustalone, NIE prowizoryczne / NIE `[do potwierdzenia]` / nie czeka na dowód on-device.
+   - **Wyjątek: NOTA-WYMAGANIE** (kontrakt behawioralny „jak widget/ficzura ma się zachowywać"): dopuszczalna, gdy przechodzi trwała ZASADA, mimo rewidowalnych szczegółów — pod warunkiem struktury §Zasada / §Kontrakt (rewidowalny, każda reguła z WHY) / §Autorytet (źródło prawdy = tracker/PM, nota = zrozumienie inżynierii). Pełna definicja: skill `brain-conventions` §„Rodzaj wiedzy: NOTA-WYMAGANIE".
 2. **CROSS-TICKET RELEVANT** — ktoś na przyszłym, niepowiązanym tickecie chciałby to mieć wyświetlone.
 3. **DOMENA/PRODUKT/FIZYKA-WHY** — nie mechanika kodu (konwencja kodowania / użycie API / reguła repo → CLAUDE.md/skill).
 - ⚠️ **NIE klasyfikuj po trybie gramatycznym.** Tryb rozkazujący („musi/zawsze/nigdy") NIE znaczy mechanika-kodu —
