@@ -11,6 +11,8 @@ do atomowych notatek `home: brain` w `03-Resources/<ctx>/knowledge/`, surface'ow
 linkowanych z `_MOC.md`. Siostra `/brain-update` (który trzyma status/detal roboczy). **BRAIN-ONLY** —
 nigdy nie snapshotuje do skilli zespołu, repo NIETKNIĘTE.
 
+> Źródło ZEWNĘTRZNE (call / kurs / artykuł / framework) → użyj `distill-coaching`, NIE tej komendy. Ten silnik jest do WYKONANEJ PRACY WEWNĘTRZNEJ (ticket / sesja).
+
 To jest **SILNIK**. Główny wyzwalacz = in-loop hook w `/brain-update`; standalone = on-demand + `--sweep`
 (backfill klastra zamkniętych ticketów). Kontrakt (schemat, reguła anty-dryf, forma pointer, tryby):
 **`<vault>/_system/knowledge-system.md`** — czytaj, NIE przepisuj. Repo mózgu (config/skrypty):
