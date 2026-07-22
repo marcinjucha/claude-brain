@@ -63,7 +63,7 @@ który już żyje w repo (jeden próg, jeden bug, jedna reguła-pliku)?
 `type: knowledge`, `context: <ctx>`, `id: <slug>` (kebab-case ASCII, ≥2 znaki, bez wiodącej cyfry),
 `status: emerging|canon`, `home: brain`, `source: SHELF-XXXXX` (ticket źródłowy), `created: YYYY-MM-DD`,
 `updated: YYYY-MM-DD`, `references:` (lista ścieżek/kotwic repo, z których synteza czerpie — kotwica DRIFT-AUDIT,
-jawnie NIE `mirror-source`, brak synca), `used-by:` (zostaw puste — własność narzędzia), `superseded-by:` (tylko przy obaleniu).
+jawnie NIE `reflects-source`, brak synca), `used-by:` (zostaw puste — własność narzędzia), `superseded-by:` (tylko przy obaleniu).
 Ciało: atomowe, tytuł = teza; dla decyzji dodaj „Stosuj gdy / nie gdy"; linkuj hojnie `[[slug]]`.
 
 ---
@@ -114,7 +114,7 @@ Per potwierdzony kandydat, w tej kolejności:
 3. `python3 /Users/marcinjucha/Prywatne/projects/claude-brain/scripts/sync-knowledge.py --context <ctx> --check` (dry-run; exit 1 dryf / 2 dangling) — **używaj `--check` WYŁĄCZNIE, NIGDY gołego przebiegu** (goły przebieg ZAPISUJE snapshoty do konsumentów-skilli zespołu → łamie brain-only); napraw dangling `[[link]]` i uruchom ponownie.
 4. Finalny pass no-invention/traceability nad tym, co wylądowało.
 
-**NIGDY: snapshot, obsługa mirror, blok `## Knowledge`, wskaźnik gdziekolwiek.** To brain-only synteza — repo pozostaje jedynym źródłem swoich atomów.
+**NIGDY: snapshot, obsługa reflection, blok `## Knowledge`, wskaźnik gdziekolwiek.** To brain-only synteza — repo pozostaje jedynym źródłem swoich atomów.
 
 ## Faza 6 — raport
 

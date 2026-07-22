@@ -132,32 +132,65 @@ out="$(python3 "$SCRIPT" --config "$(CFG)" --context testctx --check 2>&1)"; rc=
 echo "$out" | grep -q "would change 0" && [ $rc -eq 0 ] && ok "po --used-by snapshoty w sync (derive PRZED snapshot)" || no "dryf po --used-by: $out (rc=$rc)"
 head -8 "$ROOT/vault/03-Resources/testctx/knowledge/alpha.md" | grep -q "used-by: \[test-skill\]" && ok "used-by w źródle zaktualizowane" || no "used-by nie zaktualizowane"
 
-echo "### T13 — MIRROR: orphan-exclude (C2) + mirror-stale (C1) + self-snapshot-guard (C3)"
+echo "### T13 — REFLECT: orphan-exclude (C2) + reflection-stale (C1) + self-snapshot-guard (C3)"
 build
 SRC="$ROOT/teamskill.md"; printf "team content\n" > "$SRC"
 cat > "$ROOT/vault/03-Resources/testctx/knowledge/gamma.md" <<EOF
 ---
 type: knowledge
 id: gamma
-status: mirror
+status: reflection
 home: test-skill
-mirror-source: $SRC
+reflects-source: $SRC
 ---
-# Mirror gamma
-treść lustra
+# Reflection gamma
+atom odbicia
 EOF
-# C2: gamma (mirror) NIE referowane przez skill i NIE w MOC → NIE orphan
+# C2: gamma (reflection) NIE referowane przez skill i NIE w MOC → NIE orphan
 printf -- "## Knowledge\n- @references/knowledge/alpha.md\n" > "$SK"
 out="$(python3 "$SCRIPT" --config "$(CFG)" --context testctx --check 2>&1)"
-echo "$out" | grep -qi "orphan: gamma" && no "mirror gamma błędnie orphan (C2)" || ok "mirror gamma NIE orphan mimo braku w MOC i konsumencie (C2)"
-# C1: źródło nowsze niż lustro → mirror-stale
+echo "$out" | grep -qi "orphan: gamma" && no "reflection gamma błędnie orphan (C2)" || ok "reflection gamma NIE orphan mimo braku w MOC i konsumencie (C2)"
+# C1: źródło (skill) nowsze niż odbicie → reflection-stale
 sleep 1; touch "$SRC"
 out="$(python3 "$SCRIPT" --config "$(CFG)" --context testctx --check 2>&1)"
-echo "$out" | grep -qi "mirror-stale: gamma" && ok "mirror-stale wykryte gdy źródło nowsze (C1)" || no "brak mirror-stale: $out"
+echo "$out" | grep -qi "reflection-stale: gamma" && ok "reflection-stale wykryte gdy źródło nowsze (C1)" || no "brak reflection-stale: $out"
 # C3: skill referuje gamma a home==test-skill → NIE self-snapshot
 printf -- "## Knowledge\n- @references/knowledge/gamma.md\n" > "$SK"
 python3 "$SCRIPT" --config "$(CFG)" --context testctx >/dev/null 2>&1
-[ ! -f "$(REF)/gamma.md" ] && ok "mirror gamma NIE zsnapshotowane do własnego home-skilla (C3)" || no "circular self-snapshot lustra!"
+[ ! -f "$(REF)/gamma.md" ] && ok "reflection gamma NIE zsnapshotowane do własnego home-skilla (C3)" || no "circular self-snapshot odbicia!"
+
+echo "### T14 — LEGACY mirror (backward-compat + mirror-source fallback) + POINTER orphan-exclude"
+build
+# zeta/eta CELOWO poza MOC (build MOC = alpha/beta/delta/epsilon) → orphan-exclude jest ROZRÓŻNIAJĄCY:
+# bez gałęzi statusu obie byłyby orphanami (nie w MOC, bez konsumenta). Z gałęzią — wykluczone.
+SRC2="$ROOT/legacyskill.md"; printf "legacy\n" > "$SRC2"
+cat > "$ROOT/vault/03-Resources/testctx/knowledge/zeta.md" <<EOF
+---
+type: knowledge
+id: zeta
+status: mirror
+home: legacy-skill
+mirror-source: $SRC2
+---
+# Legacy mirror zeta
+EOF
+# pointer: link+gist, zero wiedzy, consumer-less, poza MOC → NIE orphan (bez stale-check)
+cat > "$ROOT/vault/03-Resources/testctx/knowledge/eta.md" <<EOF
+---
+type: knowledge
+id: eta
+status: pointer
+home: some-skill
+---
+# eta — wskaźnik do skilla
+EOF
+printf -- "## Knowledge\n- @references/knowledge/alpha.md\n" > "$SK"
+# legacy źródło NOWSZE niż nota → reflection-stale MUSI zapalić przez FALLBACK mirror-source
+sleep 1; touch "$SRC2"
+out="$(python3 "$SCRIPT" --config "$(CFG)" --context testctx --check 2>&1)"
+echo "$out" | grep -qi "orphan: zeta" && no "legacy mirror zeta błędnie orphan (poza MOC!)" || ok "legacy mirror zeta rozpoznany (NIE orphan mimo braku w MOC)"
+echo "$out" | grep -qi "orphan: eta" && no "pointer eta błędnie orphan (poza MOC!)" || ok "pointer eta NIE orphan mimo braku w MOC (C-pointer)"
+echo "$out" | grep -qi "reflection-stale: zeta" && ok "reflection-stale przez FALLBACK mirror-source (legacy)" || no "brak reflection-stale dla legacy mirror-source: $out"
 
 echo; echo "================  WYNIK: $PASS PASS / $FAIL FAIL  ================"
 rm -rf "$ROOT"

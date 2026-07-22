@@ -169,10 +169,11 @@ def snapshot(cfg, ctx, write, report):
                 dangling.add((os.path.basename(skdir), slug)); continue
             with open(src[slug], encoding="utf-8") as f:
                 body = f.read()
-            # MIRROR self-snapshot guard: never snapshot a mirror note back INTO its own home skill
-            # (circular brain→skill→brain — a mirror's source IS that skill).
-            if (fm_value(body, "status") or "").strip() == "mirror" and (fm_value(body, "home") or "").strip() == os.path.basename(skdir):
-                report.append(("skip-mirror-self", f"{slug} (lustro home={os.path.basename(skdir)})"))
+            # REFLECT/mirror self-snapshot guard: never snapshot a skill-homed note back INTO its
+            # own home skill (circular brain→skill→brain — its source IS that skill). Covers the
+            # new `reflection` form and legacy `mirror`.
+            if (fm_value(body, "status") or "").strip() in ("reflection", "mirror") and (fm_value(body, "home") or "").strip() == os.path.basename(skdir):
+                report.append(("skip-skill-homed-self", f"{slug} (odbicie home={os.path.basename(skdir)})"))
                 continue
             # per-note origin: a note inherited from a base context (general-business) records
             # ITS real source dir, not the consuming context's dir, so "edit the brain note" points right.
@@ -265,16 +266,24 @@ def integrity(cfg, ctx, src, srcdir, origin, gref):
             else:
                 issues.append(("dangling-link", f"{slug} → [[{tgt}]] (no such note)"))
             dangling_links = True
-        if st == "mirror":
-            # MIRROR note = consumer-less BY DESIGN (source is an external/team skill, not brain).
-            # Don't flag orphan/used-by-stale; instead flag staleness vs the source skill (heuristic, advisory).
-            msrc = fm_value(txt, "mirror-source")
+        if st in ("reflection", "mirror"):
+            # REFLECT note (and legacy `mirror`) = consumer-less BY DESIGN (source is a standalone
+            # team skill, not brain — skill untouched, no `## Knowledge`, no snapshot). Don't flag
+            # orphan/used-by-stale; instead flag staleness vs the source skill (heuristic, advisory).
+            # Field is `reflects-source`; fall back to legacy `mirror-source` for not-yet-migrated notes.
+            msrc = fm_value(txt, "reflects-source") or fm_value(txt, "mirror-source")
             if msrc and os.path.isfile(msrc):
                 try:
                     if os.path.getmtime(msrc) > os.path.getmtime(path):
-                        issues.append(("mirror-stale", f"{slug}: źródło nowsze niż lustro — odśwież (skill→mózg)"))
+                        issues.append(("reflection-stale", f"{slug}: źródło (skill) nowsze niż odbicie — odśwież (skill→mózg)"))
                 except OSError:
                     pass
+            continue
+        if st == "pointer":
+            # POINTER note = title + gist + link only, ZERO knowledge in body, consumer-less BY
+            # DESIGN (skill is the source of truth; agent loads it natively in the repo). No body
+            # to drift → no staleness check; exclude from orphan/used-by so survival no longer
+            # depends on _MOC membership.
             continue
         # orphan: referenced by no skill and not in MOC
         if not ref_by[slug] and slug not in moc_links:

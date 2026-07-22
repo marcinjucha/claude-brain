@@ -1,13 +1,13 @@
 ---
 name: brain-conventions
-description: Konwencje pracy z mózgiem + wspólna dyscyplina destylacji wiedzy — brzytwa, dwie półki, jednokierunkowość, home/status/mirror, 4 twarde ograniczenia destylacji, schemat noty. Ładowana przez /brain-extract-knowledge, distill-coaching, brain-manager.
+description: Konwencje pracy z mózgiem + wspólna dyscyplina destylacji wiedzy — brzytwa, dwie półki, jednokierunkowość, home/status/reflection (reflection/pointer/legacy-mirror), 4 twarde ograniczenia destylacji, schemat noty. Ładowana przez /brain-extract-knowledge, distill-coaching, brain-manager.
 ---
 
 # brain-conventions — konwencje mózgu + wspólna dyscyplina destylacji
 
 Jedyny osiągalny (context-agnostic) dom dla (1) konwencji pracy z mózgiem oraz (2) wspólnej DYSCYPLINY DESTYLACJI, którą konsumują ZARÓWNO `/brain-extract-knowledge` (wiedza z własnej pracy), JAK i `distill-coaching` (wejścia zewnętrzne). Skill jest ładowalny z dowolnego kontekstu — globalna komenda nie może zależeć od skilla lokalnego dla jednego kontekstu.
 
-**Pełny kontrakt (schemat noty, snapshot, dedup, MIRROR, promocja):** `<vault>/_system/knowledge-system.md`. Ten skill WSKAZUJE kontrakt, nie przepisuje go.
+**Pełny kontrakt (schemat noty, snapshot, dedup, REFLECT, POINTER, promocja):** `<vault>/_system/knowledge-system.md`. Ten skill WSKAZUJE kontrakt, nie przepisuje go.
 
 ---
 
@@ -17,10 +17,12 @@ Jedyny osiągalny (context-agnostic) dom dla (1) konwencji pracy z mózgiem oraz
 
 - **Dwie drabiny pamięci + crossover.** Repo-drabina (zespołowa): `/ai-extract-memory` → `memory.md` → `/ai-curate-memory` → `CLAUDE.md`/skille. Brain-drabina (prywatna): `/brain-update` → pamięć projektu / working note → `/brain-extract-knowledge` → noty wiedzy. **Crossover:** pojedynczy zakotwiczony atom → repo; cross-atom SYNTEZA → brain. Reguła: **„Own the synthesis, link the atom"** — brain trzyma tylko syntezę, której żadna pojedyncza lokalizacja repo nie niesie, resztę linkuje.
 
-- **home / status / mirror** (skrót; pełne definicje: kontrakt §Schemat, §Tryb MIRROR):
+- **home / status / reflection** (skrót; pełne definicje: kontrakt §Schemat, §Tryb REFLECT, §Tryb POINTER):
   - `home: brain` — mózg jest źródłem prawdy (brak pola = default `brain`).
-  - `home: <skill>` — źródłem wciąż jest skill (jeszcze niezmigrowany); nota jest lustrem, NIE oznaczaj `canon`.
-  - `status: mirror` — odbicie skilla zespołu/zewnętrznego; NIE rozwijaj wiedzy w miejscu (refresh skill→brain ją nadpisze) — net-nowa wiedza idzie do osobnej noty `home: brain`.
+  - `home: <skill>` — źródłem wciąż jest skill (jeszcze niezmigrowany albo zespołowy); nota jest odbiciem, NIE oznaczaj `canon`.
+  - `status: reflection` — ATOMOWE odbicie skilla zespołu/zewnętrznego (skill NIETKNIĘTY, skill = źródło; `reflects-source`); NIE rozwijaj wiedzy w miejscu (refresh skill→brain ją nadpisze) — net-nowa wiedza idzie do osobnej noty `home: brain`.
+  - `status: pointer` — link-only stub (tytuł + gist + link do żywego skilla, ZERO wiedzy w ciele); nie odświeża się wiedzą.
+  - `status: mirror` — LEGACY/wycofany (gruba kopia całego skilla w jednym pliku); zastępowany przez `reflection`, silnik traktuje jak reflection.
   - `emerging` → `canon` po utrwaleniu (kryterium promocji — kontrakt / komenda).
 
 - **Jednokierunkowość session → brain.** Nic nie wraca do `SESSION.md` (sesja pozostaje pasywna — „sesja nie wie o mózgu").
@@ -82,7 +84,7 @@ Oś ORTOGONALNA do brzytwy: brzytwa decyduje repo-vs-brain; ta decyduje — GDY 
 
 ### Schemat noty
 
-Pełny schemat: kontrakt `_system/knowledge-system.md` §Schemat notatki (NIE przepisuj). Pola dodawane przez `/brain-extract-knowledge` przy ekstrakcji z pracy: `created`, `references` (ścieżki/kotwice repo, z których synteza czerpie — kotwica drift-audit, NIE `mirror-source`), `superseded-by` (tylko przy obaleniu — nigdy cichy delete).
+Pełny schemat: kontrakt `_system/knowledge-system.md` §Schemat notatki (NIE przepisuj). Pola dodawane przez `/brain-extract-knowledge` przy ekstrakcji z pracy: `created`, `references` (ścieżki/kotwice repo, z których synteza czerpie — kotwica drift-audit, NIE `reflects-source`), `superseded-by` (tylko przy obaleniu — nigdy cichy delete).
 
 ---
 

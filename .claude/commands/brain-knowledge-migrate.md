@@ -1,6 +1,6 @@
 ---
-description: Migrate ONE skill's domain knowledge into the brain knowledge-system — EXTRACT (your skills, thin them) or MIRROR (team-shared skills, copy only). Usage /brain-knowledge-migrate [skill] [--mirror]
-argument-hint: [skill] [--mirror]
+description: Migrate ONE skill's domain knowledge into the brain knowledge-system — EXTRACT (your skills, thin them) or REFLECT (team-shared skills, untouched — knowledge reflected as atomic notes). Usage /brain-knowledge-migrate [skill] [--reflect]
+argument-hint: [skill] [--reflect]
 allowed-tools: Bash, Read, Edit, Task
 ---
 
@@ -15,37 +15,40 @@ reguła anty-dryf, forma pointer, kontrakt skill↔mózg, bezstratność 5a/5b/5
 Para z `/brain-knowledge-init` (onboarding kontekstu) i `/brain-update` (osąd: merge, awans emerging→canon).
 Repo mózgu (skrypty/config): `/Users/marcinjucha/Prywatne/projects/claude-brain`.
 
-## ⭐ RDZEŃ KOMENDY — dwa tryby (EXTRACT vs MIRROR)
+## ⭐ RDZEŃ KOMENDY — dwa tryby (EXTRACT vs REFLECT)
 
-|  | **EXTRACT** (default — TWOJE skille) | **MIRROR** (`--mirror` — WSPÓŁDZIELONE/zespołowe, np. Scandit `ios-*`) |
+|  | **EXTRACT** (default — TWOJE skille) | **REFLECT** (`--reflect` — WSPÓŁDZIELONE/zespołowe, np. Scandit `ios-*`) |
 |---|---|---|
 | Ciało skilla | ŚCIENIONE (wiedza → pointery) | **NIETKNIĘTE** (zespół trzyma pełny skill) |
-| Notatka w mózgu | `home: brain` (mózg = źródło prawdy) | `home: <skill-slug>` (lustro; skill = źródło prawdy) |
+| Notatka w mózgu | `home: brain` (mózg = źródło prawdy) | `home: <skill-slug>` (odbicie; skill = źródło prawdy) |
+| Ziarnistość | ATOMY (1 idea = 1 nota) | **ATOMY** (1 idea = 1 nota, dedup wg reguły anty-dryf) — **NIE jeden gruby plik** (to był stary `mirror`, wycofany) |
 | Blok `## Knowledge` w skillu? | TAK | **NIE** |
 | Snapshot do `references/knowledge/` skilla? | TAK (sync mózg→skill) | **NIE — repo skilla całkowicie nietknięte** |
-| Kierunek synca | mózg → skill (snapshot) | skill → mózg (odśwież lustro, gdy skill się zmieni) |
-| Korzyść | single-source-w-mózgu + skill nadal odpalalny | tylko brain-side: notatka przeglądalna / surface'owalna / linkowalna / reużywalna przez TWOJE inne skille — BEZ zmiany tego, co widzi zespół |
-| Bramka walidacji | pełne 5a + 5b + 5c | 5a (notatka == wiedza skilla) + 5b (niezależna kopia bezstratna); 5c funkcjonalne N/A (skill bez zmian) — zamiast tego potwierdź, że notatka czyta się SAMODZIELNIE |
+| Kierunek synca | mózg → skill (snapshot) | skill → mózg (odśwież odbicie, gdy skill się zmieni) |
+| Korzyść | single-source-w-mózgu + skill nadal odpalalny | tylko brain-side: **przeglądalne / linkowalne / surface'owalne ATOMY** (nie monolit), reużywalne GRANULARNIE przez TWOJE inne skille — BEZ zmiany tego, co widzi zespół |
+| Bramka walidacji | pełne 5a + 5b + 5c | 5a (atomy pokrywają wiedzę skilla) + 5b (niezależna kopia bezstratna); 5c funkcjonalne N/A (skill bez zmian) — zamiast tego potwierdź, że KAŻDA nota czyta się SAMODZIELNIE |
 
-> **Rozwój lustra:** NIE rozwijaj net-nowej wiedzy w notatce-lustrze (refresh skill→brain ją nadpisze). Twoja net-nowa wiedza → osobna notatka `home: brain` (konsumują Twoje skille); dla ZESPOŁU → PR do skilla zespołu (system nie pushuje mózg→repo), potem refresh. Pełna zasada: `_system/knowledge-system.md` §„Tryb MIRROR".
+> **Rozwój odbicia:** NIE rozwijaj net-nowej wiedzy w notatce-odbiciu (refresh skill→brain ją nadpisze). Twoja net-nowa wiedza → osobna notatka `home: brain` (konsumują Twoje skille); dla ZESPOŁU → PR do skilla zespołu (system nie pushuje mózg→repo), potem refresh. Pełna zasada: `_system/knowledge-system.md` §„Tryb REFLECT".
 
-**PO CO MIRROR:** skill współdzielony z zespołem (Scandit `ios-*`) MUSI zostać kompletny dla
+**PO CO REFLECT:** skill współdzielony z zespołem (Scandit `ios-*`) MUSI zostać kompletny dla
 współpracowników, a vault mózgu nie jest z nimi dzielony — więc wszystkie korzyści bazy wiedzy
-dostajesz przez **SKOPIOWANIE (lustro)** wiedzy do mózgu, NIGDY nie ścieniając skilla ani nie dotykając jego repo.
+dostajesz przez **ODBICIE (atomy)** wiedzy do mózgu, NIGDY nie ścieniając skilla ani nie dotykając jego repo.
+(`mirror` = wycofana forma LEGACY — była grubą kopią całego skilla w jednym pliku; REFLECT zastępuje ją atomami.)
 
 ## Faza 0 — ustal skill + tryb
 - Skill z `$1`. Brak → zapytaj który skill.
 - Sprawdź, że katalog skilla istnieje (`skills/<skill>/SKILL.md` w repo kontekstu). Nie istnieje → zapytaj/przerwij, NIE działaj na ślepo.
-- **Dla MIRROR rozwiąż `<ctx>`** z REPO skilla → kontekstu w `config.json` `.knowledge` (np. skill w `digital-shelf-ios` → `scandit`; notatka-lustro ląduje w `03-Resources/scandit/knowledge/`). Potwierdź, że `<ctx>` jest zarejestrowany w configu.
-- Tryb: **EXTRACT** domyślnie; **MIRROR** gdy `--mirror` LUB gdy skill jest współdzielony z zespołem.
+- **Dla REFLECT rozwiąż `<ctx>`** z REPO skilla → kontekstu w `config.json` `.knowledge` (np. skill w `digital-shelf-ios` → `scandit`; noty-odbicia lądują w `03-Resources/scandit/knowledge/`). Potwierdź, że `<ctx>` jest zarejestrowany w configu.
+- Tryb: **EXTRACT** domyślnie; **REFLECT** gdy `--reflect` LUB gdy skill jest współdzielony z zespołem.
   Niejasne, czy współdzielony? → zapytaj wprost: „czy ten skill jest używany przez zespół (np. repo
-  iOS/Scandit, nie tylko Twoje)?". Zespołowy = MIRROR.
-- **Potwierdź tryb przed jakimkolwiek działaniem** (blast radius MIRROR vs EXTRACT jest inny — EXTRACT
-  zmienia ciało skilla, MIRROR nie). Nie ruszaj dalej bez potwierdzenia.
+  iOS/Scandit, nie tylko Twoje)?". Zespołowy = REFLECT.
+- **Potwierdź tryb przed jakimkolwiek działaniem** (blast radius REFLECT vs EXTRACT jest inny — EXTRACT
+  zmienia ciało skilla, REFLECT nie). Nie ruszaj dalej bez potwierdzenia.
 
 ## Faza 1 — inwentaryzacja + plan
 Wg playbooka w `_system/knowledge-system.md` („Migracja skilla", krok 1–2) — NIE powielaj kroków, wykonaj je:
 - Rozdziel ciało SKILL.md: PROCEDURA („jak zrobić" — zostaje) vs WIEDZA domenowa („co wiemy" — idzie do notatek).
+- **Rozbij wiedzę ATOMOWO** (1 idea = 1 nota) — dla REFLECT tak samo jak dla EXTRACT (NIE jeden gruby plik-lustro; to był wycofany `mirror`).
 - Dla każdego kawałka wiedzy: **dedup-search** w `03-Resources/<ctx>/knowledge/` (reguła anty-dryf) →
   ROZSZERZ istniejącą notatkę, nie twórz rodzeństwa. Slug = kebab-case ASCII, ≥2 znaki, bez wiodących cyfr.
 - Zaplanuj notatki (nowe / do rozszerzenia) + `status` (canon jeśli z dojrzałego skilla; emerging jeśli świeży wzorzec).
@@ -58,32 +61,32 @@ Notatki w mózgu to pliki vaulta (NIE artefakt-definicja) → pisz/rozszerzaj je
   - Notatki: `home: brain`.
   - Ścień `SKILL.md` (usuń prozę wiedzy, dodaj blok `## Knowledge` w formie **pointer** `@references/knowledge/<slug>.md` + self-check „wylistuj złożone notatki").
   - ⚠️ Edycja `SKILL.md` (plik-artefakt) MUSI iść przez subagenta **`ai-manager-agent`** (reguła MUST) — main loop NIE pisze SKILL.md sam, nawet z pełnym kontekstem.
-- **MIRROR:**
-  - Notatka: `home: <skill-slug>` (lustro), `status: mirror`, `mirror-source: <abs-path do SKILL.md>` (umożliwia silnikowi advisory `mirror-stale`), `status` ≠ `canon` (źródłem jest skill).
-  - **NIE dotykaj `SKILL.md` ani repo skilla. NIE dodawaj bloku `## Knowledge`. NIE pisz snapshotu.** Lustro żyje tylko w mózgu.
+- **REFLECT:**
+  - Notatki: utwórz **WIELE atomowych not** (1 idea = 1 nota — NIE jeden gruby plik), każda `home: <skill-slug>` (odbicie), `status: reflection`, `reflects-source: <abs-path do SKILL.md>` (umożliwia silnikowi advisory `reflection-stale`), `status` ≠ `canon` (źródłem jest skill).
+  - **NIE dotykaj `SKILL.md` ani repo skilla. NIE dodawaj bloku `## Knowledge`. NIE pisz snapshotu.** Odbicie żyje tylko w mózgu.
 
 ## Faza 3 — sync
 - **EXTRACT:** `python3 /Users/marcinjucha/Prywatne/projects/claude-brain/scripts/sync-knowledge.py --context <ctx> --used-by` (snapshot mózg→`references/knowledge/` + auto-derive `used-by`).
-- **MIRROR:** pomiń snapshot (skill nietknięty, nie jest konsumentem). Lustro pozostaje wyłącznie notatką w mózgu; odświeżasz je ręcznie, gdy zespołowy skill się zmieni.
+- **REFLECT:** pomiń snapshot (skill nietknięty, nie jest konsumentem). Noty-odbicia pozostają wyłącznie w mózgu; odświeżasz je ręcznie, gdy zespołowy skill się zmieni.
 
 ## Faza 4 — WALIDACJA (BRAMKA — NIE pomijać)
 Pełny szczegół: `_system/knowledge-system.md` krok 5 (5a/5b/5c). Bez czystych wszystkich warstw migracja NIE jest „done".
 - **5a — mechaniczna (grep):**
   - EXTRACT: każda teza/dyscyplina/liczba/przykład (a) ZNIKŁA z nowego ciała SKILL.md (zero duplikacji) **oraz** (b) jest w którejś notatce snapshotu; 0 osieroconych tez; 0 dangling (`sync-knowledge.py --check` exit 0).
-  - MIRROR: notatka == wiedza skilla (nic nie zgubione); repo skilla bez żadnych zmian (`git status` czysty po stronie skilla).
+  - REFLECT: atomy == wiedza skilla (nic nie zgubione, wiedza rozbita atomowo); repo skilla bez żadnych zmian (`git status` czysty po stronie skilla).
 - **5b — NIEZALEŻNY agent (adwersaryjny):** ODDZIELNY, świeży agent (NIE ten, co migrował — `fork` lub `ai-manager-agent`) porównuje OLD vs NEW i raportuje WSZYSTKO zgubione/zniekształcone/osłabione (warunek „kiedy/kiedy-nie", niuans, liczba, przykład, ton). Domyślnie zakłada, że coś wypadło, i musi jawnie wykluczyć.
 - **5c — funkcjonalna:**
   - EXTRACT: świeży agent odpala ścieniony skill na REALNYM przypadku — potwierdź, że sam dociąga notatki (self-check je listuje) i stosuje dyscypliny w wyniku.
-  - MIRROR: N/A (skill bez zmian) — zamiast tego potwierdź, że notatka-lustro czyta się SAMODZIELNIE (zrozumiała bez ciała skilla).
+  - REFLECT: N/A (skill bez zmian) — zamiast tego potwierdź, że KAŻDA nota-odbicie czyta się SAMODZIELNIE (zrozumiała bez ciała skilla).
 
 ## Faza 5 — commit
 Stage **JAWNIE** (nazwane ścieżki — nigdy `git add -A`; repo bywa z niepowiązaną pracą in-flight):
 - EXTRACT: notatki vaulta + ścieniony `SKILL.md` + snapshoty `references/knowledge/`.
-- MIRROR: TYLKO notatki vaulta.
-Komunikat commita = tryb (EXTRACT/MIRROR) + który skill + wynik walidacji (5a/5b/[5c]). (Vault to osobne repo od repo skilla — commituj w odpowiednim.)
+- REFLECT: TYLKO notatki vaulta.
+Komunikat commita = tryb (EXTRACT/REFLECT) + który skill + wynik walidacji (5a/5b/[5c]). (Vault to osobne repo od repo skilla — commituj w odpowiednim.)
 
 ## Follow-up — awans do puli bazowej (gdy wiedza jest UNIWERSALNA)
 Ta komenda migruje wiedzę do KONTEKSTU. Jeśli któraś zmigrowana notatka jest w istocie UNIWERSALNA (czysty craft biznesowy lub techniczny, nie project-specific), po migracji AWANSUJ ją do pasującej puli bazowej (`general-business` / `general-technical`) przez `scripts/promote-to-universal.py`. Ekstrakcja do poziomu kontekstu to zadanie tej komendy; awans do puli bazowej to osobny krok następczy.
 
 ## Raport
-Podsumuj: (a) skill + tryb, (b) notatki utworzone/rozszerzone (slugi), (c) co ze SKILL.md (ścieniony przez ai-manager-agent / nietknięty), (d) wynik 3-warstwowej bramki, (e) co zacommitowano i gdzie.
+Podsumuj: (a) skill + tryb, (b) notatki utworzone/rozszerzone (slugi; dla REFLECT — liczba atomów), (c) co ze SKILL.md (ścieniony przez ai-manager-agent / nietknięty), (d) wynik 3-warstwowej bramki, (e) co zacommitowano i gdzie.
