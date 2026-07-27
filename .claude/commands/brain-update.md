@@ -116,6 +116,15 @@ w `Home.md`. **NIE** przeliczaj innych kontekstów ani całego Home (to robi `/b
 „**Status:**" dotkniętego podmiotu. WHY: brain-update jest ŹRÓDŁEM statusu na bieżąco, brain-sync go tylko
 spina i roluje — jeden format (SPEC) = brak dryfu.
 
+## Faza 3.6 — odśwież Trello (tylko gdy kontekst ma board)
+Gated: uruchom TYLKO gdy (a) `_<context>.md` ma we frontmatter `tracker_trello` ORAZ (b) ta sesja zmieniła status karty / next-actions. Inaczej pomiń (jedno zdanie w raporcie).
+Model = **ENCJA-jako-LISTA** — pełna mechanika + API + id labelek/boardów: **`/brain-publish` Faza 4** (NIE duplikuj tu szczegółów). W skrócie:
+- karta ZOSTAJE w liście swojej encji (kreator / obszar / klient) — status NIE jest listą, więc NIE przenoś między listami.
+- ukończone w sesji → `dueComplete=true`.
+- nowa zależność/blokada (input od klienta, zgoda, bramka) → dodaj labelkę `⏳ Czekam`; odblokowane/gotowe teraz → zdejmij labelkę + `pos=top`.
+- nowy next-action z sesji → utwórz kartę w liście encji (aktywna = bez labelki; zależna = z `⏳ Czekam`). Karta atomowa, jedna rzecz, przypisana do właściciela (zasada jakości kart z `/brain-publish`).
+Trello to lustro next-actions (nie źródło) — dotykaj TYLKO stanu kart (pozycja/labelka/complete/nowe karty), nigdy nie kasuj cudzej pracy. **Outward tracker write → zaproponuj zmiany kart i zastosuj po potwierdzeniu** (jak `/brain-publish` Faza 4: „tylko za zgodą"). W raporcie: wypisz karty ruszone / oznaczone / utworzone.
+
 ## Faza 3.7 — utrzymanie bazy wiedzy (knowledge-system)
 Dwa zakresy o ROZDZIELNYM gatowaniu:
 - **EXTRACT** (kroki 1, 2a/2b/2c-emerging, 3) — uruchom TYLKO gdy `config.json` `.knowledge[<context>].active == true`.
@@ -151,6 +160,7 @@ Co zaktualizowano: (a) pamięć projektu (`<memory>` — status/połączenia), (
 (ticketu lub encji — detal; zaznacz jeśli powstała nowa, jeśli założono/zmigrowano folder
 podmiotu, LUB jeśli detalu nie zrzucono przez niejednoznaczny target), (c) blok statusu (jeśli
 odświeżony — `_<context>.md` + slice w Home) + ewentualne sugestie lekcji do repo `memory.md`.
+(c-bis) Trello (jeśli board — karty ruszone / oznaczone `⏳ Czekam` / utworzone; inaczej 'brak boardu lub bez zmian').
 (d) utrzymanie wiedzy: ile snapshotów zsynch., co scalono/awansowano/naprawiono (lub 'pominięto — brak aktywnej wiedzy').
 (e) **nudge wiedzy domenowej:** jeśli bufor repo `memory.md` zawiera wpisy `## Domain Concepts`
 / `## Architecture Decisions` wyglądające na cross-atom SYNTEZĘ (obejmuje ≥2 atomy, żadna pojedyncza

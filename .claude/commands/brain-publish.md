@@ -52,14 +52,11 @@ i dokładną treść do wysłania. Czekaj na "tak". Nic nie wysyłaj bez zgody.
 ## Faza 4 — status (opcjonalnie, tylko za zgodą)
 Jeśli podano `--status` lub użytkownik prosi: JIRA `getTransitionsForJiraIssue` →
 `transitionJiraIssue`; Notion `notion-update-page` ustaw `Status`. Nigdy bez potwierdzenia.
-- **Trello:** na boardach Trello listy=status, labelka=encja (klient/osoba). Status =
-  **przeniesienie karty** do listy o nazwie odpowiadającej `--status`
-  ("📋 Do zrobienia" / "🔵 W toku" / "⏳ Czekam" / "✅ Done"). Rozwiąż listę po nazwie na boardzie karty:
-  - board karty: `GET /1/cards/{id}?fields=idBoard`
-  - listy boardu: `GET /1/boards/{idBoard}/lists?filter=open`
-  - znajdź listę po nazwie wg `--status`, przenieś kartę: `PUT /1/cards/{id}?idList={listId}`.
-  Labelka karty = ENCJA (klient/osoba) i jej NIE ruszamy przy zmianie statusu.
-  Auth jak w Fazie 3 (curl + `TRELLO_API_KEY`/`TRELLO_TOKEN`). Tylko za zgodą.
+- **Trello — model ENCJA-jako-LISTA (oba aktywne boardy od 2026-07-22):** karta ZOSTAJE w liście swojej encji (shadow-operator = kreator; agency = obszar/klient). NIE przenoś między listami przy zmianie statusu — status niesie pozycja + labelka `⏳ Czekam` + `dueComplete`. Auth jak w Fazie 3 (curl + `TRELLO_API_KEY`/`TRELLO_TOKEN`). Tylko za zgodą. Labelka `⏳ Czekam` per board: shadow-operator `mTwOoGKz` = `6a6101608e9f62aefb22599d`; agency `tkOXUJUS` = `6a6106a58030b5d65f4f78e9` (lub rozwiąż po nazwie „⏳ Czekam": `GET /1/boards/{idBoard}/labels`). Wg `--status`:
+    - `Done` / `✅` → `PUT /1/cards/{id}?dueComplete=true` (opcjonalnie zdejmij labelkę Czekam).
+    - `Czekam` / `⏳` → dodaj labelkę: `POST /1/cards/{id}/idLabels` z `value=<id labelki Czekam tego boardu>`.
+    - `W toku` / `Do zrobienia` → zdejmij labelkę Czekam (`DELETE /1/cards/{id}/idLabels/<id>`), `dueComplete=false`, ustaw pozycję (`pos=top` dla „W toku"). NIE przenoś do innej listy.
+  ⚠️ POST-y wymagają pełnego `idBoard` (shadow-operator `6a3e87bd04fcdf91d4a88ca4`, agency `6a3e8e8e29866edeceaee93f`), nie skrótu.
 
 ## Zasada jakości kart (next-action → board)
 Dotyczy PRZYPADKU, gdy operacja wypycha **wiele kart next-action** na board (nie standardowy
@@ -68,12 +65,12 @@ pojedynczy `## Finalny produkt` → jedno istniejące zadanie). Każda karta MUS
 2. **Niezależna** — wykonywalna sama z siebie. Jeśli jest zablokowana niezakończoną zależnością, to NIE jest to-do — to "czekam".
 3. **Przypisana do właściciela** — do tego, kto ją wykonuje.
 
-Routing po właścicielu/gotowości (Trello, listy=status z Fazy 4):
-- Akcje, które właściciel notatki (Marcin/operator) może zrobić **TERAZ** → lista aktywna ("📋 Do zrobienia" / "🔵 W toku").
-- Akcje zależne od kogoś innego (twórca/klient — np. kupno domeny, publikacja ankiety) → "⏳ Czekam". Dodaj je jako karty (NIE pomijaj — to śledzone zależności), tylko na liście czekam, nie na to-do.
-- Element zablokowany/bramkowany (np. "pełny launch — zablokowany do walidacji") też idzie na "⏳ Czekam", nie na to-do.
+Routing po właścicielu/gotowości (Trello, model ENCJA-jako-LISTA, Faza 4): karta ląduje w LIŚCIE swojej encji (kreator / obszar / klient). Gotowość niesie pozycja + labelka:
+- Akcja do zrobienia **TERAZ** przez operatora → bez labelki, pozycja u góry (W toku) / niżej (Do zrobienia).
+- Akcja zależna od kogoś innego (twórca/klient — np. kupno domeny, wzór od klienta, zgoda admina) → **labelka `⏳ Czekam`**. Dodaj jako kartę (NIE pomijaj — to śledzona zależność), z labelką Czekam.
+- Element zablokowany/bramkowany (np. „pełny launch — zablokowany do walidacji") też dostaje labelkę `⏳ Czekam`.
 
-> **WHY:** zablokowana albo spakowana karta na liście aktywnej kłamie o gotowości — sugeruje "do zrobienia teraz", a nie da się jej ruszyć; wyrzucenie zależności zamiast dodania na "czekam" gubi jej śledzenie.
+> **WHY:** zablokowana albo spakowana karta udająca gotowość (u góry / bez labelki Czekam) kłamie — sugeruje „do zrobienia teraz", a nie da się jej ruszyć; wyrzucenie zależności zamiast oznaczenia „czekam" gubi jej śledzenie.
 
 ## Faza 5 — zaktualizuj notatkę
 W froncie notatki ustaw `status` (lustro nowego stanu, jeśli zmieniony) i `updated` na dziś;

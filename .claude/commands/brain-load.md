@@ -12,6 +12,17 @@ Uruchamiana z DOWOLNEGO folderu (komenda globalna). Para z `/brain-update`.
 
 Repo mózgu (config/ścieżki): `/Users/marcinjucha/Prywatne/projects/claude-brain`.
 
+## Zbieranie danych (jedna paczka)
+Discovery Fazy 0 + Fazy 2 leci JEDNYM wywołaniem shella, nie serią round-tripów:
+- `pwd` + `git branch --show-current` (toleruj „not a git repository" — kontekst może być bez repo)
+- listing rozwiązanego vaulta PŁASKO **i** o jeden poziom głębiej (foldery podmiotów):
+  `ls <vault>` + `ls <vault>/*/` (albo `ls -R <vault>` z capem) — vault ma notatki płaskie
+  OBOK folderów podmiotów (np. `agency/`: `justyna-kancelaria/`, `social-media/` + płaskie `oferta-*.md`).
+- obecność `SESSION.md` w cwd
+- `git worktree list`, gdy repo ma worktree
+Zasada: JEDNA paczka, potem czytaj TYLKO te notatki, których wymaga zadeklarowany focus/ticket
+— nie zrzucaj całego vaulta do kontekstu.
+
 ## Faza 0 — wykryj projekt + ticket
 1. `pwd`. Dopasuj do `config.json` → `paths` (najdłuższy pasujący prefiks ścieżki).
    - Trafienie → masz `context`, `vault` (podfolder), `memory` (plik pamięci), `repoMemory`.
@@ -26,9 +37,12 @@ Repo mózgu (config/ścieżki): `/Users/marcinjucha/Prywatne/projects/claude-bra
      niejednoznaczny (`agency` ma 2 wpisy: `legal-mind`=`_halo-efekt.md` vs `doc-forge`=`_doc-forge.md`)
      — `contexts` z kroku 2 to rozstrzyga, NIE zgaduj z kroku 3. (Np. cwd `claude-marketing` domyślnie =
      `shadow-operator`, ale „halo efekt"→`agency`, vault `01-Projects/agency`, `_halo-efekt.md`.)
-2. **Ustal ticket** (zawsze wyprowadzalny z gałęzi/worktree): `git -C <cwd> branch --show-current`
-   → regex `SHELF-[0-9]+` (np. `feature/SHELF-23428-...` → `SHELF-23428`). Jak wywołane z
-   `/ios-feature <TICKET>` — użyj tego argumentu. Brak gałęzi/ticketa → pomiń backfill (Faza 2.5).
+2. **Ustal ticket** (gdy kontekst ma tracker z ID w nazwie gałęzi): `git -C <cwd> branch --show-current`
+   → wzorzec ID zależy od trackera kontekstu, NIE zakładaj `SHELF-` poza JIRA: kontekst JIRA
+   (`scandit`) → `SHELF-[0-9]+` (np. `feature/SHELF-23428-...` → `SHELF-23428`); konteksty
+   Notion/Trello mają notatki nazwane slugiem, bez ID w gałęzi → **brak ticketa to normalny stan,
+   nie błąd**: pomiń backfill (Faza 2.5) i pracuj po slugu/focusie. Jak wywołane z
+   `/ios-feature <TICKET>` — użyj tego argumentu. Brak gałęzi/repo → też pomiń backfill.
 
 ## Faza 1 — wczytaj górny poziom (mózg)
 - Przeczytaj `vault.path`/`<vault>`/`<memory>` (np. `01-Projects/scandit/_scandit.md`) — status,
@@ -63,16 +77,46 @@ Jeśli ticket wykryty (Faza 0) **i** nie istnieje notatka `<TICKET>*.md` — ani
 - Jeśli notatka już istnieje → nic nie rób (tylko ją wczytaj w Fazie 1/2).
 
 ## Faza 2.6 — reconcile SESSION.md ↔ pamięć projektu
-Jeśli worktree `SESSION.md` (wczytany w Fazie 2) wspomina tickety/pracę, których NIE ma w
-górnej pamięci `<memory>` (`_scandit.md`):
-- Zasygnalizuj: **„brain stale vs SESSION.md"** + wypisz deltę (czego brak na wysokiej półce).
-- Wpłyń tę górną deltę (status/połączenia, nie detal techniczny) do `<memory>`, `updated`=dziś.
+`SESSION.md` żyje per worktree, a worktree jest per ticket/podmiot — więc bierz pod uwagę TEŻ
+`SESSION.md` w SIOSTRZANYCH worktree tego repo (`git worktree list`), nie tylko w cwd. Tanio:
+siostrzany `SESSION.md` czytaj tylko gdy jego worktree/branch jest jedną z pozycji, które mózg
+trzyma jako otwarte, ALBO gdy jest świeższy niż `updated:` pamięci projektu.
+Jeśli którykolwiek `SESSION.md` wspomina tickety/pracę/etapy, których NIE ma w górnej pamięci
+`<memory>` (np. `_scandit.md`):
+- Zasygnalizuj: **„brain stale vs SESSION.md"** + wypisz deltę (czego brak / co nieaktualne na wysokiej półce).
+- **NIE edytuj bloku `status:auto` ręcznie (TWARDA REGUŁA).** Blok jest generowany z
+  `_system/templates/status-block.md` i oznaczony `<!-- status:auto — … nie edytuj ręcznie -->`.
+  `/brain-load` tylko RAPORTUJE deltę i przekazuje ją do `/brain-update`, które jest właścicielem
+  regeneracji — nie przepisuje bloku samo.
 - Detal techniczny NIE idzie tu — to robi `/brain-update` (SESSION.md → notatka ticketu).
+
+## Faza 2.7 — drift check (mózg vs ground truth)
+READ-ONLY porównanie: co warstwa statusu `<memory>` twierdzi, że jest „w toku / w review",
+vs ground truth TEGO kontekstu. Ground truth jest per-kontekst — rozgałęź po tym, co ISTNIEJE,
+i cicho pomiń brakujące źródło:
+- **kontekst z repo** (`scandit`, `legal-mind`, `doc-forge`, `claude-marketing`,
+  `kacper-landing-page`, `claude-dev`):
+  `git log --oneline -12 origin/<default-branch>` +
+  `git for-each-ref --sort=-committerdate --format='%(committerdate:short) %(refname:short)' refs/remotes/origin | head -12`
+  → oflaguj (a) pozycje, które mózg trzyma jako otwarte, a są już zmergowane, (b) branche
+  z aktywnością świeższą niż `updated:` pamięci.
+- **brak repo / cwd nie mapuje się na wpis w `paths`** (np. `personal`, kontekst czysto vaultowy):
+  ground truth = same working notes — porównaj `status:`/`updated:` z frontmattera i pola trackera
+  z tym, co twierdzi blok statusu pamięci. Notatka świeższa niż `updated:` pamięci = dryf.
+- **tracker (Notion/JIRA)**: OPCJONALNIE, tylko na wyraźną prośbę. `/brain-load` NIE odpytuje
+  trackera domyślnie — to brief startowy, ma być tani; odpytywanie należy do `/brain-sync` / `/brain-pull`.
+Awaria sieci = RAPORTUJ, nie zamiataj: jeśli `git fetch` padnie (VPN off, host nieosiągalny) —
+powiedz to i zaznacz, że refy są z ostatniego fetcha. Nigdy nie podawaj stałych refów jako świeżych.
+Nie fetchuj automatycznie jako krok blokujący.
+Wyjście: krótka lista delt, nie raport.
 
 ## Faza 3 — przedstaw obraz
 Krótko podsumuj użytkownikowi: co to za projekt, na jakim etapie, co w toku, otwarte wątki,
 i czego pamięć NIE wie (luki). Wymień: czy notatka ticketu była backfillowana, czy był
-reconcile SESSION.md. Bez ścian tekstu — to brief startowy, nie raport.
+reconcile SESSION.md (w tym siostrzane worktree). Bez ścian tekstu — to brief startowy, nie raport.
+- dryf (Faza 2.7): krótka lista delt „mózg mówi X, ground truth mówi Y" + źródło (git refs /
+  frontmatter notatek), a przy awarii sieci — z jakiej daty są refy. Zamknij zdaniem, że blok
+  `status:auto` regeneruje `/brain-update`, nie ta komenda.
 - knowledge: zsynch. ✅ / albo: N dryf · M dup? · K emerging · dangling: … — przy problemach dodaj, że `/brain-update` rozwiązuje je (osąd: scal duplikaty, awansuj emerging→canon). Jeśli kontekst dziedziczy pule bazowe (`inherits`) — NAZWIJ WSZYSTKIE (np. „+ general-business + general-technical (uniwersalne)", jak `agency`), by było jasne, że dostępny jest też uniwersalny craft, nie tylko noty kontekstowe.
 
 > Pamięć projektu w mózgu = wysoka półka (status/połączenia). Głęboka wiedza techniczna

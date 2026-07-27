@@ -25,8 +25,8 @@ po ścieżce absolutnej — komenda jest globalna i bywa uruchamiana spoza repo.
 |----------|---------|--------|---------------|-------------|
 | `personal` | Notion | `collection://29084f14-76e0-80be-ac06-000b9ee2fc4f` | `01-Projects` | `<slug>.md` |
 | `scandit` | JIRA | projekt SHELF, cloudId `a19c74f3-95cf-4d55-9d33-366adfe6f7a0` | `01-Projects/work` | `SHELF-<nr>-<slug>.md` |
-| `shadow-operator` | **Trello** (aktywny) | board `mTwOoGKz` (z `tracker_trello` we frontmatter `_<context>.md`). LISTA = status (📋 Do zrobienia / 🔵 W toku / ⏳ Czekam / ✅ Done), LABELKA = encja (klient) | `01-Projects/shadow-operator` | `<slug>.md` |
-| `agency` (Trello) | **Trello** | board `tkOXUJUS` (z `tracker_trello` we frontmatter `_<context>.md`). LISTA = status, LABELKA = encja (osoba/klient) | `01-Projects/agency` | `<slug>.md` |
+| `shadow-operator` | **Trello** (aktywny) | board `mTwOoGKz` (z `tracker_trello` we frontmatter `_<context>.md`). **Model KREATOR-jako-LISTA** (zmiana 2026-07-22): **LISTA = encja (kreator)**; STATUS niesie: pozycja w liście (W toku góra → Do zrobienia → ⏳Czekam → ✓Done dół) + labelka **⏳ Czekam** + karta oznaczona complete (`dueComplete`). BRAK list statusowych. | `01-Projects/shadow-operator` | `<slug>.md` |
+| `agency` (Trello) | **Trello** | board `tkOXUJUS` (z `tracker_trello` we frontmatter `_<context>.md`). **Model ENCJA-jako-LISTA** (zmiana 2026-07-22): **LISTA = encja (obszar/klient)** — np. Venture/leady · Platforma · Website/SEO · Justyna; STATUS = pozycja + labelka **⏳ Czekam** + `dueComplete`. BRAK list statusowych. | `01-Projects/agency` | `<slug>.md` |
 | `shadow-operator` | Notion | **Tasks Tracker** `collection://37984f14-76e0-80f1-95f2-000bd6a8a39a` (relacja `Prospect` → kreator). Kreatorzy/prospekty osobno: Prospecting Tracker `collection://9cd84f14-76e0-823a-9146-876ae3400d3c` (źródło prospectingu/archiwum) | `01-Projects/shadow-operator` | `<slug>.md` |
 | `agency` | Notion | `collection://29284f14-76e0-8062-a18d-000bfce0cf23` | `01-Projects/agency` | `<task-id>-<slug>.md` |
 | `social-media` | Notion | projekt **AAA-P-10** `33c84f1476e08111acd6e3e197be747f` (relacja `✅ Tasks`) | `01-Projects/agency/social-media` | `<task-id>-<slug>.md` |
@@ -44,10 +44,12 @@ po ścieżce absolutnej — komenda jest globalna i bywa uruchamiana spoza repo.
 - **Notion (pod-projekt, np. `social-media`):** NIE używaj `notion-search` po całej tabeli —
   semantyka zwraca obce zadania łapiące się na słowa. Zamiast tego `notion-fetch` na stronie
   **projektu** i odczytaj relację `✅ Tasks`, potem `notion-fetch` każdego zadania.
-- **Trello (granularność = ENCJA = LABELKA, nie karta, nie lista):** Bash `curl` na Trello REST (bez MCP). Pobierz karty z labelkami, listą (status) i due:
-  `GET https://api.trello.com/1/boards/{boardId}/cards?fields=name,due,idList,labels&filter=open&key=$TRELLO_API_KEY&token=$TRELLO_TOKEN`
-  oraz `GET https://api.trello.com/1/boards/{boardId}/lists?fields=name&filter=open&key=$TRELLO_API_KEY&token=$TRELLO_TOKEN` żeby zmapować `idList` → nazwę listy (= status).
-  AUTH jak w `/brain-publish` (creds w `claude-marketing/.env.local`: `TRELLO_API_KEY`+`TRELLO_TOKEN`; `set -a; source .env.local; set +a`; 1-dniowy token → przy „invalid token" odnów przez `/1/authorize`). Grupuj karty po nazwie LABELKI = encja (klient/osoba) → JEDNA notatka robocza per encja; karty pod tą labelką → checklista `## Next-actions` w notatce (każda karta jako `- [ ] <nazwa karty>`, STATUS = nazwa jej listy, due jeśli jest). Pomiń karty z listy `Done`/`✅ Done`. NIE rób notatki per karta ani per lista.
+- **Trello (granularność = ENCJA, nie karta) — oś ENCJA/STATUS zależy od MODELU boardu (czytaj z `tracker_trello`):** Bash `curl` na Trello REST (bez MCP). Pobierz karty + listy:
+  `GET https://api.trello.com/1/boards/{boardId}/cards?fields=name,due,dueComplete,idList,labels&filter=open&key=$TRELLO_API_KEY&token=$TRELLO_TOKEN`
+  oraz `GET https://api.trello.com/1/boards/{boardId}/lists?fields=name&filter=open&key=$TRELLO_API_KEY&token=$TRELLO_TOKEN` żeby zmapować `idList` → nazwę listy.
+  AUTH jak w `/brain-publish` (creds w `claude-marketing/.env.local`: `TRELLO_API_KEY`+`TRELLO_TOKEN`; `set -a; source .env.local; set +a`; token bywa krótki → przy „invalid token" odnów przez `/1/authorize`).
+  **Model ENCJA-jako-LISTA (oba aktywne boardy od 2026-07-22):** ENCJA = **nazwa LISTY**; grupuj karty po `idList` → JEDNA notatka per encja. STATUS karty = z pozycji + labelka `⏳ Czekam` (jeśli jest) + `dueComplete`. Pomiń karty z `dueComplete: true` (= Done). NIE ma list statusowych. Czym jest encja per board: shadow-operator (`mTwOoGKz`) = **kreator** (→ notatka per kreator); agency (`tkOXUJUS`) = **obszar/klient** (Venture/leady · Platforma · Website/SEO · Justyna — kolumna-klient np. Justyna → jej notatka; kolumny-obszary CMS to grupowanie kanbanowe, niekoniecznie 1 notatka).
+  Każda karta → `- [ ] <nazwa karty>` w `## Next-actions` (STATUS + due jeśli jest). NIE rób notatki per karta.
 - `task_id` dla Notion Agency = ludzkie ID (`AAA-T-###`); `task_url` = pełny URL (zawiera UUID do publish).
 - Filtr `--status` zawęża do podanego statusu.
 
@@ -55,7 +57,7 @@ po ścieżce absolutnej — komenda jest globalna i bywa uruchamiana spoza repo.
 Dla każdego zadania zdecyduj, czy zasługuje na notatkę roboczą:
 - ✅ **TAK** — ma detal techniczny / proces / wiele kroków (praca, projekty, kreatorzy, social media).
 - ❌ **NIE** — drobny errand ("zadzwonić", "zarezerwować", "kupić"). Zostaje tylko w trackerze.
-- **Trello (per ENCJA / per labelka):** labelka-encja z kartami = ma proces → TAK (jedna notatka). Pomiń karty z listy `Done`/`✅ Done` (i oczywiste archiwa) oraz encje, które są tylko errandami.
+- **Trello (per ENCJA):** encja z kartami = ma proces → TAK (jedna notatka). Encja = nazwa LISTY (model ENCJA-jako-LISTA — kreator dla shadow-operator, obszar/klient dla agency). Pomiń karty ukończone (`dueComplete: true`) i oczywiste archiwa oraz encje, które są tylko errandami.
 
 ## Faza 3 — scaffold (pomiń przy `--dry`)
 Dla zadań zakwalifikowanych na TAK:
@@ -64,12 +66,12 @@ Dla zadań zakwalifikowanych na TAK:
    (`tracker`, `task_id`, `task_url`, `task`, `status`, `priority`, `project`, `context`, `updated`)
    i sekcję Kontekst (summary zadania). Detal zostaw pusty — to pisze użytkownik.
 3. Plik w folderze i wg konwencji nazw z tabeli.
-4. **Trello (dedup per ENCJA = per LABELKA, nie per `task_id`):** shadow-operator ma już notatki per kreator
-   (`kacper-snela.md`, `barbara-bylina.md`, `katarzyna-miller.md`). Podział ról: Trello mirroruje TYLKO next-actions;
+4. **Trello (dedup per ENCJA, nie per `task_id`):** shadow-operator ma już notatki per kreator
+   (`kacper-snela.md`, `barbara-bylina.md`). Encja = nazwa LISTY (model ENCJA-jako-LISTA — kreator dla shadow-operator, obszar/klient dla agency, np. lista „Justyna" → `justyna-kancelaria/`). Podział ról: Trello mirroruje TYLKO next-actions;
    notatka w mózgu = źródło prawdy dla całego detalu/procesu/kontekstu. Dlatego pull Trello → mózg dotyka WYŁĄCZNIE
-   sekcji `## Next-actions` (twórz/odśwież ją z kart pogrupowanych po labelce-encji) i NIGDY nie nadpisuje reszty istniejącej notatki
+   sekcji `## Next-actions` (twórz/odśwież ją z kart pogrupowanych po encji) i NIGDY nie nadpisuje reszty istniejącej notatki
    (Kontekst, Detal techniczny, Decyzje, Finalny produkt — to jest brain-owned). Jeśli notatka dla tej encji
-   już istnieje (dopasuj po nazwie encji = nazwie labelki / istniejącym pliku) → ODŚWIEŻ `## Next-actions` w miejscu, resztę zostaw nietkniętą,
+   już istnieje (dopasuj po nazwie encji = nazwie listy-kreatora / labelki / istniejącym pliku) → ODŚWIEŻ `## Next-actions` w miejscu, resztę zostaw nietkniętą,
    NIE twórz duplikatu. Pełny scaffold z szablonu dostaje tylko zupełnie nowa encja (brak notatki). Frontmatter notatki Trello:
    `tracker: trello`, `task_url` = referencja boardu (luźny round-trip z `/brain-publish`; cel publish per-karta ustawiasz ręcznie gdy trzeba), `task` = nazwa encji, `context: shadow-operator`, `updated` = dziś. Zostaw `## Kontekst` (summary); detal techniczny zostaw użytkownikowi.
 
