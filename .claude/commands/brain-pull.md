@@ -24,19 +24,24 @@ po ścieżce absolutnej — komenda jest globalna i bywa uruchamiana spoza repo.
 | Kontekst | Tracker | Źródło | Folder vaultu | Nazwa pliku |
 |----------|---------|--------|---------------|-------------|
 | `personal` | Notion | `collection://29084f14-76e0-80be-ac06-000b9ee2fc4f` | `01-Projects` | `<slug>.md` |
-| `scandit` | JIRA | projekt SHELF, cloudId `a19c74f3-95cf-4d55-9d33-366adfe6f7a0` | `01-Projects/work` | `SHELF-<nr>-<slug>.md` |
+| `scandit` | JIRA | projekt SHELF, cloudId `a19c74f3-95cf-4d55-9d33-366adfe6f7a0` | `01-Projects/scandit` | `SHELF-<nr>-<slug>.md` |
+| `scandit-pple-sdk` | JIRA | projekt SHELF, cloudId `a19c74f3-95cf-4d55-9d33-366adfe6f7a0` | `01-Projects/scandit-pple-sdk` | `SHELF-<nr>-<slug>.md` |
 | `shadow-operator` | **Trello** (aktywny) | board `mTwOoGKz` (z `tracker_trello` we frontmatter `_<context>.md`). **Model KREATOR-jako-LISTA** (zmiana 2026-07-22): **LISTA = encja (kreator)**; STATUS niesie: pozycja w liście (W toku góra → Do zrobienia → ⏳Czekam → ✓Done dół) + labelka **⏳ Czekam** + karta oznaczona complete (`dueComplete`). BRAK list statusowych. | `01-Projects/shadow-operator` | `<slug>.md` |
 | `agency` (Trello) | **Trello** | board `tkOXUJUS` (z `tracker_trello` we frontmatter `_<context>.md`). **Model ENCJA-jako-LISTA** (zmiana 2026-07-22): **LISTA = encja (obszar/klient)** — np. Venture/leady · Platforma · Website/SEO · Justyna; STATUS = pozycja + labelka **⏳ Czekam** + `dueComplete`. BRAK list statusowych. | `01-Projects/agency` | `<slug>.md` |
 | `shadow-operator` | Notion | **Tasks Tracker** `collection://37984f14-76e0-80f1-95f2-000bd6a8a39a` (relacja `Prospect` → kreator). Kreatorzy/prospekty osobno: Prospecting Tracker `collection://9cd84f14-76e0-823a-9146-876ae3400d3c` (źródło prospectingu/archiwum) | `01-Projects/shadow-operator` | `<slug>.md` |
 | `agency` | Notion | `collection://29284f14-76e0-8062-a18d-000bfce0cf23` | `01-Projects/agency` | `<task-id>-<slug>.md` |
 | `social-media` | Notion | projekt **AAA-P-10** `33c84f1476e08111acd6e3e197be747f` (relacja `✅ Tasks`) | `01-Projects/agency/social-media` | `<task-id>-<slug>.md` |
 
+`scandit` vs `scandit-pple-sdk`: `scandit` = aplikacja Shelfview (repo `digital-shelf-ios`),
+`scandit-pple-sdk` = PPLE SDK (repo `digital-shelf-sdk-ios`) — SAM projekt JIRA (SHELF), OSOBNA pula
+wiedzy domenowej i osobna pamięć projektu.
+
 Ścieżkę vaultu czytaj z `config.json` → `vault.path` (NIE hardkoduj).
 
 ## Faza 0 — rozwiąż kontekst
 1. Wczytaj `config.json`; ustal `vault.path` i tracker dla `$1`.
 2. Jeśli kontekst używa Trello — rozwiąż board z `tracker_trello` we frontmatter `_<context>.md` (np. `shadow-operator` → `mTwOoGKz`).
-3. Jeśli kontekst nieznany — wypisz dostępne (`personal`, `scandit`, `shadow-operator`, `agency`, `social-media`) i zapytaj.
+3. Jeśli kontekst nieznany — wypisz dostępne (`personal`, `scandit`, `scandit-pple-sdk`, `shadow-operator`, `agency`, `social-media`) i zapytaj.
 
 ## Faza 1 — pobierz zadania
 - **JIRA:** `searchJiraIssuesUsingJql`, domyślnie sprint-scoped: `assignee = currentUser() AND sprint in openSprints() AND project = SHELF ORDER BY priority DESC` (szerzej: `... AND statusCategory != Done`). Pola wąsko: `summary,status,issuetype,priority,updated` (i tak bywa za duże → czytaj zapisany plik przez `jq`). Scaffold tylko aktywne (In Progress/To Do); pomiń Done/Implemented i placeholdery. Pełne reguły: skill Scandit `project-management`.

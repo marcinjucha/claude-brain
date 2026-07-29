@@ -28,9 +28,12 @@ Struktura vaultu (PARA): `00-Inbox`, `01-Projects/{work,clients}`, `02-Areas`,
 ## Routing zadań (warstwa zadań mózgu)
 
 - Osobiste → **Notion** Private Dashboard (`connectors/notion/`).
-- Praca Scandit → **JIRA** projekt SHELF, repo digital-shelf-ios (`connectors/jira/`).
-- Notatka robocza linkuje do zadania przez frontmatter `tracker` + `task_id`. Plik pracy
-  Scandit: `01-Projects/work/SHELF-<nr>-<slug>.md`.
+- Praca Scandit → **JIRA** projekt SHELF (`connectors/jira/`), DWA konteksty: `scandit` =
+  aplikacja Shelfview (repo digital-shelf-ios), `scandit-pple-sdk` = PPLE SDK (repo
+  digital-shelf-sdk-ios) — ten sam projekt JIRA, osobna pamięć i osobna pula wiedzy.
+- Notatka robocza linkuje do zadania przez frontmatter `tracker` + `task_id`. Plik pracy:
+  `01-Projects/scandit/SHELF-<nr>-<slug>.md` (aplikacja) albo
+  `01-Projects/scandit-pple-sdk/SHELF-<nr>-<slug>.md` (SDK).
 
 ## Status i kolejność
 

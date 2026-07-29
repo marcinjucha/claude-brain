@@ -1,6 +1,6 @@
 # Konteksty (mapa mózgu)
 
-Second brain obsługuje cztery konteksty. Każdy ma własny tracker zadań, własne miejsce
+Second brain obsługuje pięć kontekstów. Każdy ma własny tracker zadań, własne miejsce
 w Notion i (czasem) powiązane repo. Notatki robocze linkują do zadań przez frontmatter
 `tracker` + `task_id` (patrz `connectors/`).
 
@@ -20,10 +20,10 @@ w Notion i (czasem) powiązane repo. Notatki robocze linkują do zadań przez fr
 - **Vault:** `01-Projects` (osobiste) / `02-Areas`
 - Drobne errandy zostają w Notion (bez notatek roboczych).
 
-## 2. Praca — Scandit
+## 2. Praca — Scandit (aplikacja Shelfview)
 - **Tracker:** JIRA — projekt **SHELF** (`scandit.atlassian.net`, cloudId `a19c74f3-95cf-4d55-9d33-366adfe6f7a0`)
 - **Repo:** `~/Scandit/digital-shelf-ios/`
-- **Vault:** `01-Projects/work/SHELF-<nr>-<slug>.md`
+- **Vault:** `01-Projects/scandit/SHELF-<nr>-<slug>.md`
 - Connector: `connectors/jira/`.
 - **Autorytet JIRA/Confluence/Sprint:** skill `~/Scandit/digital-shelf-ios/.claude/skills/project-management/SKILL.md`
   (agent `atlassian-manager`) — reguły: Markdown-not-ADF, cloudId, komponenty iOS/SHELFVIEW-APP,
@@ -33,7 +33,21 @@ w Notion i (czasem) powiązane repo. Notatki robocze linkują do zadań przez fr
   idzie zamiast tego do mózgu przez `/brain-extract-knowledge` (noty `home:brain`, brain-only —
   skille zespołu nietknięte). „Own the synthesis, link the atom."
 
-## 3. Shadow Operator (własny venture)
+## 3. Praca — PPLE SDK (ScanditShelf)
+Osobny kontekst od **2026-07-29** (wcześniej repo mapowało się na `scandit`, więc jego praca lądowała
+w `_scandit.md`, a własna pula wiedzy była nieosiągalna z cwd). **PPLE SDK ≠ aplikacja Shelfview:**
+to komercyjny binarny SDK (`ScanditShelf.xcframework`, CocoaPods/SPM), cienka warstwa produktowa nad
+Scandit **Data Capture (DC) SDK** — dwa niezależne strumienie wersji.
+- **Tracker:** JIRA — **ten sam** projekt **SHELF** co `scandit`; rozróżnienie idzie po repo/kontekście,
+  nie po projekcie JIRA (np. SHELF-23677 = smoke-test bumpa DC SDK w PPLE-SDK).
+- **Repo:** `~/Scandit/digital-shelf-sdk-ios/`
+- **Vault:** `01-Projects/scandit-pple-sdk/` — `_pple-sdk.md` + `SHELF-<nr>-<slug>.md`
+- **Pula wiedzy:** `03-Resources/scandit-pple-sdk/knowledge/` — bez `inherits` (stack iOS, jak `scandit`).
+- **Pamięć repo:** `CLAUDE.md` (architektura, dwuwarstwowa zależność wersji, fastlane); `memory.md`
+  jeszcze nie istnieje w tym repo.
+- Historia domkniętych ticketów SDK sprzed wydzielenia ZOSTAJE w `_scandit.md` — przeszłości nie przepisujemy.
+
+## 4. Shadow Operator (własny venture)
 Pomoc kreatorom YouTube/IG w monetyzacji przez produkty cyfrowe. Ja robię back-end
 marketingu, kreatorzy tworzą produkty. Dla każdego kreatora: **Intel Audit** + **skrypty**.
 Notion służy też do udostępniania materiałów kreatorom.
@@ -49,7 +63,7 @@ Notion służy też do udostępniania materiałów kreatorom.
   pamięć projektu `01-Projects/shadow-operator/_shadow-operator.md`.
 - **Vault:** `01-Projects/shadow-operator/` — `_shadow-operator.md` + notatka per kreator.
 
-## 4. HaloEfekt (agencja ze znajomymi)
+## 5. HaloEfekt (agencja ze znajomymi)
 - **Notion:** Agency Dashboard `https://app.notion.com/p/29084f1476e080d1bbb7f111d659e9ca`
   - **Agency Tasks Table** `collection://29284f14-76e0-8062-a18d-000bfce0cf23` (tracker zadań)
   - Agency Projects, Agency Clients, Marketing Docs, Klienci Docs

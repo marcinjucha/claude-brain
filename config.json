@@ -19,7 +19,7 @@
     "jira": {
       "enabled": true,
       "transport": "mcp",
-      "context": "scandit",
+      "context": ["scandit", "scandit-pple-sdk"],
       "cloudId": "a19c74f3-95cf-4d55-9d33-366adfe6f7a0",
       "site": "scandit.atlassian.net",
       "project": "SHELF"
@@ -93,9 +93,9 @@
       ]
     },
     "/Users/marcinjucha/Scandit/digital-shelf-sdk-ios": {
-      "context": "scandit",
-      "vault": "01-Projects/scandit",
-      "memory": "_scandit.md",
+      "context": "scandit-pple-sdk",
+      "vault": "01-Projects/scandit-pple-sdk",
+      "memory": "_pple-sdk.md",
       "repoMemory": [
         "CLAUDE.md",
         "memory.md"
