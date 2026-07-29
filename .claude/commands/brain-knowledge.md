@@ -62,3 +62,5 @@ shortlistę. To osąd modelu nad MOC, NIE silnik punktacji — bierz klaster ist
 
 > Mózg = źródło. `/brain-load` = wysoka półka (status). `/brain-knowledge` = półka domenowa
 > (doktryna) na żądanie. so-agent = wykonanie. Trzy różne role — nie mieszaj.
+> `/brain-load` dogrywa półkę domenową WARUNKOWO (tylko gdy dostanie opis zadania) — wg TEGO
+> SPEC-a, który pozostaje właścicielem reguł; to delegacja, nie zlanie się roli.

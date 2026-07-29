@@ -1,6 +1,6 @@
 ---
-description: Connect the current folder to the brain — load project memory + deep repo memory
-argument-hint: [context]
+description: Connect the current folder to the brain — load project memory + deep repo memory; z opisem zadania dogrywa też półkę wiedzy domenowej
+argument-hint: [kontekst | opis zadania]
 allowed-tools: Read, Write, Bash, Grep, mcp__claude_ai_Atlassian__searchJiraIssuesUsingJql, mcp__claude_ai_Atlassian__getJiraIssue
 ---
 
@@ -37,6 +37,25 @@ Zasada: JEDNA paczka, potem czytaj TYLKO te notatki, których wymaga zadeklarowa
      niejednoznaczny (`agency` ma 2 wpisy: `legal-mind`=`_halo-efekt.md` vs `doc-forge`=`_doc-forge.md`)
      — `contexts` z kroku 2 to rozstrzyga, NIE zgaduj z kroku 3. (Np. cwd `claude-marketing` domyślnie =
      `shadow-operator`, ale „halo efekt"→`agency`, vault `01-Projects/agency`, `_halo-efekt.md`.)
+   - **Sklasyfikuj `$ARGUMENTS` — JEDNA z trzech klas, nigdy kombinacja (rozstrzygnij PRZED
+     resolucją):** (a) **deklaracja kontekstu** — po normalizacji (lowercase, trim) argument jest
+     DOKŁADNIE nazwą kontekstu albo aliasem; (b) **deklaracja ticketu** — pasuje do wzorca ID
+     trackera z pkt 2 (np. `SHELF-23428`); (c) **FOCUS** — cokolwiek innego = opis zadania/problemu.
+     Dokładne trafienie (a)/(b) ZAWSZE wygrywa z interpretacją jako focus. **WHY:** goła nazwa
+     kontekstu i gołe ID ticketu muszą zachować dotychczasowe zachowanie — tani brief startowy bez
+     półki domenowej (Faza 2.8); inaczej każde `/brain-load scandit` zaczęłoby ciągnąć noty, a
+     `SHELF-23428` odpalałoby wybór not po ID bez treści semantycznej.
+   - **Zbiór rozpoznawanych nazw = SUMA, nie tylko cwd (KRYTYCZNE):** wszystkie wartości
+     `paths[*].context` + klucze `paths[<cwd>].contexts` + klucze `paths[<cwd>].contextAliases`.
+     **WHY:** tylko `claude-marketing` ma `contexts`/`contextAliases` — recognizer zawężony do cwd
+     uznałby `agency` wpisane z `digital-shelf-ios` za opis problemu; krok 3 powyżej i tak akceptuje
+     dowolny wpis `paths` z tym `context`, więc recognizer musi być równie szeroki.
+   - **Kontekst + opis zadania jednocześnie: kontekst zadeklaruj ZDANIEM W PROMPCIE**, nie wciskaj
+     obu w argument („halo efekt: onboarding klienta" ⇒ NIE). Zdanie w promptcie jest już nadrzędne
+     wobec cwd (reguła „Zadeklarowany kontekst > cwd" wyżej), więc `$ARGUMENTS` zostaw na sam opis.
+     **WHY:** taki argument klasyfikuje się jako FOCUS, kontekst poleci z cwd i komenda CICHO dobierze
+     noty z puli ZŁEGO kontekstu — a bez bramki potwierdzenia (Faza 2.8) nikt tego nie wyłapie przed
+     wczytaniem.
 2. **Ustal ticket** (gdy kontekst ma tracker z ID w nazwie gałęzi): `git -C <cwd> branch --show-current`
    → wzorzec ID zależy od trackera kontekstu, NIE zakładaj `SHELF-` poza JIRA: kontekst JIRA
    (`scandit`) → `SHELF-[0-9]+` (np. `feature/SHELF-23428-...` → `SHELF-23428`); konteksty
@@ -110,6 +129,37 @@ powiedz to i zaznacz, że refy są z ostatniego fetcha. Nigdy nie podawaj stały
 Nie fetchuj automatycznie jako krok blokujący.
 Wyjście: krótka lista delt, nie raport.
 
+## Faza 2.8 — półka domenowa (WARUNKOWO: tylko gdy jest FOCUS)
+- **Warunek wejścia:** Faza 0 pkt 1 sklasyfikowała `$ARGUMENTS` jako FOCUS (klasa c). Deklaracja
+  kontekstu, deklaracja ticketu, brak argumentu → POMIŃ całą fazę. **WHY:** koszt czytania MOC i not
+  jest OPT-IN — płacisz go tylko wtedy, gdy Marcin sam opisał, nad czym pracuje. Spójne z Fazą 2.7,
+  która z tego samego powodu (brief startowy ma być tani) nie odpytuje trackera domyślnie.
+- **`config.json` `.knowledge[<context>].active != true` → pomiń CICHO**, bez komunikatu. Flagę bierz
+  z Fazy 2 (już tam sprawdzona) — nie sprawdzaj drugi raz i nie uruchamiaj `sync-knowledge.py`
+  ponownie. **Odstępstwo od `/brain-knowledge`**, gdzie nieaktywna wiedza to twardy stop z
+  komunikatem. **WHY:** tam ładowanie not JEST celem komendy, tu to opcjonalny dodatek do briefu —
+  komunikat o nieaktywnej puli byłby szumem w podsumowaniu startowym.
+- **Wzbogać opis problemu:** FOCUS + (gdy ticket wykryty) esencja jego notatki roboczej z Fazy 1 —
+  summary / acceptance criteria. **WHY:** samo zdanie Marcina bywa skrótowe, a notatka ticketu jest
+  już w kontekście — trafność wyboru rośnie za zero dodatkowego kosztu.
+- **SPEC = `/brain-knowledge` (jedna definicja, zero driftu — tak jak `_system/templates/status-block.md`
+  jest jedyną definicją formatu warstwy statusu). Wykonaj JEGO: „Faza 0 — rozwiąż kontekst + pulę
+  wiedzy" pkt 2 (własny katalog wiedzy **oraz KAŻDA** pula z `inherits`), „Faza 1 — czytaj TANI indeks
+  (MOC), nie wszystkie noty", „Faza 2 — MODELOWY wybór" i DRUGĄ POŁOWĘ „Fazy 3" (przeczytaj wybrane
+  noty W CAŁOŚCI z vaulta). Jego Twardych ograniczeń NIE powtarzaj tutaj — czytaj je stamtąd;
+  obowiązują bez zmian: noty z vaulta, nigdy ze snapshotów skilla; `inherits`; READ-ONLY; oraz to,
+  że wiedza UZUPEŁNIA `so-agent`, nie zastępuje go.**
+- **JEDYNE odstępstwo — pomiń shortlistę do potwierdzenia z pierwszej połowy jego Fazy 3: noty
+  wczytuj OD RAZU.** **WHY:** puchnięcie kontekstu, przed którym broni tamto ograniczenie, w praktyce
+  się nie materializuje — modelowy wybór po MOC dobiera noty trafnie, więc potwierdzanie było czystym
+  tarciem na briefie startowym, nie zabezpieczeniem. **SELEKTYWNOŚCI to NIE rozluźnia: nadal klaster
+  istotny dla problemu, NIGDY cała pula** — to część nośna, bo argument za pominięciem potwierdzenia
+  upada w chwili, gdy wybór przestaje być selektywny. Skoro bramki nie ma, raport z Fazy 3 jest
+  JEDYNYM miejscem, gdzie Marcin widzi, co weszło mu do kontekstu — jest obowiązkowy.
+- Wybrana nota oflagowana w Fazie 2 jako `emerging` albo kandydat-duplikat → zaznacz to przy niej
+  (nie canon), ale jej nie pomijaj. **WHY:** świeża wiedza bywa najtrafniejsza; ukrycie jej statusu
+  kazałoby traktować ją jak zatwierdzoną doktrynę.
+
 ## Faza 3 — przedstaw obraz
 Krótko podsumuj użytkownikowi: co to za projekt, na jakim etapie, co w toku, otwarte wątki,
 i czego pamięć NIE wie (luki). Wymień: czy notatka ticketu była backfillowana, czy był
@@ -118,6 +168,13 @@ reconcile SESSION.md (w tym siostrzane worktree). Bez ścian tekstu — to brief
   frontmatter notatek), a przy awarii sieci — z jakiej daty są refy. Zamknij zdaniem, że blok
   `status:auto` regeneruje `/brain-update`, nie ta komenda.
 - knowledge: zsynch. ✅ / albo: N dryf · M dup? · K emerging · dangling: … — przy problemach dodaj, że `/brain-update` rozwiązuje je (osąd: scal duplikaty, awansuj emerging→canon). Jeśli kontekst dziedziczy pule bazowe (`inherits`) — NAZWIJ WSZYSTKIE (np. „+ general-business + general-technical (uniwersalne)", jak `agency`), by było jasne, że dostępny jest też uniwersalny craft, nie tylko noty kontekstowe.
+- gdy Faza 2.8 się wykonała: **wymień noty FAKTYCZNIE wczytane, każdą z pulą pochodzenia** (własna
+  pula kontekstu vs konkretna pula z `inherits`) + zaznacz `emerging`/kandydatów-duplikaty. **WHY:**
+  bez bramki potwierdzenia to jedyna widoczność tego, co weszło do kontekstu — pominięcie
+  potwierdzenia ma być JAWNE, nie ciche. Faza pominięta → nie dopisuj nic (żadnego „pominięto").
 
 > Pamięć projektu w mózgu = wysoka półka (status/połączenia). Głęboka wiedza techniczna
 > NIE jest tu kopiowana — żyje w repo (CLAUDE.md/skille, a świeże w memory.md). Czytaj oba poziomy; nie scalaj.
+> Trzecia półka — domenowa (doktryna z vaulta) — dochodzi WARUNKOWO, tylko gdy argument to opis
+> zadania (Faza 2.8), i wg SPEC-a `/brain-knowledge`, który pozostaje właścicielem jej reguł.
+> Trzy osobne półki — nadal nie scalaj.
