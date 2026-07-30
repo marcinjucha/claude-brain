@@ -6,10 +6,10 @@
 # Idempotent. The per-skill MIGRATION (extract knowledge → notes → thin the skill) is separate
 # CONTENT work — see _system/knowledge-system.md for the contract.
 #
-# Usage: knowledge-init.sh <context>      e.g.  knowledge-init.sh scandit
+# Usage: knowledge-init.sh <context>      e.g.  knowledge-init.sh scandit-shelfview
 set -euo pipefail
 
-CTX="${1:?podaj kontekst, np: knowledge-init.sh scandit}"
+CTX="${1:?podaj kontekst, np: knowledge-init.sh scandit-shelfview}"
 BRAIN="/Users/marcinjucha/Prywatne/projects/claude-brain"
 CONFIG="$BRAIN/config.json"
 command -v jq >/dev/null 2>&1 || { echo "jq wymagane"; exit 1; }

@@ -20,10 +20,15 @@ w Notion i (czasem) powiązane repo. Notatki robocze linkują do zadań przez fr
 - **Vault:** `01-Projects` (osobiste) / `02-Areas`
 - Drobne errandy zostają w Notion (bez notatek roboczych).
 
-## 2. Praca — Scandit (aplikacja Shelfview)
+## 2. Praca — Scandit ShelfView (aplikacja)
+> Kontekst nazywał się `scandit` do **2026-07-30**; przemianowany na `scandit-shelfview`, bo obok
+> stoi `scandit-pple-sdk` i goła nazwa „scandit" nie mówiła, o który produkt chodzi. Pamięć
+> `_scandit.md` → `_shelfview.md`, katalogi `01-Projects/scandit` → `01-Projects/scandit-shelfview`,
+> `03-Resources/scandit` → `03-Resources/scandit-shelfview`.
 - **Tracker:** JIRA — projekt **SHELF** (`scandit.atlassian.net`, cloudId `a19c74f3-95cf-4d55-9d33-366adfe6f7a0`)
-- **Repo:** `~/Scandit/digital-shelf-ios/`
-- **Vault:** `01-Projects/scandit/SHELF-<nr>-<slug>.md`
+- **Repa (DWA, jeden kontekst):** `~/Scandit/digital-shelf-ios/` (aplikacja) + `~/Scandit/digital-shelf-kmp/`
+  (wspólny moduł KMP, od 2026-07-30 — ten sam produkt, te same tickety SHELF, jedna pamięć)
+- **Vault:** `01-Projects/scandit-shelfview/SHELF-<nr>-<slug>.md`
 - Connector: `connectors/jira/`.
 - **Autorytet JIRA/Confluence/Sprint:** skill `~/Scandit/digital-shelf-ios/.claude/skills/project-management/SKILL.md`
   (agent `atlassian-manager`) — reguły: Markdown-not-ADF, cloudId, komponenty iOS/SHELFVIEW-APP,
@@ -34,18 +39,19 @@ w Notion i (czasem) powiązane repo. Notatki robocze linkują do zadań przez fr
   skille zespołu nietknięte). „Own the synthesis, link the atom."
 
 ## 3. Praca — PPLE SDK (ScanditShelf)
-Osobny kontekst od **2026-07-29** (wcześniej repo mapowało się na `scandit`, więc jego praca lądowała
-w `_scandit.md`, a własna pula wiedzy była nieosiągalna z cwd). **PPLE SDK ≠ aplikacja Shelfview:**
+Osobny kontekst od **2026-07-29** (wcześniej repo mapowało się na kontekst nazywający się wtedy
+`scandit`, więc jego praca lądowała w ówczesnym `_scandit.md` — dziś `_shelfview.md` — a własna pula
+wiedzy była nieosiągalna z cwd). **PPLE SDK ≠ aplikacja Shelfview:**
 to komercyjny binarny SDK (`ScanditShelf.xcframework`, CocoaPods/SPM), cienka warstwa produktowa nad
 Scandit **Data Capture (DC) SDK** — dwa niezależne strumienie wersji.
-- **Tracker:** JIRA — **ten sam** projekt **SHELF** co `scandit`; rozróżnienie idzie po repo/kontekście,
+- **Tracker:** JIRA — **ten sam** projekt **SHELF** co `scandit-shelfview`; rozróżnienie idzie po repo/kontekście,
   nie po projekcie JIRA (np. SHELF-23677 = smoke-test bumpa DC SDK w PPLE-SDK).
 - **Repo:** `~/Scandit/digital-shelf-sdk-ios/`
 - **Vault:** `01-Projects/scandit-pple-sdk/` — `_pple-sdk.md` + `SHELF-<nr>-<slug>.md`
-- **Pula wiedzy:** `03-Resources/scandit-pple-sdk/knowledge/` — bez `inherits` (stack iOS, jak `scandit`).
+- **Pula wiedzy:** `03-Resources/scandit-pple-sdk/knowledge/` — bez `inherits` (stack iOS, jak `scandit-shelfview`).
 - **Pamięć repo:** `CLAUDE.md` (architektura, dwuwarstwowa zależność wersji, fastlane); `memory.md`
   jeszcze nie istnieje w tym repo.
-- Historia domkniętych ticketów SDK sprzed wydzielenia ZOSTAJE w `_scandit.md` — przeszłości nie przepisujemy.
+- Historia domkniętych ticketów SDK sprzed wydzielenia ZOSTAJE w `_shelfview.md` — przeszłości nie przepisujemy.
 
 ## 4. Shadow Operator (własny venture)
 Pomoc kreatorom YouTube/IG w monetyzacji przez produkty cyfrowe. Ja robię back-end

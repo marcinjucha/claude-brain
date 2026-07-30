@@ -6,7 +6,7 @@ The brain vault (03-Resources/<ctx>/knowledge/) is the SOURCE OF TRUTH for domai
 Consuming skills stay thin and declare what they need via `@references/knowledge/<slug>.md`
 pointers (+ a `## Knowledge` block). This script snapshots those notes into each skill's
 `references/knowledge/` (one-way, generated copy), auto-derives `used-by`, and runs integrity
-checks. Config-driven and multi-context (shadow-operator / agency / scandit / …). A context may
+checks. Config-driven and multi-context (shadow-operator / agency / scandit-shelfview / …). A context may
 `inherits: [<base>]` (e.g. business contexts inherit the `general-business` universal pool); each
 inherited base dir is unioned into that context's source set, snapshots, and cross-context
 used-by/orphan aggregation, so a universal note is shared without duplication.

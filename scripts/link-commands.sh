@@ -6,7 +6,7 @@
 # Why: brain-* commands + the brain-conventions skill + the brain-manager agent live in
 # claude-brain/.claude/{commands,skills,agents} but Claude Code discovers GLOBAL artifacts from
 # ~/.claude/{commands,skills,agents}. New files were being created without the symlink, so they
-# were invisible outside this repo (e.g. from the scandit repo). Run this after adding any of them.
+# were invisible outside this repo (e.g. from the scandit-shelfview repo). Run this after adding any of them.
 #
 # Usage: link-commands.sh [--dry-run]
 set -euo pipefail

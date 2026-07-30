@@ -19,7 +19,7 @@
     "jira": {
       "enabled": true,
       "transport": "mcp",
-      "context": ["scandit", "scandit-pple-sdk"],
+      "context": ["scandit-shelfview", "scandit-pple-sdk"],
       "cloudId": "a19c74f3-95cf-4d55-9d33-366adfe6f7a0",
       "site": "scandit.atlassian.net",
       "project": "SHELF"
@@ -32,9 +32,18 @@
   },
   "paths": {
     "/Users/marcinjucha/Scandit/digital-shelf-ios": {
-      "context": "scandit",
-      "vault": "01-Projects/scandit",
-      "memory": "_scandit.md",
+      "context": "scandit-shelfview",
+      "vault": "01-Projects/scandit-shelfview",
+      "memory": "_shelfview.md",
+      "repoMemory": [
+        "CLAUDE.md",
+        "memory.md"
+      ]
+    },
+    "/Users/marcinjucha/Scandit/digital-shelf-kmp": {
+      "context": "scandit-shelfview",
+      "vault": "01-Projects/scandit-shelfview",
+      "memory": "_shelfview.md",
       "repoMemory": [
         "CLAUDE.md",
         "memory.md"
@@ -122,7 +131,7 @@
       "dir": "03-Resources/general-technical/knowledge",
       "active": true,
       "consumers": [],
-      "_note": "Base context: universal engineering craft (web/TS stack — TanStack/Supabase/RLS/React + stack-agnostic principles). No consumers of its own; web-dev contexts pull it in via `inherits`. Halo/project-specific CMS/monorepo notes stay in `agency`; iOS (scandit) does NOT inherit (different stack)."
+      "_note": "Base context: universal engineering craft (web/TS stack — TanStack/Supabase/RLS/React + stack-agnostic principles). No consumers of its own; web-dev contexts pull it in via `inherits`. Halo/project-specific CMS/monorepo notes stay in `agency`; iOS (scandit-shelfview) does NOT inherit (different stack)."
     },
     "shadow-operator": {
       "dir": "03-Resources/shadow-operator/knowledge",
@@ -141,11 +150,12 @@
         "/Users/marcinjucha/Prywatne/projects/doc-forge/.claude/skills"
       ]
     },
-    "scandit": {
-      "dir": "03-Resources/scandit/knowledge",
+    "scandit-shelfview": {
+      "dir": "03-Resources/scandit-shelfview/knowledge",
       "active": true,
       "consumers": [
-        "/Users/marcinjucha/Scandit/digital-shelf-ios/.claude/skills"
+        "/Users/marcinjucha/Scandit/digital-shelf-ios/.claude/skills",
+        "/Users/marcinjucha/Scandit/digital-shelf-kmp/.claude/skills"
       ]
     },
     "claude-dev": {

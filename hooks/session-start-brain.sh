@@ -73,7 +73,7 @@ append() { OUT="${OUT}${1}"$'\n'; }
 append "# Brain context loaded (read-only) — context: ${CONTEXT:-unknown}"
 append ""
 
-# high-shelf project memory (_scandit.md etc.)
+# high-shelf project memory (_shelfview.md etc.)
 if [ -n "$MEMORY" ] && [ -f "$MEMORY_FILE" ]; then
   append "## Brain project memory ($MEMORY_FILE)"
   append ""
@@ -129,7 +129,7 @@ if command -v git >/dev/null 2>&1; then
   TICKET="$(printf '%s' "$BRANCH" | grep -oiE 'SHELF-[0-9]+' | head -1 || true)"
 fi
 
-# working-note convention: <VAULT_SUB>/<TICKET>*.md (e.g. 01-Projects/scandit/SHELF-23796-*.md)
+# working-note convention: <VAULT_SUB>/<TICKET>*.md (e.g. 01-Projects/scandit-shelfview/SHELF-23796-*.md)
 NOTE_FILE=""
 NOTE_MISSING=0
 if [ -n "$TICKET" ]; then

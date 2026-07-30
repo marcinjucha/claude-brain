@@ -43,7 +43,7 @@ Zasada: JEDNA paczka, potem czytaj TYLKO te notatki, których wymaga zadeklarowa
      trackera z pkt 2 (np. `SHELF-23428`); (c) **FOCUS** — cokolwiek innego = opis zadania/problemu.
      Dokładne trafienie (a)/(b) ZAWSZE wygrywa z interpretacją jako focus. **WHY:** goła nazwa
      kontekstu i gołe ID ticketu muszą zachować dotychczasowe zachowanie — tani brief startowy bez
-     półki domenowej (Faza 2.8); inaczej każde `/brain-load scandit` zaczęłoby ciągnąć noty, a
+     półki domenowej (Faza 2.8); inaczej każde `/brain-load scandit-shelfview` zaczęłoby ciągnąć noty, a
      `SHELF-23428` odpalałoby wybór not po ID bez treści semantycznej.
    - **Zbiór rozpoznawanych nazw = SUMA, nie tylko cwd (KRYTYCZNE):** wszystkie wartości
      `paths[*].context` + klucze `paths[<cwd>].contexts` + klucze `paths[<cwd>].contextAliases`.
@@ -58,13 +58,13 @@ Zasada: JEDNA paczka, potem czytaj TYLKO te notatki, których wymaga zadeklarowa
      wczytaniem.
 2. **Ustal ticket** (gdy kontekst ma tracker z ID w nazwie gałęzi): `git -C <cwd> branch --show-current`
    → wzorzec ID zależy od trackera kontekstu, NIE zakładaj `SHELF-` poza JIRA: kontekst JIRA
-   (`scandit`) → `SHELF-[0-9]+` (np. `feature/SHELF-23428-...` → `SHELF-23428`); konteksty
+   (`scandit-shelfview`) → `SHELF-[0-9]+` (np. `feature/SHELF-23428-...` → `SHELF-23428`); konteksty
    Notion/Trello mają notatki nazwane slugiem, bez ID w gałęzi → **brak ticketa to normalny stan,
    nie błąd**: pomiń backfill (Faza 2.5) i pracuj po slugu/focusie. Jak wywołane z
    `/ios-feature <TICKET>` — użyj tego argumentu. Brak gałęzi/repo → też pomiń backfill.
 
 ## Faza 1 — wczytaj górny poziom (mózg)
-- Przeczytaj `vault.path`/`<vault>`/`<memory>` (np. `01-Projects/scandit/_scandit.md`) — status,
+- Przeczytaj `vault.path`/`<vault>`/`<memory>` (np. `01-Projects/scandit-shelfview/_shelfview.md`) — status,
   co w toku, jak się łączy.
 - Jeśli ticket wykryty (Faza 0 pkt 2) — NAJPIERW przeczytaj W CAŁOŚCI jego własną notatkę
   roboczą jako PODSTAWOWĄ notatkę tego worktree: `<vault>/<TICKET>*.md` (także wewnątrz
@@ -101,7 +101,7 @@ Jeśli ticket wykryty (Faza 0) **i** nie istnieje notatka `<TICKET>*.md` — ani
 siostrzany `SESSION.md` czytaj tylko gdy jego worktree/branch jest jedną z pozycji, które mózg
 trzyma jako otwarte, ALBO gdy jest świeższy niż `updated:` pamięci projektu.
 Jeśli którykolwiek `SESSION.md` wspomina tickety/pracę/etapy, których NIE ma w górnej pamięci
-`<memory>` (np. `_scandit.md`):
+`<memory>` (np. `_shelfview.md`):
 - Zasygnalizuj: **„brain stale vs SESSION.md"** + wypisz deltę (czego brak / co nieaktualne na wysokiej półce).
 - **NIE edytuj bloku `status:auto` ręcznie (TWARDA REGUŁA).** Blok jest generowany z
   `_system/templates/status-block.md` i oznaczony `<!-- status:auto — … nie edytuj ręcznie -->`.
@@ -113,7 +113,7 @@ Jeśli którykolwiek `SESSION.md` wspomina tickety/pracę/etapy, których NIE ma
 READ-ONLY porównanie: co warstwa statusu `<memory>` twierdzi, że jest „w toku / w review",
 vs ground truth TEGO kontekstu. Ground truth jest per-kontekst — rozgałęź po tym, co ISTNIEJE,
 i cicho pomiń brakujące źródło:
-- **kontekst z repo** (`scandit`, `legal-mind`, `doc-forge`, `claude-marketing`,
+- **kontekst z repo** (`scandit-shelfview`, `legal-mind`, `doc-forge`, `claude-marketing`,
   `kacper-landing-page`, `claude-dev`):
   `git log --oneline -12 origin/<default-branch>` +
   `git for-each-ref --sort=-committerdate --format='%(committerdate:short) %(refname:short)' refs/remotes/origin | head -12`

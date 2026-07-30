@@ -120,7 +120,7 @@ Czytaj `_system/templates/status-block.md` (SPEC formatu) i **ZASTĄP** blok `st
 `/status:auto` nietknięta).
 
 ## Faza 4.5 — tracker→Brain (luka migracji, opcjonalnie `--gap`, READ-ONLY)
-Wybierz tracker PER KONTEKST z `config.json` → `connectors`/`paths` (np. `scandit` → JIRA projekt SHELF;
+Wybierz tracker PER KONTEKST z `config.json` → `connectors`/`paths` (np. `scandit-shelfview` → JIRA projekt SHELF;
 `shadow-operator`/`agency`/`personal` → Notion) i zestaw zadania trackera z vaultem.
 - **Notion:** `notion-fetch`/`notion-search`; gdy MCP padnie — fallback na HTTP API
   (`Authorization: Bearer $NOTION_TOKEN`, `Notion-Version: 2022-06-28`).

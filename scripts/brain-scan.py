@@ -7,7 +7,7 @@ never writes, moves, or deletes anything. Vault root is read from
 
 Usage:
   scripts/brain-scan.py                     # scan whole vault
-  scripts/brain-scan.py --context scandit   # limit to one context's areas
+  scripts/brain-scan.py --context scandit-shelfview   # limit to one context's areas
   scripts/brain-scan.py --today 2026-07-07  # override "today" for stale check
 
 Detects (deterministic — still needs human judgment before acting):

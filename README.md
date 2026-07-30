@@ -112,7 +112,7 @@ lub `/brain-update` Faza 3.8 lub `/ai-curate-memory` target #1 zamieniają cross
 ## mirror vs brain-owned
 
 - **`home: brain`** — mózg jest źródłem prawdy, notę posiadasz i rozwijasz. Notatki syntezy z pracy
-  (scandit: brain-only, surface przez SessionStart) LUB konsumowane przez TWOJE skille (snapshot).
+  (scandit-shelfview: brain-only, surface przez SessionStart) LUB konsumowane przez TWOJE skille (snapshot).
 - **`status: mirror`** — nota tylko ODBIJA skill zespołu (`/brain-knowledge-migrate --mirror`);
   refresh skill→mózg, nigdy nie rozwijaj w miejscu. Net-nowa wiedza dla zespołu → PR do skilla,
   nie do lustra. (Scandit ma dziś 13 luster + rosnącą warstwę brain-owned syntezy.)
@@ -144,10 +144,10 @@ Dyscyplina destylacji dzielona przez silniki: skill `brain-conventions`.
 | Warstwa statusu (`status:auto`) | ✅ auto-blok, rollup 3-poziomowy | `_system/templates/status-block.md` |
 | Knowledge-system | ✅ mózg = źródło (canon/emerging/mirror) + pre-commit | `scripts/`, `_system/knowledge-system.md` |
 | SessionStart hooki | ✅ inject kontekstu + regen snapshotów wiedzy | `hooks/session-start-*.sh` |
-| Konteksty wiedzy (`active`) | scandit · shadow-operator · agency · claude-dev | `config.json` `.knowledge` |
+| Konteksty wiedzy (`active`) | scandit-shelfview · shadow-operator · agency · claude-dev | `config.json` `.knowledge` |
 | n8n / `/brain-digest` | ⬜ todo | `n8n/` |
 
-**Uwaga — konteksty:** `.paths` (brain-loadable projekty) obejmuje scandit + repa marketing/agency.
+**Uwaga — konteksty:** `.paths` (brain-loadable projekty) obejmuje scandit-shelfview + repa marketing/agency.
 `claude-dev` jest kontekstem **knowledge-only** (jego skille konsumują snapshoty wiedzy; nie ma
 projektu-vaulta `01-Projects/claude-dev`) — celowo bez wpisu `.paths`, obsługiwany przez knowledge-sync
 w swoim repo, nie przez `/brain-load`.

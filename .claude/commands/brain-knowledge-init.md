@@ -6,7 +6,7 @@ allowed-tools: Bash, Read, Edit
 
 # /brain-knowledge-init — podłącz kontekst do bazy wiedzy
 
-Onboarduje kontekst (`shadow-operator` / `agency` / `scandit` / nowy) do knowledge-system:
+Onboarduje kontekst (`shadow-operator` / `agency` / `scandit-shelfview` / nowy) do knowledge-system:
 tworzy katalog wiedzy w vaulcie + aktywuje + instaluje pre-commit u konsumentów, potem
 naprowadza na pracę z TREŚCIĄ. Para z `/brain-load` (surfacing) i `/brain-update` (maintenance).
 Kontrakt: `_system/knowledge-system.md`.

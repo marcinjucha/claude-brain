@@ -40,7 +40,7 @@ z powrotem do SESSION.md (pozostaje pasywny — „sesja nie wie o mózgu").
 Daty względne (np. „wczoraj", „dziś") zamień na bezwzględne (`YYYY-MM-DD`).
 
 ## Faza 2a — pamięć projektu / wysoka półka (status + połączenia)
-W `<vault>/<memory>` (np. `_scandit.md`): odśwież sekcje **Status**, **W toku**,
+W `<vault>/<memory>` (np. `_shelfview.md`): odśwież sekcje **Status**, **W toku**,
 **Jak się łączy**. Ustaw `updated` na dziś. Zwięźle — to mapa, nie dziennik.
 
 **KONDENSUJ, nie akumuluj (KRYTYCZNE — najczęstszy błąd tej komendy):** aktualizacja =
@@ -55,7 +55,7 @@ cytatów z kodu, ścieżek decyzji — to sygnał, że piszesz dziennik. Przenie
 a w pamięci projektu zostaw jedno zdanie statusu + link. **Jeśli istniejący wpis już spuchł od
 detalu — przy tej aktualizacji go skondensuj** (detal do working note), nie powielaj.
 
-Jeśli plik nie istnieje → utwórz z analogicznej struktury co `_scandit.md`.
+Jeśli plik nie istnieje → utwórz z analogicznej struktury co `_shelfview.md`.
 Tu idzie TYLKO wysoki poziom (status/postęp/połączenia), NIE detal techniczny.
 
 ## Faza 2b — notatka robocza / working detail (detal z sesji)
@@ -128,13 +128,13 @@ Trello to lustro next-actions (nie źródło) — dotykaj TYLKO stanu kart (pozy
 ## Faza 3.7 — utrzymanie bazy wiedzy (knowledge-system)
 Dwa zakresy o ROZDZIELNYM gatowaniu:
 - **EXTRACT** (kroki 1, 2a/2b/2c-emerging, 3) — uruchom TYLKO gdy `config.json` `.knowledge[<context>].active == true`.
-- **Maintenance ODBIĆ** (krok 2-reflection) — uruchom ZAWSZE, gdy kontekst ma jakiekolwiek notatki `status: reflection` (lub legacy `status: mirror`), NIEZALEŻNIE od `active`. WHY: kontekst może mieć odbicia do odświeżenia (np. claude-dev ma odbicia skilli meta) niezależnie od EXTRACT-u — `reflection-stale` trzeba naprawić nawet gdy EXTRACT nieaktywny. (Uwaga o scandit: config ma `active: true`. Snapshot-sync jest de-facto NO-OPEM dla kontekstów brain-only / reflection-only / pointer-only — skille zespołu nie mają bloku `## Knowledge`, więc silnik ich NIE snapshotuje — dlatego `active: true` jest bezpieczne. Konsekwencja: hook Fazy 3.8, bramkowany `active==true`, DZIAŁA dla scandit.)
+- **Maintenance ODBIĆ** (krok 2-reflection) — uruchom ZAWSZE, gdy kontekst ma jakiekolwiek notatki `status: reflection` (lub legacy `status: mirror`), NIEZALEŻNIE od `active`. WHY: kontekst może mieć odbicia do odświeżenia (np. claude-dev ma odbicia skilli meta) niezależnie od EXTRACT-u — `reflection-stale` trzeba naprawić nawet gdy EXTRACT nieaktywny. (Uwaga o scandit-shelfview: config ma `active: true`. Snapshot-sync jest de-facto NO-OPEM dla kontekstów brain-only / reflection-only / pointer-only — skille zespołu nie mają bloku `## Knowledge`, więc silnik ich NIE snapshotuje — dlatego `active: true` jest bezpieczne. Konsekwencja: hook Fazy 3.8, bramkowany `active==true`, DZIAŁA dla scandit-shelfview.)
 
 Jeśli EXTRACT aktywny (`active == true`):
 1. Uruchom `python3 /Users/marcinjucha/Prywatne/projects/claude-brain/scripts/sync-knowledge.py --context <context> --used-by` — regeneruje snapshoty + przepisuje `used-by` w notatkach mózgu + raport integralności.
 2. **Osąd agenta** (to, czego skrypt nie zrobi automatycznie) na podstawie raportu:
    - **kandydaci-duplikaty (dup?):** oceń, czy to ta sama idea; jeśli tak — scal (przenieś treść do jednej notatki, zaktualizuj `[[linki]]` i wskaźniki, usuń drugą), wg reguły anty-dryf z `_system/knowledge-system.md`.
-   - **emerging → canon:** dla notatek `status: emerging` (home=brain) sprawdź, czy wzorzec utrzymał się na **N≥3 odrębnych ŹRÓDŁACH** (twórcy / tickety / atomy — wg kontekstu; np. kontekst JIRA jak scandit promuje po ticketach/atomach; zapisane slugi przypadków w ciele notatki); jeśli tak — zmień `status` na `canon`.
+   - **emerging → canon:** dla notatek `status: emerging` (home=brain) sprawdź, czy wzorzec utrzymał się na **N≥3 odrębnych ŹRÓDŁACH** (twórcy / tickety / atomy — wg kontekstu; np. kontekst JIRA jak scandit-shelfview promuje po ticketach/atomach; zapisane slugi przypadków w ciele notatki); jeśli tak — zmień `status` na `canon`.
    - **notatki `status: reflection` (i legacy `status: mirror`) — maintenance ODBIĆ (URUCHOM ZAWSZE, niezależnie od `active`; patrz nagłówek fazy):** NIE awansuj (nigdy nie stają się brain-canon), NIE scalaj, NIE rozwijaj w nich treści — odbicie to ODBICIE skilla. **Przy `reflection-stale` (z raportu integralności, gdy aktywny; inaczej z heurystyki mtime: `reflects-source` — z fallbackiem na legacy `mirror-source` — nowszy niż notatka) ODŚWIEŻ odbicie SAM — to robi agent brain-update, NIE zalecaj użytkownikowi:** przeczytaj AKTUALNY skill-źródło z `reflects-source`, zregeneruj noty-odbicia BEZSTRATNIE ATOMOWO (re-ekstrakcja skill→brain), bump `updated`. Nadpisanie jest BEZPIECZNE — reguła develop gwarantuje, że w odbiciu NIE ma własnej wiedzy (net-nowa wiedza żyje w osobnej notatce `home: brain`). Net-nowa wiedza z sesji idzie więc do `home: brain`, NIGDY do odbicia. W raporcie: „odświeżono odbicie X ze skilla" (patrz `_system/knowledge-system.md` §„Tryb REFLECT"). **Notatki `status: pointer` (link-only stub, zero wiedzy) — NIE odświeżaj wiedzą; utrzymaj tylko poprawny link/gist.**
    - **dangling / sieroty:** napraw (dangling = krytyczne; sierota = rozważ link z MOC albo usuń). Notatki `status: reflection` / `pointer` (i legacy `mirror`) są legalnie bez-konsumenta (engine wyłącza je z orphan-check) — NIE traktuj odbicia/pointera jako sieroty do usunięcia.
 3. Zaktualizuj `_MOC.md` kontekstu, jeśli doszły/zniknęły notatki.

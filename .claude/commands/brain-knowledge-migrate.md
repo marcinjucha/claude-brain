@@ -38,7 +38,7 @@ dostajesz przez **ODBICIE (atomy)** wiedzy do mózgu, NIGDY nie ścieniając ski
 ## Faza 0 — ustal skill + tryb
 - Skill z `$1`. Brak → zapytaj który skill.
 - Sprawdź, że katalog skilla istnieje (`skills/<skill>/SKILL.md` w repo kontekstu). Nie istnieje → zapytaj/przerwij, NIE działaj na ślepo.
-- **Dla REFLECT rozwiąż `<ctx>`** z REPO skilla → kontekstu w `config.json` `.knowledge` (np. skill w `digital-shelf-ios` → `scandit`; noty-odbicia lądują w `03-Resources/scandit/knowledge/`). Potwierdź, że `<ctx>` jest zarejestrowany w configu.
+- **Dla REFLECT rozwiąż `<ctx>`** z REPO skilla → kontekstu w `config.json` `.knowledge` (np. skill w `digital-shelf-ios` → `scandit-shelfview`; noty-odbicia lądują w `03-Resources/scandit-shelfview/knowledge/`). Potwierdź, że `<ctx>` jest zarejestrowany w configu.
 - Tryb: **EXTRACT** domyślnie; **REFLECT** gdy `--reflect` LUB gdy skill jest współdzielony z zespołem.
   Niejasne, czy współdzielony? → zapytaj wprost: „czy ten skill jest używany przez zespół (np. repo
   iOS/Scandit, nie tylko Twoje)?". Zespołowy = REFLECT.
