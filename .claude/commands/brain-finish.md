@@ -17,10 +17,10 @@ Repo mózgu (config/skrypty): `/Users/marcinjucha/Prywatne/projects/claude-brain
 
 ```
 0: Preflight — kontekst, memory.md N, kandydaci repo, baseline gita   (INLINE, zawsze)
-1: /brain-update                                                      (FORK, zawsze)
-2: lekcje sesji → memory.md  (/ai-extract-memory SPEC)                (FORK, self-skip)
+1: /brain-update                                       (FORK, zawsze / już w sesji → skip)
+2: lekcje sesji → memory.md  (/ai-extract-memory SPEC)  (FORK, self-skip / już w sesji)
 3: /brain-extract-knowledge  (bramka odroczona)                       (FORK, warunkowo)
-4: zapis kolejki odroczonej do notatki roboczej                       (INLINE)
+4: zapis kolejki odroczonej — notatka robocza / Trello Inbox           (INLINE)
 5: Commit per repo                                                    (INLINE — nie delegować)
 6: Raport                                                             (INLINE)
 ```
@@ -112,6 +112,21 @@ czytał się jako decyzja.
 
 (a) **Rozwiąż `<ctx>` / `<vault>` / `<memory>`** wg `/brain-update` Faza 0 (zadeklarowany
 `$ARGUMENTS` > cwd→`config.json` `.paths`).
+
+**Gdy argument NIE mapuje się na ŻADEN kontekst** — brak wpisu w `config.json` `.paths` i brak
+`knowledge[<arg>]` (realny przebieg 2026-08-04: `/brain-finish claude-brain`, a rozpoznane konteksty
+to `agency`, `claude-dev`, `scandit-pple-sdk`, `scandit-shelfview`, `shadow-operator`) — są DWA
+dopuszczalne wyjścia i przebieg MUSI powiedzieć, które wybrał:
+1. argument nazywa **repo / obszar narzędziowy poza mapą mózgu** → Fazy 1–3 `SKIPPED — argument nie
+   jest kontekstem mózgu, brak targetu vaulta/pamięci`, przebieg wykonuje **wyłącznie zamknięcie
+   gita** (Fazy 4–6);
+2. faktyczna praca mózgowa tej sesji należy do **innego, zmapowanego kontekstu** → rozwiąż na TEN
+   kontekst i powiedz to wprost w planie preflightu i w raporcie.
+
+**NIGDY nie schodź po cichu do domyślnego kontekstu z cwd.** WHY: cichy fallback podszyłby zamknięcie
+tej sesji pod ZŁY mózg — wpis „Ostatnio…" i noty wiedzy wylądowałyby w pamięci projektu, którego ta
+sesja nie dotknęła, i nikt by tego nie zauważył, bo przebieg wyglądałby na udany.
+
 (b) `wc -l <project>/memory.md` → **N**, wobec progów 150 / 180 / 200.
 (c) **Wypisz kandydatów repo:** repo vaulta Obsidiana, repo projektu (cwd) oraz `claude-brain`
 TYLKO jeśli ta sesja dotknęła jego skryptów/configu.
@@ -119,13 +134,28 @@ TYLKO jeśli ta sesja dotknęła jego skryptów/configu.
 **PRZED-ISTNIEJĄCY baseline** brudnych ścieżek / wpisów indeksu / untracked **zanim cokolwiek
 zostanie zapisane**. Ten baseline jest tym, co czyni listę „zostało niescommitowane" z Fazy 6
 ZMIERZONĄ, a nie zgadniętą.
+(e) **Kontrola idempotencji Faz 1–3** — dla KAŻDEJ z nich ustal, czy już wykonała się W TEJ SESJI.
+- **Sygnał podstawowy: własna wiedza orkiestratora o tej konwersacji** — albo uruchomiłeś tę
+  podkomendę w tej sesji, albo nie. Tego nie da się zautomatyzować i tak to trzeba czytać.
+- **Sygnał potwierdzający (poszlaka, nie dowód):** frontmatter `<memory>` `updated:` = dzisiejsza
+  data ORAZ pamięć projektu ma już wpis z dzisiaj opisujący pracę TEJ sesji.
+
+Faza już wykonana → `SKIPPED — już wykonana w tej sesji`, a jej **już wyprodukowane wyjścia**
+(lista kandydatów z Fazy 3.8 `/brain-update`, dopisane wpisy `memory.md` + nowe N, zapisane ścieżki)
+**przenieś do faz dalszych DOKŁADNIE tak, jakby faza właśnie się wykonała**.
+**WHY przeniesienie jest load-bearing:** bramka Fazy 3 i suma ścieżek Fazy 5 czytają ZWROTY faz
+wyżej — skip, który je zeruje, wygasza Fazę 3 i wypuszcza commit bez części zapisanych ścieżek.
+**WHY sama kontrola:** 2026-08-04 `/brain-update` i `/ai-extract-memory` odpalono ręcznie wcześniej
+w tej samej sesji; ponowienie dopisałoby DRUGI wpis „Ostatnio (2026-08-04…)" o tej samej sesji
+i przegenerowało blok statusu, więc orkiestrator musiał odstąpić od reguł tej komendy trzy razy.
 
 Wypisz jednorazowy plan preflightu (kontekst + jak rozwiązany, N, repa, które fazy prawdopodobnie
-się wykonają) i **jedź dalej. Bez pytań** (Reguła 4).
+się wykonają, które są już wykonane) i **jedź dalej. Bez pytań** (Reguła 4).
 
-**Kontrakt dalej:** `<ctx>`, `<vault>`, `<memory>`, N, lista repo, baseline survey.
+**Kontrakt dalej:** `<ctx>`, `<vault>`, `<memory>`, N, lista repo, baseline survey, lista faz już
+wykonanych w tej sesji wraz z ich wyjściami.
 
-## Faza 1 — `/brain-update` (FORK, zawsze, bez skipu)
+## Faza 1 — `/brain-update` (FORK, zawsze — chyba że już wykonana w tej sesji)
 
 **Kontekst do forka:** rozwiązana trójka; ograniczenie Trello z Reguły 7; plus „jesteś wewnątrz
 brain-finish — na końcu idzie raport, więc NIE proś o potwierdzenia, o które normalnie byś poprosił;
@@ -137,7 +167,7 @@ cokolwiek niepotwierdzalne wraca jako PROPOZYCJA w Twoim zwrocie".
 
 SPEC: `/Users/marcinjucha/Prywatne/projects/claude-brain/.claude/commands/brain-update.md`.
 
-## Faza 2 — lekcje sesji → `memory.md` (FORK, self-skip przy braku sygnału)
+## Faza 2 — lekcje sesji → `memory.md` (FORK, self-skip przy braku sygnału; SKIP, gdy już wykonana w tej sesji)
 
 Idzie za SPEC-em `/ai-extract-memory` — jego **ciałem promptu agenta** (tabela sygnałów, format
 wpisu, limit 200 linii, raport liczby linii) — a **NIE** za jego wrapperem orkiestracyjnym
@@ -160,9 +190,12 @@ SPEC: `/Users/marcinjucha/.claude/commands/ai-extract-memory.md`.
 ## Faza 3 — wiedza domenowa (FORK, warunkowo)
 
 **SKIP, gdy zachodzi którekolwiek — i powiedz które** (skip to normalny wynik, nie porażka):
-1. `config.json` `knowledge[<ctx>]` nie istnieje albo `active != true`;
+1. `config.json` `knowledge[<ctx>]` nie istnieje albo `active != true` (w tym: argument nie mapuje
+   się na żaden kontekst — Faza 0(a) wariant 1);
 2. Faza 1 surface'owała ZERO kandydatów **ORAZ** Faza 2 nie przekierowała tu żadnej lekcji
-   uniwersalnego craftu.
+   uniwersalnego craftu;
+3. `/brain-extract-knowledge` już wykonano w TEJ sesji (Faza 0(e)) — wtedy przenieś jego zapisane
+   noty i ścieżki dalej, nie odpalaj go po raz drugi.
 
 Inaczej: fork wykonuje `/brain-extract-knowledge` z przekazaną listą kandydatów.
 
@@ -185,12 +218,21 @@ SPEC: `/Users/marcinjucha/Prywatne/projects/claude-brain/.claude/commands/brain-
 Dopisz kolejkę do przeglądu **do notatki roboczej sesji** (ten sam target, który rozwiązała
 `/brain-update` Faza 2b; gdy target był niejednoznaczny → dopisz do pamięci projektu `<memory>`).
 
+**Gdy dla rozwiązanego kontekstu NIE MA żadnego targetu w vaulcie** (Faza 0(a) wariant 1 — argument
+poza mapą mózgu, więc nie ma ani notatki roboczej, ani `<memory>`): kolejka idzie w **NOWE karty
+w liście Trello `📥 Inbox`**, po jednej na element (preautoryzowane, Reguła 7), a raport podaje
+short-linki utworzonych kart. Zastosowane i sprawdzone 2026-08-04.
+**WHY właśnie Trello:** cały sens tej kolejki to przetrwanie okna czatu, a bez kontekstu w vaulcie
+Trello jest JEDYNĄ dostępną warstwą trwałości — kolejka wypisana tylko w raporcie umiera razem
+z sesją.
+
 **Kolejka zawiera:** odroczoną bramkę wiedzy (noty `emerging` do zweryfikowania) + niezastosowane
 propozycje Trello + ewentualny należny przebieg `sync-knowledge.py` + rekomendację
 `/ai-curate-memory`, jeśli N tego wymaga.
 
-**WHY kolejka MUSI trafić do pliku, nie tylko na czat:** w raporcie czatowym umiera razem z okienkiem,
-co przeczy całemu sensowi tej komendy; w notatce roboczej podnosi ją następny `/brain-load`.
+**WHY kolejka MUSI trafić do warstwy TRWAŁEJ (plik albo karta), nie tylko na czat:** w raporcie
+czatowym umiera razem z okienkiem, co przeczy całemu sensowi tej komendy; w notatce roboczej podnosi
+ją następny `/brain-load`, a karta w Inboxie czeka na przegląd Marcina.
 
 **WHY ta faza jest PRZED commitem (rozstrzygnięcie kolejności):** commit musi być OSTATNIM ZAPISEM
 przebiegu, żeby wszystko, co ta sesja zapisała — łącznie z plikiem kolejki — było w środku, a raport
@@ -209,6 +251,8 @@ Mechanika, w tej kolejności:
    — **przebieg ponowny** (drzewo zmieniło się od Fazy 0).
 2. `python3 /Users/marcinjucha/Prywatne/projects/claude-brain/scripts/session-commit-scope.py --plan <repo> -- <path>…`
    z **sumą zapisanych ścieżek podaną przez model**, minus ścieżki faz, które padły (Reguła 6).
+   Ścieżki podawaj **repo-relative albo absolutne**; gdy ta sama nazwa istnieje i w repo, i w cwd,
+   skrypt twardo failuje i żąda absolutnej — podaj absolutną, nie zgaduj.
 3. Pokaż zawężony `git status --short` + `git diff --stat` per repo.
 4. `git add -- <paths>` — **WYMAGANE**, bo świeża nota wiedzy jest untracked, a
    `git commit -- <untracked-path>` się wywala. **Nigdy `git add -A`.**
@@ -219,23 +263,43 @@ Mechanika, w tej kolejności:
 6. Wiadomość wg konwencji commitów projektu (WHY-focused, body 80–300 znaków) **BEZ prefiksu
    `[TICKET]`** — to konwencja gałęzi Scandit, a repa vaulta i mózgu nie mają gałęzi z ticketami.
    Prozę podawaj przez `-m`, nigdy heredocem.
-7. **Tylko bieżąca gałąź** — bez tworzenia gałęzi, bez pusha.
+7. **Po każdym commicie:**
+   `python3 /Users/marcinjucha/Prywatne/projects/claude-brain/scripts/session-commit-scope.py --verify <repo> <sha> -- <path>…`
+   z tą samą listą ścieżek. Wynik (`⚠ EXTRA` / `⚠ MISSING` / `⚠ LEFTOVER`) idzie do Fazy 6 punkt 4.
+   **WHY obowiązkowo:** pathspec NIE gwarantuje zawartości commita — hook `pre-commit` może
+   zastage'ować pliki w trakcie commita. 2026-08-04 commit zawężony do `memory.md` wylądował
+   z TRZEMA plikami (dwa snapshoty wiedzy z RÓWNOLEGŁEJ sesji) i zostawił je zastage'owane;
+   bez tego kroku raport twierdziłby, że commit ma jeden plik.
+   **Nie używamy `--no-verify`** — ten hook robi też sync snapshotów i blokuje commit na wiszącej
+   referencji, więc obejście kupiłoby czystość commita za cenę realnej kontroli. Dlatego gwarancja
+   jest ZAPOBIEGANIE → **WYKRYCIE I UCZCIWE ZARAPORTOWANIE**.
+8. **Tylko bieżąca gałąź** — bez tworzenia gałęzi, bez pusha.
 
 SPEC stylu wiadomości: skill `ai-git-commit-patterns`.
 
 ## Faza 6 — Raport (INLINE)
 
 W tej kolejności:
-1. **Kontekst** — rozwiązana wartość + czy zadeklarowany, czy wywiedziony z cwd.
-2. **Per pod-krok RAN / SKIPPED + powód**, z wyraźnym stwierdzeniem, że skip jest normalny (zero
-   kandydatów wiedzy jest częste i poprawne).
+1. **Kontekst** — rozwiązana wartość + czy zadeklarowany, czy wywiedziony z cwd; a gdy argument nie
+   mapował się na żaden kontekst, **który z dwóch wariantów Fazy 0(a) wybrano** (poza mapą mózgu →
+   sam git, czy przepisanie na inny zmapowany kontekst).
+2. **Per pod-krok RAN / SKIPPED + powód**, z wyraźnym stwierdzeniem, że skip jest normalny — zero
+   kandydatów wiedzy, „już wykonana w tej sesji" i „argument nie jest kontekstem mózgu" to poprawne
+   wyniki, nie awarie do ponowienia.
 3. **Co zapisano**, pogrupowane per system — wysoka półka vaulta · notatka robocza · noty wiedzy ·
    `memory.md`.
-4. **Commity** — jedna linia per repo (repo, krótki sha, subject, liczba plików), a potem jawnie
-   **przed-istniejące wpisy brudne/staged ZOSTAWIONE NIESCOMMITOWANE, wypisane po ścieżkach**.
-   WHY obowiązkowo: 2026-07-29 cztery zmiany nazw zastage'owane przez wcześniejszą sesję wpadły do
-   commita, który twierdził, że zawiera tylko pracę tamtej sesji — jawne stage'owanie NIE wystarcza,
-   bo `git commit` commituje CAŁY indeks.
+4. **Commity** — jedna linia per repo (repo, krótki sha, subject, liczba plików), a potem jawnie:
+   - **przed-istniejące wpisy brudne/staged ZOSTAWIONE NIESCOMMITOWANE, wypisane po ścieżkach**;
+   - **pliki `⚠ EXTRA`, które hook wcisnął do commita** (z `--verify`, krok 7 Fazy 5) + wszelkie
+     `⚠ LEFTOVER` zostawione zastage'owane po commicie.
+
+   **DWA ODRĘBNE WEKTORY ZAMIATANIA — pierwszy zamyka zawężanie, drugi nie:**
+   - **indeks** (praca zastage'owana WCZEŚNIEJ): 2026-07-29 cztery zmiany nazw z wcześniejszej sesji
+     wpadły do commita, który twierdził, że zawiera tylko pracę tamtej sesji — jawne stage'owanie
+     NIE wystarcza, bo `git commit` commituje CAŁY indeks. Zamykane przez `commit -- <paths>`;
+   - **hook** (pliki stage'owane W TRAKCIE commita): 2026-08-04 poprawnie zawężony commit wylądował
+     z dwoma plikami z RÓWNOLEGŁEJ sesji i zostawił je w brudnym indeksie. Zawężanie tego NIE
+     zamyka — wyłapuje to dopiero `--verify` po commicie.
 5. **Kolejka do przeglądu** (ta sama, którą zapisała Faza 4 — plus ścieżka pliku, w który wpadła).
 6. **Nie zapisano i dlaczego**, w tym każda padnięta faza, której ścieżki wyłączono z commita.
 

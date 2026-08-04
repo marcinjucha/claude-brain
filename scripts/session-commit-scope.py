@@ -2,10 +2,12 @@
 """
 session-commit-scope.py — git commit scoping helper for /brain-finish Phase 5.
 
-Two modes:
-  --survey <repo>...            per repo: worktree-dirty paths, INDEX entries, untracked paths
-  --plan <repo>... -- <path>... group supplied paths by repo, flag no-ops and index entries that
-                                a commit would sweep, and emit the exact add/commit invocations
+Three modes:
+  --survey <repo>...                 per repo: worktree-dirty paths, INDEX entries, untracked paths
+  --plan <repo>... -- <path>...      group supplied paths by repo, flag no-ops and index entries that
+                                     a commit would sweep, warn about a pre-commit hook, and emit the
+                                     exact add/commit invocations
+  --verify <repo> <sha> -- <path>... compare what the commit ACTUALLY holds against the intended set
 
 BOUNDARY — the script NEVER decides WHICH paths are "this session's". That is judgment and stays
 with the model, which knows what it wrote. The script's value is CORRECTNESS, not input size:
@@ -19,12 +21,35 @@ with the model, which knows what it wrote. The script's value is CORRECTNESS, no
   2. It mechanizes the index inspection that the 2026-07-29 incident proved gets forgotten:
      `git commit` commits the whole INDEX, not the paths you just staged — four renames staged by
      an earlier session were swept into a commit claiming to hold only that session's work.
+  3. It closes the SECOND sweep vector, found on the first real /brain-finish run (2026-08-04):
+     a repo `pre-commit` hook can `git add` files DURING the commit, so a correctly scoped pathspec
+     is not a guarantee. `claude-marketing`'s hook runs sync-knowledge.py and stages the regenerated
+     snapshots; commit d6ddaa9 was scoped to `memory.md` and landed with THREE files, two of them
+     snapshots belonging to a parallel session, and left those two staged afterwards.
+     We do NOT pass --no-verify: that hook also blocks on a dangling reference, so bypassing it
+     would buy commit purity at the price of a real safety check. The guarantee therefore moves from
+     PREVENT to DETECT AND REPORT TRUTHFULLY — hence the --plan hook warning and the --verify mode.
+
+PATH RESOLUTION (--plan / --verify) — supplied paths are resolved in this order:
+  1. absolute            → used as-is;
+  2. repo-relative       → exists under one of the supplied repos;
+  3. cwd-relative        → exists relative to the process CWD, then mapped into its repo;
+  4. git-known           → --plan only: not on disk (e.g. a staged DELETION) but git reports it
+                           dirty/staged/untracked in exactly one supplied repo;
+  5. otherwise           → hard error.
+An AMBIGUOUS path (exists both repo-relative and cwd-relative, resolving to DIFFERENT files) is a
+hard error, never a guess: silently picking one of two real files is exactly the class of mistake
+this script exists to prevent. WHY resolution order at all — the interface reads `--plan <repo> --
+<paths>`, so repo-relative paths are the natural call; resolving them against CWD (the pre-2026-08-04
+behavior) failed every path whenever the target repo was not the CWD, which is the normal case for
+the vault and for claude-brain.
 
 Explicitly NOT in scope: counting memory.md against its threshold (one `wc -l` in Phase 0 —
 wrapping it is overhead, not leverage).
 
-Exit codes: 0 ok · 1 advisory warnings (no-op path and/or sweep risk) · 2 hard error
-            (unreadable repo, or a supplied path outside every known repo).
+Exit codes: 0 ok · 1 advisory warnings (--plan: no-op path and/or sweep risk; --verify: EXTRA or
+            MISSING entries) · 2 hard error (unreadable repo, unresolvable or ambiguous path, or a
+            supplied path outside every known repo).
 """
 import argparse
 import os
@@ -51,10 +76,44 @@ def git(repo, *args):
     return proc.stdout
 
 
+def git_soft(repo, *args):
+    """Run git in `repo`; return (returncode, stdout bytes). Never dies.
+
+    Used for probes where a non-zero exit is a legitimate answer (`config --get` of an unset key).
+    """
+    proc = subprocess.run(("git", "-C", repo) + args,
+                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return proc.returncode, proc.stdout
+
+
 def repo_root(path):
     if not os.path.isdir(path):
         die("not a directory: " + path)
     return git(path, "rev-parse", "--show-toplevel").decode("utf-8").strip()
+
+
+def pre_commit_hook(root):
+    """Return the path of an executable `pre-commit` hook, or None.
+
+    Honors core.hooksPath (a repo can relocate its hooks); falls back to the hooks dir git itself
+    reports, which is correct for worktrees and separate git dirs too.
+    """
+    rc, out = git_soft(root, "config", "--get", "core.hooksPath")
+    configured = out.decode("utf-8", "replace").strip() if rc == 0 else ""
+    if configured:
+        base = configured if os.path.isabs(configured) else os.path.join(root, configured)
+    else:
+        rc2, out2 = git_soft(root, "rev-parse", "--git-path", "hooks")
+        rel = out2.decode("utf-8", "replace").strip() if rc2 == 0 else ".git/hooks"
+        base = rel if os.path.isabs(rel) else os.path.join(root, rel)
+    candidate = os.path.join(base, "pre-commit")
+    if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+        return candidate
+    return None
+
+
+HOOK_WARNING = ("⚠ HOOK      %s — a pre-commit hook may stage files OUTSIDE your pathspec; "
+                "check the commit afterwards with --verify")
 
 
 def scan(root):
@@ -94,6 +153,22 @@ def scan(root):
     return {"index": index, "dirty": dirty, "untracked": untracked}
 
 
+def commit_files(root, sha):
+    """Paths a commit actually touches, per `git show --name-only`.
+
+    -z for the same reason as scan(): raw NUL-separated paths, no unquoting of non-ASCII names.
+    The empty --format= still emits a newline before the name list, so leading newlines are
+    stripped per field. A rename is reported under its NEW name only, which is what we compare.
+    """
+    raw = git(root, "show", "--name-only", "--format=", "-z", sha)
+    out = []
+    for field in raw.split(b"\x00"):
+        name = field.strip(b"\n")
+        if name:
+            out.append(name.decode("utf-8", "surrogateescape"))
+    return out
+
+
 def print_survey(root, st):
     print("REPO %s" % root)
     for kind in ("index", "dirty", "untracked"):
@@ -108,6 +183,59 @@ def bare(path_entry):
     return path_entry.split(" (<- ", 1)[0]
 
 
+def resolve(p, roots, known=None):
+    """Resolve one supplied path to an absolute path. See PATH RESOLUTION in the module docstring.
+
+    `known` (optional) maps root -> set of git-known relative paths, used as step 4 so that a path
+    which no longer exists on disk (a staged deletion) still resolves.
+    """
+    if os.path.isabs(p):
+        return os.path.abspath(p)
+
+    hits = []          # (how, abspath) — ordered repo-relative first, then cwd-relative
+    for root in roots:
+        cand = os.path.abspath(os.path.join(root, p))
+        if os.path.exists(cand):
+            hits.append(("repo-relative to " + root, cand))
+    cwd_cand = os.path.abspath(p)
+    if os.path.exists(cwd_cand):
+        hits.append(("cwd-relative", cwd_cand))
+
+    distinct = []
+    for _, cand in hits:
+        if cand not in distinct:
+            distinct.append(cand)
+    if len(distinct) > 1:
+        die("ambiguous path %s — resolves to DIFFERENT files repo-relative and cwd-relative (%s); "
+            "pass an absolute path" % (p, " vs ".join(distinct)))
+    if distinct:
+        return distinct[0]
+
+    if known:
+        matches = [os.path.join(root, p) for root, rels in known.items() if p in rels]
+        if len(matches) == 1:
+            return os.path.abspath(matches[0])
+        if len(matches) > 1:
+            die("ambiguous path %s — git reports it in more than one supplied repo (%s); "
+                "pass an absolute path" % (p, " vs ".join(matches)))
+
+    die("path not found (tried repo-relative and cwd-relative): %s" % p)
+
+
+def group_by_repo(abs_paths, ordered_roots):
+    """Split absolute paths into {root: [relpath...]} plus a list of paths outside every root."""
+    grouped = {root: [] for root in ordered_roots}
+    orphans = []
+    for ap in abs_paths:
+        for root in ordered_roots:
+            if ap == root or ap.startswith(root + os.sep):
+                grouped[root].append(os.path.relpath(ap, root))
+                break
+        else:
+            orphans.append(ap)
+    return grouped, orphans
+
+
 def do_survey(repos):
     for r in repos:
         root = repo_root(r)
@@ -120,17 +248,11 @@ def do_plan(repos, paths):
     # longest root first, so a nested repo wins over its parent
     ordered = sorted(set(roots), key=len, reverse=True)
     states = {root: scan(root) for root in ordered}
+    known_rels = {root: set(st["dirty"]) | set(st["untracked"]) | {bare(e) for e in st["index"]}
+                  for root, st in states.items()}
 
-    grouped = {root: [] for root in ordered}
-    orphans = []
-    for p in paths:
-        ap = os.path.abspath(p)
-        for root in ordered:
-            if ap == root or ap.startswith(root + os.sep):
-                grouped[root].append(os.path.relpath(ap, root))
-                break
-        else:
-            orphans.append(p)
+    resolved = [resolve(p, ordered, known_rels) for p in paths]
+    grouped, orphans = group_by_repo(resolved, ordered)
 
     warn = False
     for root in ordered:
@@ -138,8 +260,12 @@ def do_plan(repos, paths):
         if not rels:
             continue
         st = states[root]
-        known = set(st["dirty"]) | set(st["untracked"]) | {bare(e) for e in st["index"]}
+        known = known_rels[root]
         print("REPO %s" % root)
+        hook = pre_commit_hook(root)
+        if hook:
+            # advisory only — a hook is normal, not an error, so it must not change the exit code
+            print("  " + HOOK_WARNING % hook)
         for rel in rels:
             print("  scoped    %s" % rel)
         noop = [r for r in rels if r not in known]
@@ -167,24 +293,83 @@ def do_plan(repos, paths):
     return 1 if warn else 0
 
 
+def do_verify(repo, sha, paths):
+    """Compare a landed commit against the intended path set.
+
+    The EXTRA list is the load-bearing output: it is what makes a run's report truthful about what
+    actually landed, since a pre-commit hook can stage files the pathspec never named.
+    """
+    root = repo_root(repo)
+    actual = commit_files(root, sha)
+
+    # Single repo here, so a path that no longer exists on disk (a committed deletion) is simply
+    # taken as repo-relative rather than erroring — a MISSING/ok verdict is more useful than a stop.
+    intended = []
+    for p in paths:
+        if os.path.isabs(p):
+            ap = os.path.abspath(p)
+        elif os.path.exists(os.path.abspath(os.path.join(root, p))) or os.path.exists(os.path.abspath(p)):
+            ap = resolve(p, [root])
+        else:
+            ap = os.path.abspath(os.path.join(root, p))
+        intended.append(ap)
+
+    grouped, orphans = group_by_repo(intended, [root])
+    for p in orphans:
+        sys.stderr.write("session-commit-scope: path outside every known repo: %s\n" % p)
+    if orphans:
+        return 2
+    rels = grouped[root]
+
+    print("REPO %s" % root)
+    print("  COMMIT    %s (%d file(s))" % (sha, len(actual)))
+    actual_set, intended_set = set(actual), set(rels)
+    extra = [a for a in actual if a not in intended_set]
+    missing = [r for r in rels if r not in actual_set]
+    for r in rels:
+        if r in actual_set:
+            print("  ok        %s" % r)
+    for r in missing:
+        print("  ⚠ MISSING  %s — intended but NOT in the commit" % r)
+    for a in extra:
+        print("  ⚠ EXTRA    %s — in the commit but NOT intended (pre-commit hook staged it?)" % a)
+
+    # A hook that staged files during the commit usually leaves them staged afterwards — a primed
+    # trap for the NEXT commit, which would sweep them in. Report it, advisory only.
+    leftovers = scan(root)["index"]
+    for e in leftovers:
+        print("  ⚠ LEFTOVER %s — still staged after the commit; clean before the next one" % e)
+
+    print("  TOTAL   intended=%d actual=%d extra=%d missing=%d staged-leftovers=%d"
+          % (len(rels), len(actual), len(extra), len(missing), len(leftovers)))
+    return 1 if (extra or missing) else 0
+
+
 def main():
     ap = argparse.ArgumentParser(
         prog="session-commit-scope.py",
-        description="Survey git state per repo, or plan a path-scoped commit.")
+        description="Survey git state per repo, plan a path-scoped commit, or verify a landed one.")
     ap.add_argument("--survey", nargs="+", metavar="REPO",
                     help="report dirty / index / untracked paths per repo")
     ap.add_argument("--plan", nargs="+", metavar="REPO",
                     help="plan a scoped commit; list paths after a bare --")
+    ap.add_argument("--verify", nargs=2, metavar=("REPO", "SHA"),
+                    help="compare a landed commit against the intended paths, listed after a bare --")
     ap.add_argument("paths", nargs="*", metavar="PATH",
-                    help="paths to scope (only with --plan, after --)")
+                    help="paths to scope (only with --plan / --verify, after --)")
     args = ap.parse_args()
 
-    if bool(args.survey) == bool(args.plan):
-        ap.error("pass exactly one of --survey or --plan")
+    chosen = [bool(args.survey), bool(args.plan), bool(args.verify)]
+    if sum(chosen) != 1:
+        ap.error("pass exactly one of --survey, --plan or --verify")
     if args.survey:
         if args.paths:
             ap.error("--survey takes repos only; got extra paths: %s" % " ".join(args.paths))
         sys.exit(do_survey(args.survey))
+    if args.verify:
+        if not args.paths:
+            ap.error("--verify needs the intended paths after a bare --")
+        sys.exit(do_verify(args.verify[0], args.verify[1], args.paths))
     if not args.paths:
         ap.error("--plan needs paths after a bare --")
     sys.exit(do_plan(args.plan, args.paths))
