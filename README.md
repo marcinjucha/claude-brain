@@ -88,6 +88,7 @@ Komendy są **globalne** (pliki w `.claude/commands/`, symlinkowane do `~/.claud
 |---------|-------|-------|-------|
 | `/brain-load` | start sesji pracy | pamięć projektu, notatka robocza, pamięć repo, tracker | backfill notatki ticketu + delta wysokiej półki |
 | `/brain-update` | po sesji pracy | ta sesja, `SESSION.md`, `git log` | pamięć projektu + notatka robocza + blok statusu; proponuje noty wiedzy (Faza 3.8) |
+| `/brain-finish` | **zamknięcie sesji (jeden przebieg)** | orkiestruje `/brain-update` → `/ai-extract-memory` → `/brain-extract-knowledge` | wszystko, co piszą tamte + kolejka odroczona do notatki roboczej + commit per repo (bieżąca gałąź, bez pusha) |
 | `/brain-pull` | pobranie zadań | tracker (Notion/JIRA/Trello) | notatki robocze |
 | `/brain-publish` | wysłanie produktu | notatka robocza (`## Finalny produkt`) | tracker |
 | `/brain-inbox` | triage capture | `00-Inbox` | tracker; kasuje przetworzony plik |
@@ -138,7 +139,7 @@ Dyscyplina destylacji dzielona przez silniki: skill `brain-conventions`.
 | Telegram capture | ✅ działa (bot @mjchiefbot, launchd) | `connectors/telegram/` |
 | Notion connector | ✅ spec + konwencja | `connectors/notion/` |
 | JIRA connector | ✅ spec + demo pull (SHELF) | `connectors/jira/` |
-| Rodzina `/brain-*` (10 komend) | ✅ zadania · pamięć · status · knowledge (globalne) | `.claude/commands/` → `~/.claude/commands/` |
+| Rodzina `/brain-*` (11 komend) | ✅ zadania · pamięć · status · knowledge · zamknięcie sesji (globalne) | `.claude/commands/` → `~/.claude/commands/` |
 | Skill `brain-conventions` | ✅ dyscyplina destylacji + konwencje brain | `.claude/skills/` → `~/.claude/skills/` |
 | Agent `brain-manager` | ✅ thin router (izolacja ciężkich operacji brain) | `.claude/agents/` → `~/.claude/agents/` |
 | Warstwa statusu (`status:auto`) | ✅ auto-blok, rollup 3-poziomowy | `_system/templates/status-block.md` |
@@ -162,6 +163,7 @@ Pełny projekt: `docs/architecture.md`. Mapa kontekstów: `docs/contexts.md`.
 |--------|----------|
 | `link-commands.sh` | Symlinkuje artefakty brain do `~/.claude/`: komendy (`commands/*.md`), skille (`skills/*/`), agentów (`agents/*.md`). Idempotentny, `--dry-run`, nie nadpisuje zwykłych plików. Odpal po dodaniu dowolnego artefaktu. |
 | `brain-scan.py` | Read-only diagnostyka vaultu (broken wikilinks, orphan, stale dates, big files) — zasila `/brain-sync` Fazę 1. |
+| `session-commit-scope.py` | Scoping commita dla `/brain-finish` Fazy 5: `--survey` (brudne / **wpisy indeksu** / untracked per repo) i `--plan … -- <ścieżki>` (flaguje no-opy + wpisy indeksu, które commit zamiecie; emituje poprawne `git add`/`git commit` z `-m` PRZED `--`). Exit 0 ok / 1 ostrzeżenia / 2 ścieżka poza repo. |
 | `sync-knowledge.py` | Snapshot wiedzy vault→skille (EXTRACT) + integrity (`--check` exit 1 dryf / 2 dangling; orphan advisory). |
 | `knowledge-init.sh` | Hydraulika `/brain-knowledge-init` (katalog + `active:true` + pre-commit). Idempotentny. |
 | `install-precommit.sh` | Pre-commit pilnujący spójności knowledge w repo-konsumencie. |

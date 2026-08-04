@@ -59,3 +59,26 @@ i raportuje luki migracji tracker→Brain (Notion+JIRA, READ-ONLY, sam pull dele
 To okresowy odpowiednik event-driven `brain-update` (które regeneruje status WĄSKO — własny blok
 kontekstu + własny wycinek w `Home.md`, tylko gdy status się zmienił). Dołącza do rodziny `brain-*`
 (brain-load, brain-update, brain-pull, brain-publish, brain-inbox, brain-social).
+
+## brain-finish — orkiestrator zamknięcia sesji
+
+**`brain-finish`** (`commands/brain-finish.md`) — jeden przebieg zamykający sesję: `/brain-update`
+→ lekcje repo do `memory.md` (wg SPEC-u `/ai-extract-memory`) → `/brain-extract-knowledge` →
+zapis kolejki odroczonej do notatki roboczej → commit per repo. Trzy warstwy, które muszą tu
+zostać zrozumiane, bo każda z nich była realnym błędem:
+
+- **Fazy 1–3 idą przez `subagent_type: "fork"`, NIGDY przez świeżego agenta.** Wszystkie trzy
+  podkomendy mają TĘ konwersację jako główne źródło, a świeży agent jej nie widzi i zwróci puste
+  albo wymyślone. Sam wrapper `/ai-extract-memory` robi to zakazanym sposobem (deleguje do świeżego
+  `ai-manager-agent`), dlatego brain-finish idzie za jego SPEC-em, nie za wrapperem.
+- **Kolejność jest WYMUSZONA dwoma sprzężeniami danych:** `/brain-update` Faza 3.8 surface'uje
+  kandydatów na noty wiedzy (wejście Fazy 3), a `/brain-extract-knowledge` Faza 1 woli już-
+  zdestylowane sekcje `memory.md` nad surową sesją (więc lekcje przed wiedzą).
+- **Zero bramek w trakcie — świadomie.** Bramka wiedzy jest ODROCZONA (`status: emerging` + kolejka),
+  nie usunięta; `canon` w tym przebiegu zabroniony. `/ai-curate-memory` jest tylko REKOMENDOWANA,
+  bo jest odejmująca (usuwa wpisy z `memory.md`, przepisuje CLAUDE.md/skille) i jej bramki odroczyć
+  nie można. Commit (Faza 5) jest inline i NIE WOLNO go delegować — potrzebuje sumy ścieżek ze
+  wszystkich faz, a `git commit` commituje CAŁY indeks, nie tylko to, co zastage'owałeś.
+
+Scoping commita mechanizuje `scripts/session-commit-scope.py` (survey + plan; łapie wpisy indeksu,
+które commit zamiecie, i emituje `git commit -m "…" -- <ścieżki>` w poprawnej kolejności flag).
