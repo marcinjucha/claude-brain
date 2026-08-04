@@ -55,11 +55,12 @@ agent jej nie widzi. Pełne WHY — Reguła 1.
 Wszystkie trzy podkomendy biorą TĘ konwersację jako główne źródło: `/brain-update` Faza 1 nazywa
 je wprost („TA sesja/konwersacja"), `/ai-extract-memory` analizuje konwersację,
 `/brain-extract-knowledge` Faza 2 destyluje materiał sesji. Świeży agent startuje pusty i zwróci
-puste albo wymyślone. **Nie hipotetycznie:** własny wrapper `/ai-extract-memory` deleguje do
+puste albo wymyślone. **Precedens, nie hipoteza:** wrapper `/ai-extract-memory` delegował do
 ŚWIEŻEGO `ai-manager-agent` z instrukcją „analyze the current conversation", której ten agent nie
-widzi — dlatego **brain-finish idzie za SPEC-em tej komendy, nie za jej wrapperem.** Zapisane jako
-reguła z WHY, bo każda inna komenda w tym ekosystemie robi to zakazanym sposobem i pierwszy
-przebieg będzie chciał do tego wzorca dopasować.
+widzi — naprawione 2026-08-04 (wrapper używa dziś forka). Reguła zostaje, bo **brain-finish idzie
+za SPEC-em tej komendy — jej ciałem promptu — a nie za jej wrapperem orkiestracyjnym**, i bo cała
+rodzina `ai-*` nadal deleguje do świeżych agentów: pierwszy przebieg będzie chciał dopasować się
+do tego zakazanego wzorca.
 
 **2. Cienki router: nigdy nie powtarzaj mechaniki podkomendy.**
 Każda faza dostaje jedno zdanie kontraktu (co musi wrócić) + wskaźnik do SPEC-u + wyłącznie DELTY,
