@@ -62,4 +62,4 @@ Gdy poprosisz "publish [notatka]":
   - Relacja `🎯 Project` (limit 1), `Project Work` rollup ≠ null → praca, = null → prywatne
 - **Projekty:** `collection://29084f14-76e0-80bb-8e2c-000be77d2a5f`
 
-> Routing: legal-mind / Halo Efekt → ClickUp (NIE Notion). Reszta → ten Private Dashboard.
+> Routing: agency-cms / Halo Efekt → Notion **Agency Database** (strukturalny backlog AAA-P-*/AAA-T-*, źródło dla `/ag-develop`) + Trello board Agency `tkOXUJUS` na bieżące next-actions. Reszta → ten Private Dashboard.

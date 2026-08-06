@@ -49,7 +49,7 @@
         "memory.md"
       ]
     },
-    "/Users/marcinjucha/Prywatne/projects/legal-mind": {
+    "/Users/marcinjucha/Prywatne/projects/agency-cms": {
       "context": "agency",
       "vault": "01-Projects/agency",
       "memory": "_halo-efekt.md",
@@ -146,7 +146,7 @@
       "active": true,
       "inherits": ["general-business", "general-technical"],
       "consumers": [
-        "/Users/marcinjucha/Prywatne/projects/legal-mind/.claude/skills",
+        "/Users/marcinjucha/Prywatne/projects/agency-cms/.claude/skills",
         "/Users/marcinjucha/Prywatne/projects/doc-forge/.claude/skills"
       ]
     },

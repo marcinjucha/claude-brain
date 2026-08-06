@@ -20,7 +20,7 @@ domyślny kontekst, gdy nic nie zadeklarowano. Rozwiąż go na `<vault>`/`<memor
 (1) **znormalizuj** synonim przez `paths[<cwd>].contextAliases` (np. „halo efekt"→`agency`);
 (2) rozwiąż nazwę kanoniczną przez `paths[<cwd>].contexts[<nazwa>]` (`multiContext`) — to daje
 `<vault>`/`<memory>` JEDNOZNACZNIE, preferuj to; (3) DOPIERO gdy repo nie ma `contexts` — dowolny
-wpis `paths` z tym `context`. ⚠️ Krok 3 bywa wieloznaczny (np. `agency` ma 2 wpisy: `legal-mind`=
+wpis `paths` z tym `context`. ⚠️ Krok 3 bywa wieloznaczny (np. `agency` ma 2 wpisy: `agency-cms`=
 `_halo-efekt.md` vs `doc-forge`=`_doc-forge.md`) — `contexts` z kroku 2 to rozstrzyga, NIE zgaduj
 z kroku 3. Repo wielokontekstowe (np. `claude-marketing` = shadow-operator domyślnie + agency)
 zapisuje do pamięci ZADEKLAROWANEGO kontekstu, nie cwd-domyślnego. Ticket z gałęzi (jeśli kontekst JIRA):

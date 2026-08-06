@@ -92,7 +92,7 @@ def source_notes(cfg, ctx):
 
 def find_skills(consumer_dirs):
     """SKILL.md paths under each consumer dir that contain a `## Knowledge` block.
-    Dedup by realpath so a symlink-shared skill (e.g. agency legal-mind/doc-forge) is processed once."""
+    Dedup by realpath so a symlink-shared skill (e.g. agency agency-cms/doc-forge) is processed once."""
     skills, seen = [], set()
     for cdir in consumer_dirs:
         for sk in glob.glob(os.path.join(cdir, "*", "SKILL.md")):

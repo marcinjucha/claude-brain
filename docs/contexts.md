@@ -76,8 +76,8 @@ Notion służy też do udostępniania materiałów kreatorom.
   - **Social Media** `https://app.notion.com/p/36784f1476e080169aa4d3ca99abbb54` ← **obecnie najwięcej czasu**
     (tutoriale Google Workspace short-form; wskazówki nagraniowe; Resources
     `collection://36784f14-76e0-805b-95cb-000be4f783bc`)
-- **Repos:** `~/Prywatne/projects/legal-mind/` (AI Agency), `~/Prywatne/projects/doc-forge/` (DocForge, Notion AAA-P-6)
-- **Vault (propozycja):** `01-Projects/agency/{social-media,legal-mind,doc-forge}/`
+- **Repos:** `~/Prywatne/projects/agency-cms/` (Halo Efekt CMS), `~/Prywatne/projects/doc-forge/` (DocForge, Notion AAA-P-6)
+- **Vault (propozycja):** `01-Projects/agency/{social-media,agency-cms,doc-forge}/`
 
-> HaloEfekt/legal-mind jedzie na **Notion Agency Database**
+> Halo Efekt CMS (`agency-cms`) jedzie na **Notion Agency Database**
 > (`collection://29284f14-76e0-8062-a18d-000bfce0cf23`).

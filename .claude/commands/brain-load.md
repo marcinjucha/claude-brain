@@ -34,7 +34,7 @@ Zasada: JEDNA paczka, potem czytaj TYLKO te notatki, których wymaga zadeklarowa
      (np. „halo efekt"→`agency`); (2) rozwiąż nazwę kanoniczną przez `paths[<cwd>].contexts[<nazwa>]`
      (repo wielokontekstowe, `multiContext: true`) → daje `vault`/`memory` JEDNOZNACZNIE, preferuj to;
      (3) DOPIERO gdy repo nie ma `contexts` → dowolny wpis `paths` z tym `context`; ⚠️ krok 3 jest
-     niejednoznaczny (`agency` ma 2 wpisy: `legal-mind`=`_halo-efekt.md` vs `doc-forge`=`_doc-forge.md`)
+     niejednoznaczny (`agency` ma 2 wpisy: `agency-cms`=`_halo-efekt.md` vs `doc-forge`=`_doc-forge.md`)
      — `contexts` z kroku 2 to rozstrzyga, NIE zgaduj z kroku 3. (Np. cwd `claude-marketing` domyślnie =
      `shadow-operator`, ale „halo efekt"→`agency`, vault `01-Projects/agency`, `_halo-efekt.md`.)
    - **Sklasyfikuj `$ARGUMENTS` — JEDNA z trzech klas, nigdy kombinacja (rozstrzygnij PRZED
@@ -113,7 +113,7 @@ Jeśli którykolwiek `SESSION.md` wspomina tickety/pracę/etapy, których NIE ma
 READ-ONLY porównanie: co warstwa statusu `<memory>` twierdzi, że jest „w toku / w review",
 vs ground truth TEGO kontekstu. Ground truth jest per-kontekst — rozgałęź po tym, co ISTNIEJE,
 i cicho pomiń brakujące źródło:
-- **kontekst z repo** (`scandit-shelfview`, `legal-mind`, `doc-forge`, `claude-marketing`,
+- **kontekst z repo** (`scandit-shelfview`, `agency-cms`, `doc-forge`, `claude-marketing`,
   `kacper-landing-page`, `claude-dev`):
   `git log --oneline -12 origin/<default-branch>` +
   `git for-each-ref --sort=-committerdate --format='%(committerdate:short) %(refname:short)' refs/remotes/origin | head -12`
