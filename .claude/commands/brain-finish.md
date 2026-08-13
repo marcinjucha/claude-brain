@@ -1,7 +1,7 @@
 ---
 description: "Zamknij sesję — brain-update → lekcje do memory.md → wiedza domenowa → commit per repo. Jeden przebieg, bez bramek. Usage: /brain-finish [kontekst]"
 argument-hint: [kontekst]
-allowed-tools: Read, Edit, Write, Bash, Grep, Agent
+allowed-tools: Read, Edit, Write, Bash, Grep, Task
 ---
 
 # /brain-finish — zamknięcie sesji jednym przebiegiem

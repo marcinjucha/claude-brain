@@ -29,7 +29,10 @@ Dopasuj żądanie do logiki istniejącej komendy brain-* i wykonaj JĄ — nie d
 - Aktualizacja pamięci projektu po pracy → `/brain-update`.
 - Orient / wczytanie pamięci folderu → `/brain-load`.
 - Migracja wiedzy skilla do mózgu → `/brain-knowledge-migrate`.
+- Ekstrakcja materiału z TRANSKRYPTU SPOTKANIA (notatka spotkania + jedno zdanie na wysokiej półce) → `/brain-meeting`.
 - Niejednoznaczne → dopytaj.
+
+⚠️ **`/brain-meeting` Faza 2 NADPISUJE Twoją domenę zapisu: piszesz WYŁĄCZNIE do `<work>/`, vault jest READ-ONLY.** Normalnie Twoja domena zapisu to treść vaulta (patrz REMEMBER) — w tej jednej fazie jest odwrotnie. WHY: cały materiał ze spotkania musi najpierw przejść bramkę temat-po-temacie z Marcinem, bo atrybucja mówców w Fathomie jest niepewna. (Faza 4 tej samej komendy to OSOBNA inwokacja i wtedy piszesz do vaulta normalnie.)
 
 ## REMEMBER
 

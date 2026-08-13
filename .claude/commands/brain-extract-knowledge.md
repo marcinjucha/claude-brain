@@ -1,6 +1,6 @@
 ---
 description: Wyekstrahuj TRWAŁĄ wiedzę domenową (cross-atom synteza „dlaczego projekt jest jaki jest") ze SKOŃCZONEJ pracy do atomowych notatek `home: brain`. Silnik; para z /brain-update. Globalna.
-argument-hint: [ticket] [--sweep]
+argument-hint: [ticket] [--sweep] [--from-meeting <digest-path>]
 allowed-tools: Read, Edit, Write, Bash, Grep
 ---
 
@@ -11,7 +11,8 @@ do atomowych notatek `home: brain` w `03-Resources/<ctx>/knowledge/`, surface'ow
 linkowanych z `_MOC.md`. Siostra `/brain-update` (który trzyma status/detal roboczy). **BRAIN-ONLY** —
 nigdy nie snapshotuje do skilli zespołu, repo NIETKNIĘTE.
 
-> Źródło ZEWNĘTRZNE (call / kurs / artykuł / framework) → użyj `distill-coaching`, NIE tej komendy. Ten silnik jest do WYKONANEJ PRACY WEWNĘTRZNEJ (ticket / sesja).
+> Źródło ZEWNĘTRZNE (call coachingowy / kurs / artykuł / framework) → użyj `distill-coaching`, NIE tej komendy. Ten silnik jest do PRACY WEWNĘTRZNEJ.
+> ⚠️ **Spotkanie WEWNĘTRZNE (sprint planning, all-hands, rozmowa z klientem/twórcą) NIE jest wejściem zewnętrznym** — idzie TU, przez `--from-meeting`, nie do `distill-coaching`. WHY: `distill-coaching` destyluje UNIWERSALNY craft z materiału uczącego i fan-outuje go po artefaktach; spotkanie firmowe niesie wiedzę o TYM produkcie/domenie, czyli dokładnie to, co ten silnik zapisuje jako notę `home: brain`. Odesłanie spotkania do `distill-coaching` zostawiało `/brain-meeting` Fazę 5 bez drzwi wejściowych.
 
 To jest **SILNIK**. Główny wyzwalacz = in-loop hook w `/brain-update`; standalone = on-demand + `--sweep`
 (backfill klastra zamkniętych ticketów). Kontrakt (schemat, reguła anty-dryf, forma pointer, tryby):
@@ -61,7 +62,10 @@ który już żyje w repo (jeden próg, jeden bug, jedna reguła-pliku)?
 ## Schemat notatki (kontrakt + te dodatki)
 
 `type: knowledge`, `context: <ctx>`, `id: <slug>` (kebab-case ASCII, ≥2 znaki, bez wiodącej cyfry),
-`status: emerging|canon`, `home: brain`, `source: SHELF-XXXXX` (ticket źródłowy), `created: YYYY-MM-DD`,
+`status: emerging|canon`, `home: brain`, `source: SHELF-XXXXX` (ticket źródłowy; w trybie
+`--from-meeting` — **ŚCIEŻKA notatki spotkania**, nigdy `[[wikilink]]`: `sync-knowledge.py` rozpoznaje
+`[[slug]]` i nieistniejący target daje `dangling-link` + exit 2, czyli zablokowany commit, a notatka
+spotkania nie jest notą wiedzy i nigdy nie będzie targetem), `created: YYYY-MM-DD`,
 `updated: YYYY-MM-DD`, `references:` (lista ścieżek/kotwic repo, z których synteza czerpie — kotwica DRIFT-AUDIT,
 jawnie NIE `reflects-source`, brak synca), `used-by:` (zostaw puste — własność narzędzia), `superseded-by:` (tylko przy obaleniu).
 Ciało: atomowe, tytuł = teza; dla decyzji dodaj „Stosuj gdy / nie gdy"; linkuj hojnie `[[slug]]`.
@@ -75,11 +79,23 @@ Rozwiąż `<vault>` i `knowledge[<ctx>].dir`. Potwierdź, że `knowledge[<ctx>]`
 Ticket: `git -C <cwd> branch --show-current` → regex `SHELF-[0-9]+`, albo `$1`.
 Tryb `--sweep`: przyjmij LISTĘ/klaster kluczy ticketów zamiast jednego.
 
+**Tryb `--from-meeting <digest-path>` (wejście z `/brain-meeting` Faza 5).** Zamiast ticketu
+przyjmujesz: ścieżkę do `digest.md` (już POTWIERDZONEGO przez bramkę Fazy 3) + listę 0–3 kandydatów
+przekazaną w wywołaniu + ścieżkę zapisanej notatki spotkania. Ticket NIE jest wymagany. Kontekst
+bierzesz z wywołania (`/brain-meeting` go rozwiązał), nie z `pwd` — komenda może być odpalona z vaulta,
+który nie mapuje się na żaden kontekst.
+
 ## Faza 1 — zbierz JUŻ-ZDESTYLOWANE źródła (INGEST, read-only)
 
 Czytaj w kolejności wiarygodności: sekcje domenowe repo `memory.md` (`## Domain Concepts`, `## Architecture Decisions`, `## Bugs Found`)
 + notatka robocza ticketu w `<vault>` + `SESSION.md` jeśli jest + `git log` ticketu (potwierdza CO shipnięto, kotwiczy traceability).
 **Preferuj źródła już zdestylowane nad surową sesją** (nie powtarzaj ekstrakcji przy niższej jakości weryfikacji).
+
+**W trybie `--from-meeting`:** źródłem jest **wyłącznie `digest.md` + przekazana lista kandydatów**
+(plus, opcjonalnie, zapisana notatka spotkania). ⚠️ **NIGDY nie otwieraj transkryptu spotkania** —
+nie ma go już w obiegu i niesie detal, którego ta półka nie przyjmuje. Digest przeszedł bramkę
+temat-po-temacie z Marcinem, więc jest źródłem WYŻSZEJ wiarygodności niż surowa sesja; itemy wciąż
+oznaczone `[do potwierdzenia]` odpadają na Stopniu 1 (DURABLE).
 Daty względne → bezwzględne (`YYYY-MM-DD`). Nie modyfikuj żadnego źródła.
 
 ## Faza 2 — destyluj kandydatów (EXTRACT ESSENCE)
@@ -128,6 +144,6 @@ Per potwierdzony kandydat, w tej kolejności:
 
 ## Obsługa niejednoznaczności
 
-- Ticket nierozstrzygnięty (brak `SHELF-XXXXX`, kilka w grze) → NIE zgaduj; zapytaj albo weź `$1`. Brak notatki roboczej/SESSION.md → działaj na `memory.md`+`git log`, zaznacz reduced-source.
+- Ticket nierozstrzygnięty (brak `SHELF-XXXXX`, kilka w grze) → NIE zgaduj; zapytaj albo weź `$1`. **Nie dotyczy `--from-meeting`** — tam ticket jest opcjonalny, a proweniencją jest notatka spotkania. Brak notatki roboczej/SESSION.md → działaj na `memory.md`+`git log`, zaznacz reduced-source.
 - Dom fragmentu niejednoznaczny → rozstrzygnij w Fazie 4, nigdy po cichu. Jasna synteza domenowa → brain; reguła-kodu/pułapka-arch repo → ODROCZ + nudge; niejasne po restatement → POMIŃ + wylistuj w „odroczone". Źle-zadomowiona notatka zanieczyszcza zaufaną bazę → skip-and-report bije zgadywanie.
 - Remis rozszerz-vs-utwórz → preferuj ROZSZERZ, ale pokaż cel merge'a w Fazie 4 do weta.
