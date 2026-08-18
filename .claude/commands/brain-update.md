@@ -120,31 +120,40 @@ w `_<context>.md` bieżącego kontekstu i (b) slice `<!-- ctx:<context> -->` w `
 „**Status:**" dotkniętego podmiotu. WHY: brain-update jest ŹRÓDŁEM statusu na bieżąco, brain-sync go tylko
 spina i roluje — jeden format (SPEC) = brak dryfu.
 
-**Krok 2 — blok `moc:auto` w `<vault>/01-Projects/<context>/_MOC.md` (topografia: „GDZIE to jest").**
+**Krok 2 — blok `moc:auto` w `<vault>/_MOC.md` (topografia: „GDZIE to jest").**
 ⚠️ **Warunek WĘŻSZY niż w Kroku 1: TYLKO gdy ta sesja zmieniła TOPOGRAFIĘ** — notatka powstała,
 umarła, została przeniesiona albo przemianowana. **Sama zmiana statusu NIE jest powodem: uruchomienie
 Kroku 1 NIE implikuje Kroku 2.** Typowy przebieg tej fazy = Krok 1 wykonany, Krok 2 pominięty. Żadna
 z czterech rzeczy się nie stała → pomiń (jedno zdanie w raporcie). WHY: MOC z definicji NIE zawiera
 statusu (SPEC zakazuje tego wprost), więc regeneracja przy każdej zmianie statusu produkuje commit bez
 zmiany treści albo szum w kolumnie dat.
-Format definiuje `_system/templates/moc-block.md` — **NIE opisuj go tutaj**. Implementacja:
+Format i zawartość bloku definiuje `_system/templates/moc-block.md` — **NIE opisuj go tutaj.**
+Po co go uruchamiasz: blok jest DETEKTOREM DRYFU, nie indeksem — pierwszy przebieg na
+`shadow-operator` (2026-08-18) wskazał 18 notatek z kłamiącym frontmatterem bez otwierania ani
+jednego pliku. Implementacja:
 `python3 /Users/marcinjucha/Prywatne/projects/claude-brain/scripts/gen-moc.py --vault <vault> --context <context>`
-(`--check` = dry-run). Exit: 0 ok · 1 brak `_MOC.md` albo znaczników · 2 błąd IO.
-- **Brak `_MOC.md` (exit 1) → POMIŃ CICHO i NIE zakładaj pliku.** Skrypt świadomie go nie tworzy —
-  założenie topografii to decyzja człowieka. To normalny stan kontekstu bez topografii, nie błąd:
-  ten sam wzorzec „pomiń cicho" co w Fazie 3.7 przy nieaktywnej wiedzy. NIE zamieniaj tej ciszy
-  na komunikat i NIE generuj MOC-a „na wszelki wypadek" dla kontekstów, które go nie mają.
-- Co blok wypisuje: jeden wiersz na FOLDER plus wyłącznie pozycje wymagające uwagi — notatki, w których
-  data modyfikacji pliku jest nowsza od `updated:` we frontmatterze (frontmatter kłamie o świeżości),
-  oraz sieroty bez żadnego linku przychodzącego. Pełnej listy notatek NIE wypisuje świadomie.
-  **Dlaczego to się opłaca:** blok jest DETEKTOREM DRYFU, nie tylko indeksem — pierwszy przebieg na
-  `shadow-operator` (2026-08-18) pokazał 18 notatek z kłamiącym frontmatterem, w tym trzy z luką
-  21–28 dni, bez otwierania ani jednego pliku.
+— **`--vault` dostaje FOLDER KONTEKSTU** (`<vault>`, czyli `01-Projects/<context>`), nie korzeń
+vaulta; `--check` = dry-run. WHY: skrypt sam dokleja `01-Projects/<context>`, więc korzeń vaulta
+w tym argumencie dawał `.../01-Projects/<ctx>/01-Projects/<ctx>` i exit 2 — Krok 2 nie zadziałał ani
+razu od wpięcia, bo faza wyglądała na działającą i nikt jej nie uruchomił tym wywołaniem (skrypt
+przyjmuje dziś oba warianty, ale `<vault>` w tej rodzinie komend znaczy folder kontekstu i tak ma
+być podawany).
 - **Blok POKAZUJE, nie NAPRAWIA.** Nie podbijaj `updated:` i nie linkuj sierot na podstawie samego
   bloku — podbicie daty w notatce, której nie przeczytałeś, zamienia jedno kłamstwo na drugie. Osąd
   należy do sesji; w raporcie tylko zasygnalizuj pozycje do oceny.
 - To INNY plik niż `_MOC.md` puli wiedzy (`03-Resources/<ctx>/knowledge/_MOC.md`, właściciel: Faza 3.7
   krok 3). Tu chodzi o topografię kontekstu w `01-Projects/<context>/`.
+
+Kody wyjścia skryptu:
+- **0** — ok.
+- **1 — brak `_MOC.md` → POMIŃ CICHO i NIE zakładaj pliku.** Skrypt świadomie go nie tworzy —
+  założenie topografii to decyzja człowieka. To normalny stan kontekstu bez topografii, nie błąd:
+  ten sam wzorzec „pomiń cicho" co w Fazie 3.7 przy nieaktywnej wiedzy. NIE zamieniaj tej ciszy
+  na komunikat i NIE generuj MOC-a „na wszelki wypadek" dla kontekstów, które go nie mają.
+- **2** — błąd IO albo argumentów; w praktyce najczęściej zła ścieżka `--vault`.
+- **3 — plik JEST, ale wypadły znaczniki `moc:auto`. To AWARIA, nie cisza: zgłoś w raporcie Fazy 4**,
+  bo blok NIE zregeneruje się, dopóki znaczniki nie wrócą. Nie zwijaj tego z exitem 1 — 1 znaczy
+  „kontekst nie ma topografii", 3 znaczy „ma, ale detektor został wyłączony".
 
 ## Faza 3.6 — odśwież Trello (tylko gdy kontekst ma board)
 Gated: uruchom TYLKO gdy (a) `_<context>.md` ma we frontmatter `tracker_trello` ORAZ (b) ta sesja zmieniła status karty / next-actions. Inaczej pomiń (jedno zdanie w raporcie).

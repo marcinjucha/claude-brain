@@ -18,7 +18,8 @@ Dodatkowe foldery MATERIALU (nie notatek) deklaruje SAM plik `_MOC.md` we frontm
 WHY tam, a nie w argumencie komendy: lista jest per kontekst, a plik, ktory opisuje wlasna topografie,
 jest jedynym miejscem, gdzie nie zdryfuje od tego, co opisuje.
 
-Exit: 0 ok · 1 brak `_MOC.md` albo brak znacznikow · 2 blad IO/argumentow.
+Exit: 0 ok · 1 brak `_MOC.md` (normalny stan) · 2 blad IO/argumentow (np. zla sciezka --vault)
+· 3 plik JEST, ale WYPADLY znaczniki moc:auto — to AWARIA, nie normalny stan, i wymaga uwagi.
 """
 import re, sys, argparse, datetime
 from pathlib import Path
@@ -118,7 +119,9 @@ def main():
                  "Sieroty sa tylko ZLICZONE — w tym kontekscie notatka-lisc bez linkow jest NORMA, "
                  "nie sygnalem. Wlacz wypisywanie flaga `moc_orphans: list` we frontmatterze.")
     out += ["", f"**Razem {tot} notatek · {tdr} z klamiacym frontmatterem · {tor} sierot.** "
-                "Foldery materialu i archiwum sa POMIJANE (patrz `moc_skip`). " + orph_note, ""]
+                + ("Pomijane foldery: `_archiwum` `resources` `_inbox` + `moc_skip` z frontmattera. "
+                   if extra else "Pomijane foldery: `_archiwum` `resources` `_inbox` (ten kontekst nie "
+                                 "deklaruje `moc_skip`). ") + orph_note, ""]
     bulk = ""
     if drift_mtimes:
         from collections import Counter
@@ -144,7 +147,11 @@ def main():
 
     i, j = src.find(BEGIN), src.find(END)
     if i == -1 or j == -1:
-        print(f"BLAD: brak znacznikow moc:auto w {moc}", file=sys.stderr); return 1
+        # exit 3, NIE 1: brak PLIKU to normalny stan kontekstu bez topografii, ale plik BEZ znacznikow
+        # znaczy, ze ktos je skasowal — wtedy blok nigdy sie nie zregeneruje i nikt sie nie dowie.
+        print(f"AWARIA: `{moc.name}` istnieje, ale WYPADLY znaczniki moc:auto — blok nie zregeneruje sie "
+              f"nigdy, dopoki ich nie przywrocisz.", file=sys.stderr)
+        return 3
     print(f"gen-moc [{a.context}]: notatek {tot} · dryf {tdr} · sierot {tor} · do oceny {len(flagged)}"
           + (" (--check)" if a.check else ""))
     if not a.check:
