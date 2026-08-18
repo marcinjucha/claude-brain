@@ -108,13 +108,43 @@ Roboczy detal z sesji (decyzje, dead-endy, „co dalej", dotknięte pliki/encje)
   `/ai-extract-memory` (do `memory.md`, bufor sesji) → `/ai-curate-memory` (promocja do CLAUDE.md/skilli).
   Jeśli w sesji pojawiła się taka lekcja — **zasugeruj** użytkownikowi ten zapis, nie wpisuj jej do mózgu.
 
-## Faza 3.5 — odśwież blok statusu (WĄSKO, wg SPEC)
-Jeśli ta sesja zmieniła status: zregeneruj blok `status:auto` wg `_system/templates/status-block.md`
-WĄSKO — tylko (a) blok w `_<context>.md` bieżącego kontekstu i (b) slice `<!-- ctx:<context> -->`
-w `Home.md`. **NIE** przeliczaj innych kontekstów ani całego Home (to robi `/brain-sync`). ZASTĄP blok
+## Faza 3.5 — odśwież PROJEKCJE bieżącego kontekstu (WĄSKO, wg SPEC): status + MOC
+Ta faza jest JEDYNYM właścicielem projekcji. Oba kroki dotyczą WYŁĄCZNIE bieżącego kontekstu —
+**NIE** przeliczaj innych kontekstów ani całego Home (to robi `/brain-sync`). Każdy krok ma WŁASNY,
+niezależny warunek uruchomienia.
+
+**Krok 1 — blok statusu. Warunek: ta sesja zmieniła STATUS.**
+Zregeneruj blok `status:auto` wg `_system/templates/status-block.md` WĄSKO — tylko (a) blok
+w `_<context>.md` bieżącego kontekstu i (b) slice `<!-- ctx:<context> -->` w `Home.md`. ZASTĄP blok
 (kondensuj, nie akumuluj); treść ręczna poniżej `/status:auto` nietknięta. Huby podmiotów: odśwież linię
 „**Status:**" dotkniętego podmiotu. WHY: brain-update jest ŹRÓDŁEM statusu na bieżąco, brain-sync go tylko
 spina i roluje — jeden format (SPEC) = brak dryfu.
+
+**Krok 2 — blok `moc:auto` w `<vault>/01-Projects/<context>/_MOC.md` (topografia: „GDZIE to jest").**
+⚠️ **Warunek WĘŻSZY niż w Kroku 1: TYLKO gdy ta sesja zmieniła TOPOGRAFIĘ** — notatka powstała,
+umarła, została przeniesiona albo przemianowana. **Sama zmiana statusu NIE jest powodem: uruchomienie
+Kroku 1 NIE implikuje Kroku 2.** Typowy przebieg tej fazy = Krok 1 wykonany, Krok 2 pominięty. Żadna
+z czterech rzeczy się nie stała → pomiń (jedno zdanie w raporcie). WHY: MOC z definicji NIE zawiera
+statusu (SPEC zakazuje tego wprost), więc regeneracja przy każdej zmianie statusu produkuje commit bez
+zmiany treści albo szum w kolumnie dat.
+Format definiuje `_system/templates/moc-block.md` — **NIE opisuj go tutaj**. Implementacja:
+`python3 /Users/marcinjucha/Prywatne/projects/claude-brain/scripts/gen-moc.py --vault <vault> --context <context>`
+(`--check` = dry-run). Exit: 0 ok · 1 brak `_MOC.md` albo znaczników · 2 błąd IO.
+- **Brak `_MOC.md` (exit 1) → POMIŃ CICHO i NIE zakładaj pliku.** Skrypt świadomie go nie tworzy —
+  założenie topografii to decyzja człowieka. To normalny stan kontekstu bez topografii, nie błąd:
+  ten sam wzorzec „pomiń cicho" co w Fazie 3.7 przy nieaktywnej wiedzy. NIE zamieniaj tej ciszy
+  na komunikat i NIE generuj MOC-a „na wszelki wypadek" dla kontekstów, które go nie mają.
+- Co blok wypisuje: jeden wiersz na FOLDER plus wyłącznie pozycje wymagające uwagi — notatki, w których
+  data modyfikacji pliku jest nowsza od `updated:` we frontmatterze (frontmatter kłamie o świeżości),
+  oraz sieroty bez żadnego linku przychodzącego. Pełnej listy notatek NIE wypisuje świadomie.
+  **Dlaczego to się opłaca:** blok jest DETEKTOREM DRYFU, nie tylko indeksem — pierwszy przebieg na
+  `shadow-operator` (2026-08-18) pokazał 18 notatek z kłamiącym frontmatterem, w tym trzy z luką
+  21–28 dni, bez otwierania ani jednego pliku.
+- **Blok POKAZUJE, nie NAPRAWIA.** Nie podbijaj `updated:` i nie linkuj sierot na podstawie samego
+  bloku — podbicie daty w notatce, której nie przeczytałeś, zamienia jedno kłamstwo na drugie. Osąd
+  należy do sesji; w raporcie tylko zasygnalizuj pozycje do oceny.
+- To INNY plik niż `_MOC.md` puli wiedzy (`03-Resources/<ctx>/knowledge/_MOC.md`, właściciel: Faza 3.7
+  krok 3). Tu chodzi o topografię kontekstu w `01-Projects/<context>/`.
 
 ## Faza 3.6 — odśwież Trello (tylko gdy kontekst ma board)
 Gated: uruchom TYLKO gdy (a) `_<context>.md` ma we frontmatter `tracker_trello` ORAZ (b) ta sesja zmieniła status karty / next-actions. Inaczej pomiń (jedno zdanie w raporcie).
@@ -137,7 +167,9 @@ Jeśli EXTRACT aktywny (`active == true`):
    - **emerging → canon:** dla notatek `status: emerging` (home=brain) sprawdź, czy wzorzec utrzymał się na **N≥3 odrębnych ŹRÓDŁACH** (twórcy / tickety / atomy — wg kontekstu; np. kontekst JIRA jak scandit-shelfview promuje po ticketach/atomach; zapisane slugi przypadków w ciele notatki); jeśli tak — zmień `status` na `canon`.
    - **notatki `status: reflection` (i legacy `status: mirror`) — maintenance ODBIĆ (URUCHOM ZAWSZE, niezależnie od `active`; patrz nagłówek fazy):** NIE awansuj (nigdy nie stają się brain-canon), NIE scalaj, NIE rozwijaj w nich treści — odbicie to ODBICIE skilla. **Przy `reflection-stale` (z raportu integralności, gdy aktywny; inaczej z heurystyki mtime: `reflects-source` — z fallbackiem na legacy `mirror-source` — nowszy niż notatka) ODŚWIEŻ odbicie SAM — to robi agent brain-update, NIE zalecaj użytkownikowi:** przeczytaj AKTUALNY skill-źródło z `reflects-source`, zregeneruj noty-odbicia BEZSTRATNIE ATOMOWO (re-ekstrakcja skill→brain), bump `updated`. Nadpisanie jest BEZPIECZNE — reguła develop gwarantuje, że w odbiciu NIE ma własnej wiedzy (net-nowa wiedza żyje w osobnej notatce `home: brain`). Net-nowa wiedza z sesji idzie więc do `home: brain`, NIGDY do odbicia. W raporcie: „odświeżono odbicie X ze skilla" (patrz `_system/knowledge-system.md` §„Tryb REFLECT"). **Notatki `status: pointer` (link-only stub, zero wiedzy) — NIE odświeżaj wiedzą; utrzymaj tylko poprawny link/gist.**
    - **dangling / sieroty:** napraw (dangling = krytyczne; sierota = rozważ link z MOC albo usuń). Notatki `status: reflection` / `pointer` (i legacy `mirror`) są legalnie bez-konsumenta (engine wyłącza je z orphan-check) — NIE traktuj odbicia/pointera jako sieroty do usunięcia.
-3. Zaktualizuj `_MOC.md` kontekstu, jeśli doszły/zniknęły notatki.
+3. Zaktualizuj `_MOC.md` **puli wiedzy** — `03-Resources/<context>/knowledge/_MOC.md` — jeśli doszły/zniknęły
+   notatki. ⚠️ To NIE jest `_MOC.md` topografii kontekstu (`01-Projects/<context>/_MOC.md`, właściciel:
+   Faza 3.5 krok 2) — ta sama nazwa pliku, dwa różne pliki i dwóch różnych właścicieli.
    - **Nota UNIWERSALNA (venture-niezależny craft):** jeśli sesja utworzyła LUB awansowała notatkę uniwersalną, jej wpis w `_MOC.md` oraz każdy awans emerging→canon należą do MOC WŁAŚCIWEJ PULI BAZOWEJ — `general-business` (craft biznesowy) ALBO `general-technical` (craft inżynieryjny/web-stack) — wg testu trójdzielnego w `brain-conventions` §„Trzeci wymiar zapisu — TRZY POOLE", NIE do MOC bieżącego kontekstu. Są DWIE żywe bazy uniwersalne, nie jedna.
    - **Promocja kontekst → baza uniwersalna (mechanizm):** gdy nota dojrzała do promocji z kontekstu do bazy, NIE rób ręcznego `git mv`. Uruchom `python3 /Users/marcinjucha/Prywatne/projects/claude-brain/scripts/promote-to-universal.py` (przenosi notę + przepisuje `context:` + przenosi wpis MOC + guard: odmawia przy naruszeniu reguły kierunkowej), potem `python3 …/scripts/sync-knowledge.py --all --used-by` (resync snapshotów + `used-by` we WSZYSTKICH kontekstach dziedziczących bazę), na końcu `…/sync-knowledge.py … --check` (dry-run: exit 1 dryf / 2 dangling). WHY: promocja rusza notę między poolami i musi przenieść MOC + nie złamać reguły kierunkowej — skrypt robi to atomowo, ręczne `mv` gubi wpis MOC i omija guard.
 
@@ -158,8 +190,11 @@ męczyła użytkownika — teraz surface-tu, bramka-w-silniku.
 ## Faza 4 — raport
 Co zaktualizowano: (a) pamięć projektu (`<memory>` — status/połączenia), (b) notatka robocza
 (ticketu lub encji — detal; zaznacz jeśli powstała nowa, jeśli założono/zmigrowano folder
-podmiotu, LUB jeśli detalu nie zrzucono przez niejednoznaczny target), (c) blok statusu (jeśli
-odświeżony — `_<context>.md` + slice w Home) + ewentualne sugestie lekcji do repo `memory.md`.
+podmiotu, LUB jeśli detalu nie zrzucono przez niejednoznaczny target), (c) projekcje z Fazy 3.5:
+blok statusu (jeśli odświeżony — `_<context>.md` + slice w Home) ORAZ blok MOC — zregenerowany
+(ile notatek, ile pozycji do oceny: dryf frontmattera / sieroty — POKAZANE, nie naprawione) albo
+„pominięto: brak `_MOC.md`" / „pominięto: topografia bez zmian"
++ ewentualne sugestie lekcji do repo `memory.md`.
 (c-bis) Trello (jeśli board — karty ruszone / oznaczone `⏳ Czekam` / utworzone; inaczej 'brak boardu lub bez zmian').
 (d) utrzymanie wiedzy: ile snapshotów zsynch., co scalono/awansowano/naprawiono (lub 'pominięto — brak aktywnej wiedzy').
 (e) **nudge wiedzy domenowej:** jeśli bufor repo `memory.md` zawiera wpisy `## Domain Concepts`

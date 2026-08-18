@@ -1,0 +1,123 @@
+#!/usr/bin/env python3
+"""Regeneruje blok `moc:auto` w `<vault>/01-Projects/<ctx>/_MOC.md`.
+
+Kontrakt formatu: `<vault>/_system/templates/moc-block.md` — TEN plik go NIE definiuje, tylko
+implementuje. Zmiana formatu idzie NAJPIERW do SPEC-u.
+
+⭐ KLUCZOWA DECYZJA PROJEKTOWA: blok auto NIE wypisuje wszystkich notatek.
+Pierwsza wersja wypisywala jeden wiersz na notatke — 111 wierszy dla shadow-operatora. Tabela na 111
+wierszy w pliku, ktorego sensem jest "nie czytaj wszystkiego", przeczy sama sobie i lamie regule 2
+ze SPEC-u ("kazdy poziom pokazuje tylko szczyt nizszego"). Blok auto pokazuje wiec:
+  (a) jeden wiersz na FOLDER — folderow jest kilka i tyle zostanie, wiec rosnie subliniowo,
+  (b) WYLACZNIE pozycje wymagajace uwagi: dryf frontmattera i sieroty.
+Pelna enumeracja nalezy do huba podmiotu i do systemu plikow, nie tutaj.
+
+Skip: `_archiwum` (zliczane recznie), `resources` (proweniencja), `_inbox` (kolejka) — ze SPEC-u.
+Dodatkowe foldery MATERIALU (nie notatek) deklaruje SAM plik `_MOC.md` we frontmatterze:
+    moc_skip: [dna, GW, google doc]
+WHY tam, a nie w argumencie komendy: lista jest per kontekst, a plik, ktory opisuje wlasna topografie,
+jest jedynym miejscem, gdzie nie zdryfuje od tego, co opisuje.
+
+Exit: 0 ok · 1 brak `_MOC.md` albo brak znacznikow · 2 blad IO/argumentow.
+"""
+import re, sys, argparse, datetime
+from pathlib import Path
+
+BEGIN, END = "<!-- moc:auto", "<!-- /moc:auto -->"
+SKIP_ALWAYS = {"_archiwum", "resources", "_inbox"}
+
+
+def fm_field(text, name):
+    if not text.startswith("---"):
+        return ""
+    end = text.find("\n---", 3)
+    fm = text[: end if end != -1 else 400]
+    m = re.search(rf"^{name}:\s*(.+?)\s*$", fm, re.M)
+    if not m:
+        return ""
+    v = m.group(1).split(" #")[0].strip()          # frontmatter niesie tu komentarze inline
+    return v[:38] + "…" if len(v) > 38 else v      # dluga wartosc rozwala tabele markdown
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--vault", required=True)
+    ap.add_argument("--context", required=True)
+    ap.add_argument("--check", action="store_true")
+    a = ap.parse_args()
+
+    root = Path(a.vault) / "01-Projects" / a.context
+    moc = root / "_MOC.md"
+    if not root.is_dir():
+        print(f"BLAD: brak katalogu {root}", file=sys.stderr); return 2
+    if not moc.is_file():
+        print(f"BRAK `_MOC.md` w {root} — zalozenie topografii to decyzja czlowieka."); return 1
+
+    src = moc.read_text(encoding="utf-8")
+    extra = fm_field(src, "moc_skip")
+    skip = set(SKIP_ALWAYS)
+    if extra:
+        skip |= {x.strip().strip("'\"") for x in extra.strip("[]").split(",") if x.strip()}
+
+    corpus = {p: p.read_text(encoding="utf-8", errors="replace") for p in root.rglob("*.md")}
+    notes = [p for p in corpus
+             if not skip & set(p.relative_to(root).parts)
+             and p.name not in ("_MOC.md", "CLAUDE.md", "README.md")]
+
+    per_folder, flagged = {}, []
+    for p in sorted(notes, key=lambda x: (str(x.parent.relative_to(root)), x.name)):
+        where = str(p.parent.relative_to(root)) or "."
+        d = per_folder.setdefault(where, {"n": 0, "drift": 0, "orph": 0})
+        d["n"] += 1
+        txt = corpus[p]
+        updated = fm_field(txt, "updated")[:10]
+        status = fm_field(txt, "status") or "—"
+        links = sum(1 for q, t in corpus.items() if q != p and f"[[{p.stem}" in t)
+        mtime = datetime.date.fromtimestamp(p.stat().st_mtime).isoformat()
+        why, gap = [], 0
+        if re.match(r"\d{4}-\d{2}-\d{2}", updated or "") and mtime > updated:
+            gap = (datetime.date.fromisoformat(mtime) - datetime.date.fromisoformat(updated)).days
+            d["drift"] += 1
+            why.append(f"ruszany {mtime}, `updated:` mowi {updated} (**{gap} dni**)")
+        if links == 0:
+            d["orph"] += 1; why.append("zero linkow z innych notatek")
+        if why:
+            flagged.append((gap, f"| [[{p.stem}]] | `{where}` | {status} | {' · '.join(why)} |"))
+
+    tot = sum(d["n"] for d in per_folder.values())
+    tdr = sum(d["drift"] for d in per_folder.values())
+    tor = sum(d["orph"] for d in per_folder.values())
+
+    out = [f"{BEGIN} — generowany przez brain-update wg _system/templates/moc-block.md; nie edytuj recznie -->",
+           f"### Topografia — stan {datetime.date.today().isoformat()}", "",
+           "| folder | notatek | frontmatter klamie | sierot |", "|---|---|---|---|"]
+    for w, d in sorted(per_folder.items()):
+        out.append(f"| `{w}` | {d['n']} | {d['drift'] or '—'} | {d['orph'] or '—'} |")
+    out += ["", f"**Razem {tot} notatek · {tdr} z klamiacym frontmatterem · {tor} sierot.** "
+                "Foldery materialu i archiwum sa POMIJANE (patrz `moc_skip` we frontmatterze).", ""]
+    if flagged:
+        out += [f"#### Do oceny ({len(flagged)}) — jedyne pozycje wypisane z nazwy", "",
+                "| notatka | gdzie | status | co jest nie tak |", "|---|---|---|---|",
+                *[r for _, r in sorted(flagged, key=lambda x: -x[0])], "",
+                "Osad nalezy do `/brain-update`, nie do tego bloku. `updated:` starszy od pliku znaczy, "
+                "ze ktos edytowal tresc i nie podbil daty — a wtedy kazda decyzja oparta na tej dacie "
+                "stoi na klamstwie. Sierota moze byc martwa albo tylko niezalinkowana; to rozne rzeczy. "
+                "⚠️ Luka 1-2 dni bywa ARTEFAKTEM synchronizacji iCloud (ten vault przez nia chodzi), "
+                "wiec wiersze sa sortowane MALEJACO po luce — realny dryf jest na gorze.", ""]
+    else:
+        out += ["Zero pozycji do oceny.", ""]
+    out.append(END)
+    block = "\n".join(out)
+
+    i, j = src.find(BEGIN), src.find(END)
+    if i == -1 or j == -1:
+        print(f"BLAD: brak znacznikow moc:auto w {moc}", file=sys.stderr); return 1
+    print(f"gen-moc [{a.context}]: notatek {tot} · dryf {tdr} · sierot {tor} · do oceny {len(flagged)}"
+          + (" (--check)" if a.check else ""))
+    if not a.check:
+        moc.write_text(src[:i] + block + src[j + len(END):], encoding="utf-8")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

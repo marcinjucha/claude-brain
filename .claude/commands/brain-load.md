@@ -18,6 +18,11 @@ Discovery Fazy 0 + Fazy 2 leci JEDNYM wywołaniem shella, nie serią round-trip�
 - listing rozwiązanego vaulta PŁASKO **i** o jeden poziom głębiej (foldery podmiotów):
   `ls <vault>` + `ls <vault>/*/` (albo `ls -R <vault>` z capem) — vault ma notatki płaskie
   OBOK folderów podmiotów (np. `agency/`: `justyna-kancelaria/`, `social-media/` + płaskie `oferta-*.md`).
+- kolejka w inboksie kontekstu, GDY kontekst go ma: `ls <vault>/_inbox/ 2>/dev/null | grep -v README`
+  — liczba pozycji do przetworzenia. Folder nie istnieje → pusto i CICHO, to normalny stan, nie błąd.
+  `README.md` jest kontraktem folderu, NIE pozycją w kolejce — nie licz go. To NIE `00-Inbox/` w
+  KORZENIU vaulta (capture'y z Telegrama o nieznanym jeszcze adresie, opróżnia je `/brain-inbox`);
+  `<vault>/_inbox/` jest per kontekst i na materiał o znanym adresie.
 - obecność `SESSION.md` w cwd
 - `git worktree list`, gdy repo ma worktree
 Zasada: JEDNA paczka, potem czytaj TYLKO te notatki, których wymaga zadeklarowany focus/ticket
@@ -168,6 +173,16 @@ reconcile SESSION.md (w tym siostrzane worktree). Bez ścian tekstu — to brief
   frontmatter notatek), a przy awarii sieci — z jakiej daty są refy. Zamknij zdaniem, że blok
   `status:auto` regeneruje `/brain-update`, nie ta komenda.
 - knowledge: zsynch. ✅ / albo: N dryf · M dup? · K emerging · dangling: … — przy problemach dodaj, że `/brain-update` rozwiązuje je (osąd: scal duplikaty, awansuj emerging→canon). Jeśli kontekst dziedziczy pule bazowe (`inherits`) — NAZWIJ WSZYSTKIE (np. „+ general-business + general-technical (uniwersalne)", jak `agency`), by było jasne, że dostępny jest też uniwersalny craft, nie tylko noty kontekstowe.
+- `_inbox/` kontekstu — gdy pozycje SĄ: podaj ILE i WYPISZ nazwy (nazwa pliku zwykle wystarcza do
+  decyzji) + jedno zdanie, że inbox jest KOLEJKĄ, nie półką: pozycja stąd ma zniknąć — zostać notatką,
+  przenieść się do `resources/` podmiotu jako proweniencja, albo zostać usunięta. Kontraktu folderu tu
+  NIE powtarzaj — żyje w `<vault>/_inbox/README.md` (ta sama zasada „SPEC w jednym miejscu", co w
+  Fazie 2.8 odsyłającej do `/brain-knowledge`). Przetwarzanie NIE należy do tej komendy — jest
+  READ-ONLY jak Fazy 2.7/2.8, decyzja per pozycja należy do sesji.
+  **Zero pozycji albo brak folderu → nie pisz NIC (żadnego „inbox pusty").** **WHY:** ta sama zasada,
+  co przy nieaktywnej wiedzy w Fazie 2.8 („pomiń CICHO, bez komunikatu") i przy pominiętej Fazie 2.8
+  („nie dopisuj nic") — komunikat o pustej kolejce byłby szumem w briefie startowym. Cisza jest tu
+  POPRAWNA, nie przeoczeniem; audyt nie ma tu czego „naprawiać".
 - gdy Faza 2.8 się wykonała: **wymień noty FAKTYCZNIE wczytane, każdą z pulą pochodzenia** (własna
   pula kontekstu vs konkretna pula z `inherits`) + zaznacz `emerging`/kandydatów-duplikaty. **WHY:**
   bez bramki potwierdzenia to jedyna widoczność tego, co weszło do kontekstu — pominięcie
