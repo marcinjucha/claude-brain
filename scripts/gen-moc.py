@@ -21,10 +21,48 @@ jest jedynym miejscem, gdzie nie zdryfuje od tego, co opisuje.
 Exit: 0 ok · 1 brak `_MOC.md` (normalny stan) · 2 blad IO/argumentow (np. zla sciezka --vault)
 · 3 plik JEST, ale WYPADLY znaczniki moc:auto — to AWARIA, nie normalny stan, i wymaga uwagi.
 """
-import re, sys, argparse, datetime
+import re, sys, argparse, datetime, subprocess
 from pathlib import Path
 
 BEGIN, END = "<!-- moc:auto", "<!-- /moc:auto -->"
+
+
+def content_date(repo, rel, fallback):
+    """Data ostatniej MODYFIKACJI TRESCI — bez przenosin i bez zmian samego `updated:`.
+
+    WHY nie `mtime` (2026-08-18): rusza sie przy KAZDYM dotknieciu (`git mv`, sync iCloud, poprawka
+    frontmattera), nie przy zmianie tresci. Detektor na `mtime` dal 66 pozycji, z czego 38 bylo
+    artefaktem commita `scandit -> scandit-shelfview: przemianowanie kontekstu` — git zapisal pliki
+    jako dodane pod nowa sciezka, tresc sie nie zmienila, a `updated:` z czerwca bylo POPRAWNE.
+
+    WHY commit ruszajacy TYLKO `updated:` jest POMIJANY: bez tego detektor zjada wlasny ogon —
+    poprawiasz 76 frontmatterow, commitujesz, i przy nastepnym przebiegu wszystkie 76 wracaja z luka
+    do dnia poprawki. Podbicie samej daty NIE JEST aktualizacja notatki.
+
+    ⭐ WHY brak commitu modyfikacji zwraca None, a NIE `mtime`: to trzecia odsłona tej samej pętli.
+    Pliki dodane commitem przenoszacym kontekst (`A`, nie `M`) nie maja ZADNEJ historii modyfikacji,
+    wiec detektor spadal na `mtime` — a moj wlasny zapis poprawiajacy frontmatter przesuwal `mtime`
+    na dzis i flaga wracala. Brak commitu `M` znaczy BRAK DOWODU na zmiane tresci, a bez dowodu
+    nie flagujemy: `mtime` juz raz udawal ten dowod i dal 38 falszywych pozycji.
+    """
+    try:
+        out = subprocess.run(
+            ["git", "log", "--diff-filter=M", "--follow", "-8", "--format=%H %ad", "--date=short",
+             "--", rel], cwd=repo, capture_output=True, text=True, timeout=25).stdout.strip()
+        for line in out.splitlines():
+            sha, _, day = line.partition(" ")
+            patch = subprocess.run(["git", "show", "--format=", "--unified=0", sha, "--", rel],
+                                   cwd=repo, capture_output=True, text=True, timeout=25).stdout
+            body = [l for l in patch.splitlines()
+                    if l[:1] in "+-" and not l.startswith(("+++", "---"))]
+            if body and all(re.match(r"^[+-]updated:", l) for l in body):
+                continue
+            return day
+        return None          # brak commitu `M` = brak dowodu na zmiane tresci
+    except Exception:
+        return None
+
+
 SKIP_ALWAYS = {"_archiwum", "resources", "_inbox"}
 
 
@@ -93,12 +131,14 @@ def main():
         status = fm_field(txt, "status") or "—"
         links = sum(1 for q, t in corpus.items() if q != p and re.search(r"\[\[" + re.escape(p.stem) + r"(\||#|\]\])", t))
         mtime = datetime.date.fromtimestamp(p.stat().st_mtime).isoformat()
+        touched = content_date(root, str(p.relative_to(root)), mtime)
+        nohist = touched is None
         why, gap = [], 0
-        if re.match(r"\d{4}-\d{2}-\d{2}", updated or "") and mtime > updated:
-            gap = (datetime.date.fromisoformat(mtime) - datetime.date.fromisoformat(updated)).days
+        if touched and re.match(r"\d{4}-\d{2}-\d{2}", updated or "") and touched > updated:
+            gap = (datetime.date.fromisoformat(touched) - datetime.date.fromisoformat(updated)).days
             d["drift"] += 1
-            drift_mtimes.append(mtime)
-            why.append(f"ruszany {mtime}, `updated:` mowi {updated} (**{gap} dni**)")
+            drift_mtimes.append(touched)
+            why.append(f"tresc zmieniona {touched}, `updated:` mowi {updated} (**{gap} dni**)")
         if links == 0:
             d["orph"] += 1
             if list_orphans:                      # sieroctwo jest sygnalem TYLKO tam, gdzie
@@ -138,7 +178,7 @@ def main():
                 "Osad nalezy do `/brain-update`, nie do tego bloku. `updated:` starszy od pliku znaczy, "
                 "ze ktos edytowal tresc i nie podbil daty — a wtedy kazda decyzja oparta na tej dacie "
                 "stoi na klamstwie. Sierota moze byc martwa albo tylko niezalinkowana; to rozne rzeczy. "
-                "⚠️ Luka 1-2 dni bywa ARTEFAKTEM synchronizacji iCloud (ten vault przez nia chodzi), "
+                "⚠️ Data brana z GITA (ostatnia modyfikacja tresci, bez przenosin) — nie z `mtime`, ktory rusza sie przy kazdym dotknieciu pliku. "
                 "wiec wiersze sa sortowane MALEJACO po luce — realny dryf jest na gorze." + bulk, ""]
     else:
         out += ["Zero pozycji do oceny.", ""]
