@@ -27,7 +27,7 @@ BEGIN, END = "<!-- moc:auto", "<!-- /moc:auto -->"
 SKIP_ALWAYS = {"_archiwum", "resources", "_inbox"}
 
 
-def fm_field(text, name):
+def fm_field(text, name, trim=True):
     if not text.startswith("---"):
         return ""
     end = text.find("\n---", 3)
@@ -36,6 +36,8 @@ def fm_field(text, name):
     if not m:
         return ""
     v = m.group(1).split(" #")[0].strip()          # frontmatter niesie tu komentarze inline
+    if not trim:                                   # pola STERUJACE (moc_skip, moc_orphans) nigdy
+        return v                                   # nie moga byc obcinane — cichy powrot bledu
     return v[:38] + "…" if len(v) > 38 else v      # dluga wartosc rozwala tabele markdown
 
 
@@ -46,16 +48,25 @@ def main():
     ap.add_argument("--check", action="store_true")
     a = ap.parse_args()
 
-    root = Path(a.vault) / "01-Projects" / a.context
+    # TOLERANCYJNE rozwiazanie sciezki: `--vault` moze byc KORZENIEM vaulta albo FOLDEREM KONTEKSTU.
+    # WHY: w konwencji komend brain-* `<vault>` znaczy `01-Projects/<ctx>`, a nie korzen — pierwsza
+    # wersja tego skryptu przyjmowala korzen i doklejala prefiks, wiec wywolanie z brain-update
+    # (2026-08-18) dawalo `.../01-Projects/shadow-operator/01-Projects/shadow-operator` i exit 2.
+    # Krok 2 Fazy 3.5 byl przez to MARTWY od chwili wpiecia. Przyjmujemy oba warianty, zeby ta klasa
+    # bledu nie wrocila przy nastepnym konsumencie.
+    cand = [Path(a.vault) / "01-Projects" / a.context, Path(a.vault)]
+    root = next((c for c in cand if (c / "_MOC.md").is_file() or c.is_dir() and c.name == a.context), None)
+    if root is None:
+        print("BLAD: nie znalazlem folderu kontekstu. Sprawdzone: "
+              + " · ".join(str(c) for c in cand), file=sys.stderr)
+        return 2
     moc = root / "_MOC.md"
-    if not root.is_dir():
-        print(f"BLAD: brak katalogu {root}", file=sys.stderr); return 2
     if not moc.is_file():
         print(f"BRAK `_MOC.md` w {root} — zalozenie topografii to decyzja czlowieka."); return 1
 
     src = moc.read_text(encoding="utf-8")
-    extra = fm_field(src, "moc_skip")
-    list_orphans = fm_field(src, "moc_orphans").strip().lower() == "list"
+    extra = fm_field(src, "moc_skip", trim=False)
+    list_orphans = fm_field(src, "moc_orphans", trim=False).strip().lower() == "list"
     skip = set(SKIP_ALWAYS)
     if extra:
         skip |= {x.strip().strip("'\"") for x in extra.strip("[]").split(",") if x.strip()}
@@ -79,10 +90,9 @@ def main():
         txt = corpus[p]
         updated = fm_field(txt, "updated")[:10]
         status = fm_field(txt, "status") or "—"
-        links = sum(1 for q, t in corpus.items() if q != p and f"[[{p.stem}" in t)
+        links = sum(1 for q, t in corpus.items() if q != p and re.search(r"\[\[" + re.escape(p.stem) + r"(\||#|\]\])", t))
         mtime = datetime.date.fromtimestamp(p.stat().st_mtime).isoformat()
         why, gap = [], 0
-        mt_seen.append(mtime) if False else None
         if re.match(r"\d{4}-\d{2}-\d{2}", updated or "") and mtime > updated:
             gap = (datetime.date.fromisoformat(mtime) - datetime.date.fromisoformat(updated)).days
             d["drift"] += 1
