@@ -55,16 +55,23 @@ def main():
 
     src = moc.read_text(encoding="utf-8")
     extra = fm_field(src, "moc_skip")
+    list_orphans = fm_field(src, "moc_orphans").strip().lower() == "list"
     skip = set(SKIP_ALWAYS)
     if extra:
         skip |= {x.strip().strip("'\"") for x in extra.strip("[]").split(",") if x.strip()}
 
-    corpus = {p: p.read_text(encoding="utf-8", errors="replace") for p in root.rglob("*.md")}
+    # ⚠️ `_MOC.md` JEST WYKLUCZONY z korpusu liczenia linkow — inaczej detektor karmi sam siebie:
+    # wygenerowany blok wypisuje `[[notatke]]`, ktora flaguje, wiec przy NASTEPNYM przebiegu ta
+    # notatka nie jest juz sierota. Realny przebieg (agency, 2026-08-18): pierwszy raz 27 sierot,
+    # blok zapisal 30 wierszy z wikilinkami, drugi przebieg policzyl 0. Licznik cicho zerowal sie
+    # do zera i wygladalo to jak posprzatany kontekst.
+    corpus = {p: p.read_text(encoding="utf-8", errors="replace")
+              for p in root.rglob("*.md") if p.name != "_MOC.md"}
     notes = [p for p in corpus
              if not skip & set(p.relative_to(root).parts)
              and p.name not in ("_MOC.md", "CLAUDE.md", "README.md")]
 
-    per_folder, flagged = {}, []
+    per_folder, flagged, drift_mtimes = {}, [], []
     for p in sorted(notes, key=lambda x: (str(x.parent.relative_to(root)), x.name)):
         where = str(p.parent.relative_to(root)) or "."
         d = per_folder.setdefault(where, {"n": 0, "drift": 0, "orph": 0})
@@ -75,12 +82,16 @@ def main():
         links = sum(1 for q, t in corpus.items() if q != p and f"[[{p.stem}" in t)
         mtime = datetime.date.fromtimestamp(p.stat().st_mtime).isoformat()
         why, gap = [], 0
+        mt_seen.append(mtime) if False else None
         if re.match(r"\d{4}-\d{2}-\d{2}", updated or "") and mtime > updated:
             gap = (datetime.date.fromisoformat(mtime) - datetime.date.fromisoformat(updated)).days
             d["drift"] += 1
+            drift_mtimes.append(mtime)
             why.append(f"ruszany {mtime}, `updated:` mowi {updated} (**{gap} dni**)")
         if links == 0:
-            d["orph"] += 1; why.append("zero linkow z innych notatek")
+            d["orph"] += 1
+            if list_orphans:                      # sieroctwo jest sygnalem TYLKO tam, gdzie
+                why.append("zero linkow z innych notatek")   # linkowanie krzyzowe jest konwencja
         if why:
             flagged.append((gap, f"| [[{p.stem}]] | `{where}` | {status} | {' · '.join(why)} |"))
 
@@ -93,8 +104,20 @@ def main():
            "| folder | notatek | frontmatter klamie | sierot |", "|---|---|---|---|"]
     for w, d in sorted(per_folder.items()):
         out.append(f"| `{w}` | {d['n']} | {d['drift'] or '—'} | {d['orph'] or '—'} |")
+    orph_note = ("Sieroty sa WYPISANE z nazwy (`moc_orphans: list`)." if list_orphans else
+                 "Sieroty sa tylko ZLICZONE — w tym kontekscie notatka-lisc bez linkow jest NORMA, "
+                 "nie sygnalem. Wlacz wypisywanie flaga `moc_orphans: list` we frontmatterze.")
     out += ["", f"**Razem {tot} notatek · {tdr} z klamiacym frontmatterem · {tor} sierot.** "
-                "Foldery materialu i archiwum sa POMIJANE (patrz `moc_skip` we frontmatterze).", ""]
+                "Foldery materialu i archiwum sa POMIJANE (patrz `moc_skip`). " + orph_note, ""]
+    bulk = ""
+    if drift_mtimes:
+        from collections import Counter
+        day, cnt = Counter(drift_mtimes).most_common(1)[0]
+        if cnt >= 3 and cnt / len(drift_mtimes) >= 0.3:
+            bulk = (f"\n⚠️ **{cnt} z {len(drift_mtimes)} tych plikow ma TE SAMA date modyfikacji "
+                    f"({day})** — to sygnal JEDNEJ operacji zbiorczej (przenoszenie, reformat, resync "
+                    f"iCloud), nie {len(drift_mtimes)} osobnych zaniedban. Licz to jako JEDEN dlug "
+                    f"do przejrzenia, nie jako {len(drift_mtimes)}.\n")
     if flagged:
         out += [f"#### Do oceny ({len(flagged)}) — jedyne pozycje wypisane z nazwy", "",
                 "| notatka | gdzie | status | co jest nie tak |", "|---|---|---|---|",
@@ -103,7 +126,7 @@ def main():
                 "ze ktos edytowal tresc i nie podbil daty — a wtedy kazda decyzja oparta na tej dacie "
                 "stoi na klamstwie. Sierota moze byc martwa albo tylko niezalinkowana; to rozne rzeczy. "
                 "⚠️ Luka 1-2 dni bywa ARTEFAKTEM synchronizacji iCloud (ten vault przez nia chodzi), "
-                "wiec wiersze sa sortowane MALEJACO po luce — realny dryf jest na gorze.", ""]
+                "wiec wiersze sa sortowane MALEJACO po luce — realny dryf jest na gorze." + bulk, ""]
     else:
         out += ["Zero pozycji do oceny.", ""]
     out.append(END)
