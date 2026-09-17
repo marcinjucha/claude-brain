@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
-# Install a pre-commit hook into a consuming repo that regenerates + stages knowledge snapshots
-# and blocks the commit on a dangling reference. Idempotent.
+# Install a pre-commit hook into a consuming repo that regenerates knowledge snapshots and BLOCKS
+# the commit when any of them landed outside its scope, or on a dangling reference. Idempotent.
+#
+# Hook NIE stage'uje niczego sam (zmiana 2026-09-17). WHY: `git add` całego katalogu snapshotów
+# wciągał do commita KAŻDY zaległy snapshot, także spoza zakresu — commit zawężony do sześciu
+# ścieżek wylądował z szesnastoma plikami pod wiadomością, która opisywała sześć. Zawężanie
+# ścieżek tego nie zatrzymuje, bo hook stage'uje już PO ich rozwinięciu. Teraz dryf zatrzymuje
+# commit i nazywa pliki, zamiast po cichu wjeżdżać pod cudzą wiadomość.
 #
 # Usage: install-precommit.sh <repo-path> <context>
 #   e.g. install-precommit.sh /Users/marcinjucha/Prywatne/projects/claude-marketing shadow-operator
@@ -64,12 +70,18 @@ if [ "\$code" -eq 2 ]; then
   echo "✗ knowledge-sync: dangling reference — fix the skill/note before committing." >&2
   exit 1
 fi
-# stage any regenerated snapshots so they land in this commit.
-# Per-glob with a -d guard: a non-matching pattern must NOT poison the whole add step
-# (a single combined add of two pathspecs aborts and stages NOTHING if one does not match).
-for p in skills/*/references/knowledge/ .claude/skills/*/references/knowledge/; do
-  [ -d "\$p" ] && git add -- "\$p" 2>/dev/null || true
-done
+# Snapshoty, ktore sync wlasnie zregenerowal, a ktorych NIE MA w tym commicie.
+# Liczymy niezastage'owane zmiany w katalogach snapshotow: to sa dokladnie te, ktore
+# stary hook dopisywalby po cichu do cudzego commita.
+STRAY=\$(git diff --name-only | grep -E '(^|/)references/knowledge/' || true)
+if [ -n "\$STRAY" ]; then
+  N=\$(printf '%s\\n' "\$STRAY" | wc -l | tr -d ' ')
+  echo "✗ knowledge-sync: \$N snapshot(ow) zregenerowano POZA zakresem tego commita:" >&2
+  printf '   %s\\n' \$STRAY >&2
+  echo "  Hook ich NIE dopisuje. Zacommituj je osobno albo dolacz do zakresu:" >&2
+  echo "    git add -- \$(printf '%s ' \$STRAY)" >&2
+  exit 1
+fi
 exit 0
 EOF
 chmod +x "$PRECOMMIT"
