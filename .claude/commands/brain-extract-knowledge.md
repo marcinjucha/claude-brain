@@ -19,7 +19,7 @@ To jest **SILNIK**. Główny wyzwalacz = in-loop hook w `/brain-update`; standal
 **`<vault>/_system/knowledge-system.md`** — czytaj, NIE przepisuj. Repo mózgu (config/skrypty):
 `/Users/marcinjucha/Prywatne/projects/claude-brain`.
 
-**Dyscyplina** (CP1–4, dwustopniowa brzytwa, dedup, verify-understanding, schemat noty) — skill **`brain-conventions`** (osiągalny w KAŻDYM kontekście; ta komenda jest samowystarczalna).
+**Dyscyplina** (CP1–4, dwustopniowa brzytwa, dedup, schemat noty) — skill **`brain-conventions`** (osiągalny w KAŻDYM kontekście; ta komenda jest samowystarczalna).
 
 ## ⭐ BRZYTWA (dwustopniowa — mechanizm centralny)
 
@@ -56,6 +56,7 @@ który już żyje w repo (jeden próg, jeden bug, jedna reguła-pliku)?
 - `status: emerging` (default) — synteza opiera się na JEDNYM świeżo zamkniętym tickecie (może jeszcze zostać obalona — np. shadow-mode czekający na walidację fizyczną).
 - `status: canon` — utrzymane na **N≥3 odrębnych ŹRÓDŁACH** (tickety / atomy / twórcy — wg kontekstu) ORAZ zweryfikowana.
 - Obalenie później → `status: superseded-by [[nowa-notatka]]`, NIGDY cichy delete (to, że coś było wierzone i obalone, samo jest trwałą wiedzą — filozofia dead-endów vaulta).
+  **To jest ODWRACALNOŚĆ zapisu i filar, na którym stoi bezbramkowa Faza 4:** koszt fałszywie dodanej noty jest odwracalny (obalasz ją nadpisując `status`), koszt zablokowanej dostawy wiedzy — nie.
 - Fragmenty `[do potwierdzenia]` są z konstrukcji ZABRONIONE w brain (nie przechodzą Stopnia 1 / durability).
 - Decay łapany przy ODCZYCIE przez `brain-sync --deep`, nie przy zapisie — komenda ma tylko ostemplować proweniencję, by audyt mógł działać.
 
@@ -80,7 +81,7 @@ Ticket: `git -C <cwd> branch --show-current` → regex `SHELF-[0-9]+`, albo `$1`
 Tryb `--sweep`: przyjmij LISTĘ/klaster kluczy ticketów zamiast jednego.
 
 **Tryb `--from-meeting <digest-path>` (wejście z `/brain-meeting` Faza 5).** Zamiast ticketu
-przyjmujesz: ścieżkę do `digest.md` (już POTWIERDZONEGO przez bramkę Fazy 3) + listę 0–3 kandydatów
+przyjmujesz: ścieżkę do `digest.md` (już POTWIERDZONEGO przez bramkę Fazy 3 `/brain-meeting` — ta bramka ZOSTAJE, dotyczy treści spotkania) + listę 0–3 kandydatów
 przekazaną w wywołaniu + ścieżkę zapisanej notatki spotkania. Ticket NIE jest wymagany. Kontekst
 bierzesz z wywołania (`/brain-meeting` go rozwiązał), nie z `pwd` — komenda może być odpalona z vaulta,
 który nie mapuje się na żaden kontekst.
@@ -111,15 +112,23 @@ Potem dedup-search w `knowledge/` (ORAZ skanuj `memory.md`/CLAUDE.md/skille za a
 **ROZSZERZ istniejącą** vs **UTWÓRZ nową** vs **ODRZUĆ** (pojedynczy atom → tylko link / route do repo). **Preferuj ROZSZERZ** (anty-eksplozja).
 Fragmenty niezaliczające brzytwy: zbierz do nudge'a w raporcie, NIE zapisuj.
 
-## Faza 4 — zweryfikuj zrozumienie (BRAMKA OBOWIĄZKOWA)
+## Faza 4 — decyzje zapisu (BEZ BRAMKI)
 
-Przedstaw użytkownikowi zdestylowany model + per-kandydat {rozszerz `<slug>` | utwórz `<nowy-slug>` | odrzuć→gdzie} + status.
-WSZYSTKICH kandydatów w JEDNYM restatement; akceptuj batch-confirm + per-kandydat skip. **NIGDY nie działaj dalej na ciszy.**
-(Verify-understanding z dyscypliny `brain-conventions` — obowiązkowe, bo to notatki torem canon surface'owane na starcie sesji; źle zdestylowana notatka myli orientację.)
+Ustal per-kandydat {rozszerz `<slug>` | utwórz `<nowy-slug>` | odrzuć→gdzie} + status i **przejdź od razu do zapisu — NIE pytaj użytkownika o zgodę.**
+Zdestylowany model i te decyzje idą do użytkownika PO zapisie, w raporcie Fazy 6.
+WHY: weto użytkownika jest PRZENIESIONE, nie usunięte — każda nota jest odwracalna przez `status: superseded-by` (patrz §Status + decay),
+więc restatement po zapisie daje pełną kontrolę, a bramka przed zapisem kosztowała rundę potwierdzeń przy KAŻDYM `/brain-update`
+(silnik odpala się in-loop, nie on-demand). Obroną jakości pozostają: dwustopniowa brzytwa (Faza 3), dedup-search z preferencją ROZSZERZ
+(Faza 3) i `sync-knowledge.py --check` (Faza 5).
+
+⚠️ **0 notatek to poprawny i CZĘSTY wynik przebiegu — powiedz to wprost w raporcie.** WHY: gdy nikt nie ogląda propozycji
+przed zapisem, rośnie presja, żeby przebieg „coś dał"; faza, która czuje się zobowiązana wyprodukować kandydata, to droga,
+którą wymyślona wiedza wchodzi na zaufaną półkę (ta sama reguła co `/brain-meeting` Faza 5). Pusty przebieg jest tańszy
+niż nota, którą ktoś potem musi obalić.
 
 ## Faza 5 — zapis (WRITE) + integralność
 
-Per potwierdzony kandydat, w tej kolejności:
+Per kandydat przyjęty w Fazie 4, w tej kolejności:
 0. **Rozstrzygnij dom noty — TRÓJDZIELNIE (trzeci wymiar zapisu — test w `brain-conventions` §„Trzeci wymiar zapisu — TRZY POOLE", NIE przepisuj):** są DWIE żywe bazy uniwersalne, nie jedna. Czy teza jest venture-niezależna, i jeśli tak — biznesowa czy techniczna?
    - **Uniwersalna-BIZNES** (czysty craft sprzedaż/marketing/launch/oferta/produkt/voice-copy) **→** `03-Resources/general-business/knowledge/` (`context: general-business`) + jej `_MOC.md`.
    - **Uniwersalna-TECHNICZNA** (inżynieria/web-stack venture-niezależna — TanStack/Supabase/RLS/React + zasady stack-agnostyczne SRP/TDD/kompozycja) **→** `03-Resources/general-technical/knowledge/` (`context: general-technical`) + jej `_MOC.md`. ⚠️ Ten silnik odpala się TAKŻE w kontekstach technicznych (np. claude-dev) — ekstrakcja uniwersalno-techniczna routuje TU, nie do general-business.
@@ -134,16 +143,18 @@ Per potwierdzony kandydat, w tej kolejności:
 
 ## Faza 6 — raport
 
+- **Restatement zdestylowanego modelu** + per-kandydat decyzja {rozszerz `<slug>` | utwórz `<nowy-slug>` | odrzuć→gdzie} + status — WSZYSTKICH kandydatów w jednym miejscu. To jest moment WETA: użytkownik czyta, co już zapisano, i obala niechciane przez `superseded-by` (nigdy cichy delete).
 - Notatki utworzone (slug + teza + status) / rozszerzone (co wmerge'owano).
 - Wpisy `_MOC.md` dodane.
 - Wynik `sync --check`.
 - Wyniki dedup (co złożono zamiast tworzyć — transparentność anty-dryf).
-- Odroczone/odrzucone (porażki brzytwy + niejednoznaczny dom) z powodami.
+- Odroczone/odrzucone (porażki brzytwy + POMINIĘTE z niejednoznacznym domem) z powodami.
+- **Jeśli nie powstała ŻADNA nota — powiedz to wprost jako poprawny wynik, nie jako porażkę przebiegu.**
 - Nudge lekcji repo (reguły-kodu / pułapki-arch → „rozważ `/ai-extract-memory`→`/ai-curate-memory`").
 - Źródła nietknięte (jednokierunkowo).
 
 ## Obsługa niejednoznaczności
 
 - Ticket nierozstrzygnięty (brak `SHELF-XXXXX`, kilka w grze) → NIE zgaduj; zapytaj albo weź `$1`. **Nie dotyczy `--from-meeting`** — tam ticket jest opcjonalny, a proweniencją jest notatka spotkania. Brak notatki roboczej/SESSION.md → działaj na `memory.md`+`git log`, zaznacz reduced-source.
-- Dom fragmentu niejednoznaczny → rozstrzygnij w Fazie 4, nigdy po cichu. Jasna synteza domenowa → brain; reguła-kodu/pułapka-arch repo → ODROCZ + nudge; niejasne po restatement → POMIŃ + wylistuj w „odroczone". Źle-zadomowiona notatka zanieczyszcza zaufaną bazę → skip-and-report bije zgadywanie.
-- Remis rozszerz-vs-utwórz → preferuj ROZSZERZ, ale pokaż cel merge'a w Fazie 4 do weta.
+- **Dom fragmentu niejednoznaczny → POMIŃ i wylistuj w raporcie (Faza 6, „odroczone"), NIGDY nie zgaduj.** Jasna synteza domenowa → brain; reguła-kodu/pułapka-arch repo → ODROCZ + nudge; wszystko, co nie rozstrzyga się jednoznacznie po Fazie 3 → POMIŃ. WHY: źle-zadomowiona notatka zanieczyszcza zaufaną bazę, więc skip-and-report bije zgadywanie — a bez bramki przed zapisem nie ma gdzie dopytać, więc skip jest JEDYNĄ ścieżką (dopytanie w następnym przebiegu kosztuje nic, źle zapisana nota kosztuje obalenie).
+- Remis rozszerz-vs-utwórz → preferuj ROZSZERZ i pokaż cel merge'a w raporcie Fazy 6.

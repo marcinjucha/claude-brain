@@ -840,8 +840,12 @@ w przebiegu 2026-08-10 agent Fazy 4 padł na błędzie API i orkiestrator musia�
 Gate `knowledge[<ctx>].active == true`, inaczej jedno zdanie w raporcie. Nad **DIGESTEM PO WERDYKTACH**
 (nie nad transkryptem) wyłącznie **tani pre-filtr Stopnia 1** brzytwy (`brain-conventions`)
 → **0–3 kandydatów** → przekaż do `/brain-extract-knowledge`, JEDYNEGO właściciela pełnej brzytwy,
-verify-confirm i zapisu. Jest **DOKŁADNIE JEDNO** potwierdzenie — w silniku (lustro `/brain-update`
-Faza 3.8).
+decyzji o zapisie i samego zapisu. **Silnik ZAPISUJE i RAPORTUJE — potwierdzenia nie ma w ogóle**
+(lustro `/brain-update` Faza 3.8); weto użytkownika żyje PO zapisie, przez raport silnika i
+`status: superseded-by`. WHY: podwójna bramka (propozycja tu + verify tam) męczyła użytkownika,
+a pojedyncza też okazała się tarciem przy komendzie odpalanej z nawyku — obrona jakości stoi na
+brzytwie, dedupie i `sync --check`, nie na pytaniu. ⚠️ Bramka digestu w Fazie 3 tej komendy ZOSTAJE —
+to inna bramka (dotyczy treści spotkania, gdzie atrybucja mówców jest niepewna).
 
 **FORMA PRZEKAZANIA (dokładnie ta, silnik ma na nią wejście — `/brain-extract-knowledge` Faza 0/1):**
 `/brain-extract-knowledge` z `--from-meeting <work>/digest.md` plus lista 0–3 kandydatów. Silnik

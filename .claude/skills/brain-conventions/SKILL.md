@@ -79,7 +79,7 @@ Oś ORTOGONALNA do brzytwy: brzytwa decyduje repo-vs-brain; ta decyduje — GDY 
 ### Reguły wspólne dla obu destylerów
 
 - **Anty-dryf dedup-search PRZED utworzeniem noty.** Przeszukaj `knowledge/` po istniejący slug/tezę i ROZSZERZ istniejącą, nie twórz rodzeństwa. Dedup przy zapisie = najtańsza obrona przed degradacją na skali.
-- **Verify-understanding — obowiązkowy checkpoint przed zapisem.** Zrestytuuj zdestylowany model użytkownikowi i potwierdź; nie zapisuj na ciszy.
+- **Verify-understanding — obowiązkowy checkpoint przed zapisem, ale TYLKO dla wejść ZEWNĘTRZNYCH.** Zrestytuuj zdestylowany model użytkownikowi i potwierdź; nie zapisuj na ciszy. Obowiązuje `distill-coaching` (cudzy materiał: call, kurs, artykuł — użytkownik go z Tobą nie przerabiał, więc destylat jest pierwszą rzeczą, którą w ogóle widzi). **NIE obowiązuje `/brain-extract-knowledge`** (ekstrakcja z WŁASNEJ skończonej pracy): materiał przeszedł już przez użytkownika w sesji, a silnik odpala się in-loop z `/brain-update`, więc bramka kosztowała rundę potwierdzeń przy każdym przebiegu. Tam weto jest PRZENIESIONE za zapis — raport wylicza każdą notę, a obalenie idzie przez `status: superseded-by`. ⚠️ Ta różnica jest ZAMIERZONA — nie „naprawiaj" jej, przywracając bramkę wszędzie.
 - **Improve-existing-vs-new.** Faworyzuj rozszerzenie istniejącego artefaktu/noty; nowy wymaga uzasadnionej luki (test: czy istniejący artefakt już to posiada?).
 
 ### Schemat noty

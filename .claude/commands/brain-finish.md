@@ -19,8 +19,8 @@ Repo mózgu (config/skrypty): `/Users/marcinjucha/Prywatne/projects/claude-brain
 0: Preflight — kontekst, memory.md N, kandydaci repo, baseline gita   (INLINE, zawsze)
 1: /brain-update                                       (FORK, zawsze / już w sesji → skip)
 2: lekcje sesji → memory.md  (/ai-extract-memory SPEC)  (FORK, self-skip / już w sesji)
-3: /brain-extract-knowledge  (bramka odroczona)                       (FORK, warunkowo)
-4: zapis kolejki odroczonej — notatka robocza / Trello Inbox           (INLINE)
+3: /brain-extract-knowledge  (zapis bez bramki, noty `emerging`)      (FORK, warunkowo)
+4: zapis kolejki do przeglądu — notatka robocza / Trello Inbox         (INLINE)
 5: Commit per repo                                                    (INLINE — nie delegować)
 6: Raport                                                             (INLINE)
 ```
@@ -83,8 +83,8 @@ Rodzina `ai-*` otwiera się pytaniami doprecyzowującymi; brain-finish celowo te
 plik to mówi, żeby audyt nie „naprawił" bramki z powrotem. WHY: komenda odpala się z nawyku na
 koniec sesji, a bramka-pytanie w tym momencie to dokładnie to tarcie, które zabiło standalone
 opt-in (`/brain-update` Faza 3.8 zapisuje dowód: „standalone opt-in zamiera (dowód: nudge Faza 4(e)
-→ 0 notatek)"). Bramka wiedzy nie jest usunięta, jest ODROCZONA przez `status: emerging` + kolejkę
-do przeglądu. Bramki kuracji odroczyć nie można (Reguła 3), więc kuracji się nie wykonuje. Jedyny
+→ 0 notatek)"). Wiedza nie jest przez to zapisywana bez kontroli: silnik zapisuje od razu, ale
+wyłącznie jako `status: emerging`, a kolejka do przeglądu niesie te noty dalej, poza okno czatu. Bramki kuracji odroczyć nie można (Reguła 3), więc kuracji się nie wykonuje. Jedyny
 checkpoint użytkownika to raport Fazy 6.
 
 **5. Rozwiąż kontekst RAZ, w Fazie 0, i przekazuj go jako wartości.**
@@ -201,10 +201,14 @@ SPEC: `/Users/marcinjucha/.claude/commands/ai-extract-memory.md`.
 Inaczej: fork wykonuje `/brain-extract-knowledge` z przekazaną listą kandydatów.
 
 **JEDYNE delty brain-finish wobec tego silnika:**
-- jego Faza 4 (verify-confirm) jest **ODROCZONA, nie usunięta** → każda nota zapisana jako
-  `status: emerging`, a **`canon` jest w przebiegu brain-finish ZABRONIONY** (promocja dzieje się
-  wyłącznie w `/brain-update` Faza 3.7, po N≥3 odrębnych źródłach);
-- każda zapisana/rozszerzona nota idzie do kolejki odroczonej z Fazy 4;
+- każda nota zapisana jako `status: emerging`, a **`canon` jest w przebiegu brain-finish ZABRONIONY**
+  (promocja dzieje się wyłącznie w `/brain-update` Faza 3.7, po N≥3 odrębnych źródłach). WHY: silnik
+  zapisuje bez bramki (jego Faza 4 to „decyzje zapisu", nie verify-confirm), a brain-finish jest
+  przebiegiem JEDNOPRZEBIEGOWYM bez bramek — więc ogranicznik `emerging`-only nie bierze się
+  z odroczonego potwierdzenia, tylko z tego, że `canon` wymaga dowodu z N≥3 odrębnych źródeł,
+  którego pojedyncza sesja z definicji nie ma;
+- każda zapisana/rozszerzona nota trafia na listę do przeglądu — kolejkę zapisywaną przez
+  **Fazę 4 tej komendy** (notatka robocza / Trello Inbox), nie przez silnik;
 - zaraportuj, czy zregenerowano snapshoty — rozszerzenie szeroko konsumowanej noty ma szeroki
   promień rażenia (2026-07-29: rozszerzenie noty deklarowanej przez 9 skilli zregenerowało 9 plików
   snapshotów) i jest winne osobno zatwierdzonego przebiegu `sync-knowledge.py`.
@@ -214,7 +218,7 @@ albo „SKIPPED — <który warunek>".
 
 SPEC: `/Users/marcinjucha/Prywatne/projects/claude-brain/.claude/commands/brain-extract-knowledge.md`.
 
-## Faza 4 — zapis kolejki odroczonej (INLINE)
+## Faza 4 — zapis kolejki do przeglądu (INLINE)
 
 Dopisz kolejkę do przeglądu **do notatki roboczej sesji** (ten sam target, który rozwiązała
 `/brain-update` Faza 2b; gdy target był niejednoznaczny → dopisz do pamięci projektu `<memory>`).
@@ -227,7 +231,7 @@ short-linki utworzonych kart. Zastosowane i sprawdzone 2026-08-04.
 Trello jest JEDYNĄ dostępną warstwą trwałości — kolejka wypisana tylko w raporcie umiera razem
 z sesją.
 
-**Kolejka zawiera:** odroczoną bramkę wiedzy (noty `emerging` do zweryfikowania) + niezastosowane
+**Kolejka zawiera:** noty `emerging` zapisane w tym przebiegu (do przejrzenia) + niezastosowane
 propozycje Trello + ewentualny należny przebieg `sync-knowledge.py` + rekomendację
 `/ai-curate-memory`, jeśli N tego wymaga.
 

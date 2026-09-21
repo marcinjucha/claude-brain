@@ -190,11 +190,14 @@ Jeśli `knowledge[<ctx>].active == true`: po zapisach statusu/notatki roboczej w
 notatki domenowe. **Ta faza wyłącznie SURFACE'UJE** — NIE stosuj tu pełnej brzytwy (Stopień 2 / atom-vs-synteza),
 NIE dobieraj finalnego brzmienia, NIE bramkuj i NIE zapisuj.
 **PRZEKAŻ kandydatów do silnika `/brain-extract-knowledge`** — silnik jest JEDYNYM właścicielem pełnej brzytwy,
-verify-confirm (jego Faza 4) i zapisu (Faza 5). **Jest DOKŁADNIE JEDNO potwierdzenie — w silniku — nie dwa.**
+decyzji o zapisie (jego Faza 4) i samego zapisu (Faza 5). **Silnik ZAPISUJE i RAPORTUJE — potwierdzenia nie ma w ogóle,
+ani tu, ani tam.** Weto użytkownika żyje PO zapisie: raport silnika (Faza 6) wylicza każdą notę, a obalenie idzie przez
+`status: superseded-by`, nigdy przez cichy delete.
 Lekko: **0 kandydatów to poprawny, częsty wynik** — powiedz to.
 WHY: standalone opt-in zamiera (dowód: nudge Faza 4(e) → 0 notatek); adopcja bierze się z wpięcia surfacing-u w komendę,
-którą i tak odpalasz z nawyku. Dawniej ta faza dublowała bramkę silnika (propozycja tu + verify tam) i podwójnie
-męczyła użytkownika — teraz surface-tu, bramka-w-silniku.
+którą i tak odpalasz z nawyku. Dawniej ta faza dublowała bramkę silnika (propozycja tu + verify tam) i podwójnie męczyła
+użytkownika; po redukcji do JEDNEJ bramki tarcie zostało — runda potwierdzeń przy każdym `/brain-update`. Dlatego weto
+przeniesiono za zapis: obrona jakości stoi na brzytwie, dedupie i `sync --check`, a nie na pytaniu do użytkownika.
 
 ## Faza 4 — raport
 Co zaktualizowano: (a) pamięć projektu (`<memory>` — status/połączenia), (b) notatka robocza
